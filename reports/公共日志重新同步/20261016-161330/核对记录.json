@@ -1,0 +1,21 @@
+﻿{
+  "oldHash": "315c8388bafbffa77bf55fd4f86b4763df8c5b0900e5206363062c82f3d57d7a",
+  "lastSyncedRepairHash": "a38d14bd3e098948f09f16b344242bcd5350c1e29f8dec799a4656ce91ec8cf3",
+  "oldFileModified": "2026-10-16T16:11:28.519700",
+  "onlyDifference": "CommitTask boolean log",
+  "cause": "Old content written after prior successful sync; writing process not identified",
+  "knownOldBackup": "reports/同步备份/20261016-160429-106391",
+  "businessHashes": {
+    "flows\\001_游戏重连\\QQ登录.mq": "56f0469f9d2c4f960bbdb3d3730190c29a84fdbe1229e84c3922f491ee4944a2",
+    "flows\\001_游戏重连\\登录游戏.mq": "b2dddc348ae0854f26df633bf02e0bf35d9e82146eda24434ecd2e0a7ecce8a9",
+    "flows\\050_定时领取体力\\定时领取体力.mq": "fb7a3ca7802360229652a9d7926b5f5a576a6d67625f8151849558532a852b77",
+    "flows\\055_好友体力\\好友体力.mq": "5ec40f11e5fa504c1cc197fda52ef36b07274f21824d71fd181a87600385ca6e",
+    "flows\\056_Q友体力\\Q友体力.mq": "e4acdeebf7c894ade0a407358af98289d02dd74857a219c91c7739efae90c233",
+    "flows\\151_悟空的冒险\\悟空的冒险.mq": "7ca0da5baaf952628461f2fbfce47bef39121672b553ce143ff10187210e7937",
+    "flows\\152_合作大冒险\\合作大冒险.mq": "531201f0c50216bacb68f3a70eb857345d07ae9c80665d26610013b8fb8e8de7",
+    "flows\\166_领月卡龙石\\领月卡龙石.mq": "781e874fb5ccbae2a0a76a4acae1c017d1ed46f262bbc78e974833023a610cf2",
+    "flows\\167_日常签到\\日常签到.mq": "0c8042b1e2432e35b36e4c9cb839dd763322e0ac4315d03a1e29f6d99fffc862",
+    "flows\\168_领邮件奖励\\领邮件奖励.mq": "e1e4ed2a21756bfd10a9abd31c34006ea9a823e0b4cb4606317607dac12e758b",
+    "flows\\169_领任务奖励\\领任务奖励.mq": "05bb67c71bfec0de889b677b0c2b09c1f62bb72d7b1c1999bc63c3823babd149"
+  }
+}

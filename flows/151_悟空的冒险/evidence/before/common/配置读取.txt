@@ -1,0 +1,66 @@
+﻿Function QFriendBooleanSetting(key)
+    Dim raw, rawText, rawKind, normalized, resultText
+    raw = ReadUIConfig(key, False)
+    QFriendBooleanSetting = False
+    rawText = "<null>"
+    rawKind = "null"
+    normalized = ""
+    If Not IsNull(raw) Then
+        rawText = CStr(raw)
+        normalized = LCase(Trim(rawText))
+        // MQ equality keeps primitive types distinct; no truthiness test of raw.
+        If raw = rawText Then
+            rawKind = "string"
+        ElseIf raw = True Or raw = False Then
+            rawKind = "boolean"
+        ElseIf IsNumeric(raw) Then
+            rawKind = "number"
+        Else
+            rawKind = "other"
+        End If
+        If normalized = "true" Or normalized = "1" Then
+            QFriendBooleanSetting = True
+        End If
+    End If
+    resultText = "关闭"
+    If normalized = "true" Or normalized = "1" Then
+        resultText = "开启"
+    End If
+    // LoadSettings precedes NewSession: do not concatenate uninitialized stageName.
+    Call WriteMainLog("[龙珠激斗脚本][Q友体力56配置] 键=" & key & " 读取原值=[" & rawText & "] 返回类型=" & rawKind & " 规范值=[" & normalized & "] 解析结果=" & resultText)
+    If normalized <> "true" And normalized <> "false" And normalized <> "1" And normalized <> "0" Then
+        Call WriteMainLog("[龙珠激斗脚本][Q友体力56配置] 未识别配置值，按默认关闭处理；未改写保存值")
+    End If
+End Function
+Function PositiveSetting(key, fallback)
+    Dim raw
+    raw = ReadUIConfig(key, fallback)
+    PositiveSetting = fallback
+    If IsNumeric(raw) Then
+        If CDbl(raw) > 0 Then
+            PositiveSetting = CDbl(raw)
+        End If
+    End If
+End Function
+Sub LoadSettings()
+    Call LoadTimedStaminaSettings()
+    qfriendEnabled = QFriendBooleanSetting("Q友体力启用")
+    qfriendOneClick = QFriendBooleanSetting("Q友一键领取")
+    qfriendInterval = PositiveSetting("Q友体力间隔秒", 14400)
+    friendEnabled = ReadUIConfig("好友体力启用", False)
+    friendInterval = PositiveSetting("好友体力间隔秒", 14400)
+    monthEnabled = ReadUIConfig("月卡龙石启用", False)
+    monthInterval = PositiveSetting("月卡间隔秒", 3600)
+    monthKeepDownload = ReadUIConfig("保留下载提示", False)
+    signEnabled = ReadUIConfig("日常签到启用", False)
+    signInterval = PositiveSetting("签到间隔秒", 3600)
+    rewardEnabled = ReadUIConfig("任务奖励启用", True)
+    rewardInterval = PositiveSetting("任务奖励间隔秒", 21600)
+    mailEnabled = ReadUIConfig("邮件启用", True)
+    mailInterval = PositiveSetting("邮件间隔秒", 21600)
+    loginLimit = PositiveSetting("登录总超时秒", 600) * 1000
+    businessLimit = PositiveSetting("业务总超时秒", 120) * 1000
+    messageMode = ReadUIConfig("消息邮件", 0)
+    // root.784: zero means 1000ms; positive values are seconds.
+    hallReturnDelaySeconds = PositiveSetting("返回延迟秒", 0)
+End Sub

@@ -1,0 +1,46 @@
+﻿{
+  "implemented": true,
+  "task": 152,
+  "timestamp": "2026-10-16T15:55:44.371174",
+  "approvedNormalExits": [
+    "已领取并关闭",
+    "已确认冒险主界面按原顺序操作累计5次"
+  ],
+  "intervalSeconds": 43200,
+  "staticCheck": {
+    "passed": true,
+    "modules": 31
+  },
+  "simulation": {
+    "passed": true,
+    "tests": 323
+  },
+  "officialCompile": false,
+  "device": false,
+  "sync": {
+    "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+    "hashMatches": {
+      ".mq": true,
+      ".uip": true
+    },
+    "sha256": {
+      ".mq": "315c8388bafbffa77bf55fd4f86b4763df8c5b0900e5206363062c82f3d57d7a",
+      ".uip": "ac469de2e4fc530c6d6ce44f46d1065a3bc17c004d46c1a2ec8401f0e99f5c4a"
+    }
+  },
+  "protectedFilesUnchanged": {
+    "common/悟空冒险状态.mq": true,
+    "common/定时体力状态.mq": true,
+    "flows/001_游戏重连/QQ登录.mq": true,
+    "flows/001_游戏重连/登录游戏.mq": true,
+    "flows/168_领邮件奖励/领邮件奖励.mq": true,
+    "flows/169_领任务奖励/领任务奖励.mq": true,
+    "flows/167_日常签到/日常签到.mq": true,
+    "flows/166_领月卡龙石/领月卡龙石.mq": true,
+    "flows/055_好友体力/好友体力.mq": true,
+    "flows/056_Q友体力/Q友体力.mq": true,
+    "flows/050_定时领取体力/定时领取体力.mq": true,
+    "flows/151_悟空的冒险/悟空的冒险.mq": true
+  },
+  "gitCommitOrPush": false
+}

@@ -130,7 +130,7 @@ Function HandleForegroundRecovery()
         Exit Function
     End If
     Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
-    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Then
+    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Or currentTask = 151 Or currentTask = 152 Then
         Call SaveRecovery()
     End If
     terminalConfirmed = False

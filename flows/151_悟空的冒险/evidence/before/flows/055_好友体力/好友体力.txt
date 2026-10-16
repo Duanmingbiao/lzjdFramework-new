@@ -1,0 +1,92 @@
+﻿Sub FriendStage(value)
+    friendPhase = value
+    Call SetStage(value)
+End Sub
+Function FriendTap(x, y, waitMs)
+    FriendTap = False
+    // Public foreground grace remains five seconds; never count a skipped click.
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call Note("[好友体力55] 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    If Not BusinessExpired() Then
+        FriendTap = True
+    End If
+End Function
+Function ExecuteFriendEnergy()
+    Dim enteredAt, anchorX, anchorY, firstGroup
+    ExecuteFriendEnergy = RESULT_TIMEOUT
+    terminalConfirmed = False
+    enteredAt = TickCount()
+    firstGroup = True
+    Call FriendStage("好友体力55进入")
+    Call Note("[好友体力55] 入口 root.707 全屏多点找色 方向1 相似度0.9；进入限时10000毫秒")
+    Do
+        If BusinessExpired() Then
+            Call Note("[好友体力55] 进入出口：公共超时或前台中断，保留原任务")
+            Exit Function
+        End If
+        If MatchPattern("055_大厅入口锚点") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[好友体力55] 命中大厅锚点=" & anchorX & "," & anchorY & " 区域0,0,719,1279 偏移538,-28")
+            If Not FriendTap(anchorX + 538, anchorY - 28, 1000) Then
+                Exit Function
+            End If
+        End If
+        If MatchPattern("055_好友页面") Then
+            Call Note("[好友体力55] 进入好友页面确认；每组重新找色，同组沿用锚点")
+            Exit Do
+        End If
+        If TickCount() - enteredAt > 10000 Then
+            Call Note("[好友体力55] 进入超时出口：未确认好友页，不提交，交公共恢复原任务")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call FriendStage("好友体力55第一组")
+    Do
+        If BusinessExpired() Then
+            Call Note("[好友体力55] 动作出口：公共超时或前台中断，保留原任务")
+            Exit Function
+        End If
+        If MatchPattern("055_好友页面") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[好友体力55] 命中好友页面=" & anchorX & "," & anchorY & " 区域0,0,719,1279")
+            If firstGroup Then
+                Call Note("[好友体力55] 第一组 偏移250,-110 双点击 等待500/1000毫秒")
+                If Not FriendTap(anchorX + 250, anchorY - 110, 500) Then
+                    Exit Function
+                End If
+                If Not FriendTap(anchorX + 250, anchorY - 110, 1000) Then
+                    Exit Function
+                End If
+                firstGroup = False
+                Call FriendStage("好友体力55第二组")
+            Else
+                Call Note("[好友体力55] 第二组 偏移460,-110 双点击 等待500/0毫秒")
+                If Not FriendTap(anchorX + 460, anchorY - 110, 500) Then
+                    Exit Function
+                End If
+                If Not FriendTap(anchorX + 460, anchorY - 110, 0) Then
+                    Exit Function
+                End If
+                terminalConfirmed = True
+                Call FriendStage("好友体力55待返回大厅")
+                Call Note("[好友体力55] 业务出口成功：两组双点击完成，按用户确认终态；等待公共返回大厅连续确认后提交")
+                ExecuteFriendEnergy = RESULT_OK
+                Exit Function
+            End If
+        Else
+            Delay 20
+        End If
+    Loop
+End Function

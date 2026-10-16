@@ -1,0 +1,35 @@
+{
+  "taskId": 151,
+  "implemented": true,
+  "cooperation152": "仅待开发文字，不注册不执行",
+  "approvedFix": "隐藏收集累计两次灰色终态后结束",
+  "uiHierarchy": [
+    "一级悟空的冒险页签",
+    "二级功能勾选",
+    "三级隐藏/扫荡/间隔"
+  ],
+  "staticCheck": "29个MQ文件通过",
+  "pythonMockTests": {
+    "passed": true,
+    "count": 298
+  },
+  "oldBusinessFilesByteIdentical": [
+    "flows/001_游戏重连/QQ登录.mq",
+    "flows/001_游戏重连/登录游戏.mq",
+    "flows/168_领邮件奖励/领邮件奖励.mq",
+    "flows/169_领任务奖励/领任务奖励.mq",
+    "flows/167_日常签到/日常签到.mq",
+    "flows/166_领月卡龙石/领月卡龙石.mq",
+    "flows/055_好友体力/好友体力.mq",
+    "flows/056_Q友体力/Q友体力.mq",
+    "flows/050_定时领取体力/定时领取体力.mq"
+  ],
+  "officialCompilation": "待用户打包验证",
+  "leidianRuntimeAndOCR": "待用户验证",
+  "syncedTarget": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "sha256Verified": {
+    ".mq": "7e320f02c615948f8f6ebc688bda77a01310dfbd6045bbcabfdcbf9c3864c500",
+    ".uip": "f67cb9b71e06d141bb46d49e84d3584cc651f1c1efd54a18ba86257af20303f2"
+  },
+  "gitCommitOrPush": false
+}

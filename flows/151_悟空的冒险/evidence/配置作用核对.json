@@ -1,0 +1,38 @@
+{
+  "taskId": 151,
+  "enabled": {
+    "professional": "日常_悟空的冒险",
+    "project": "悟空冒险启用",
+    "default": false
+  },
+  "hidden": {
+    "professional": "日常_悟空的冒险_隐藏关卡",
+    "project": "悟空隐藏关卡",
+    "default": 0,
+    "options": [
+      "拾极品",
+      "拾上品"
+    ],
+    "meaning": "0处理5个极品模板；1先极品再额外4个上品模板"
+  },
+  "sweep": {
+    "professional": "日常_悟空的冒险_扫荡关卡",
+    "project": "悟空扫荡关卡",
+    "default": 0,
+    "options": [
+      "扫最新",
+      "扫老关"
+    ],
+    "meaning": "1在当前不可扫荡OCR成立时执行原版0次点击、1/2次滑动、3至5次点击的旧关回退；次数超过5结束"
+  },
+  "intervalSeconds": 3600,
+  "intervalEvidence": "root.816 L10604-10608初始化",
+  "uiHierarchy": [
+    "悟空的冒险一级页签",
+    "悟空的冒险二级启用",
+    "隐藏/扫荡/间隔三级选项"
+  ],
+  "cooperation152": "仅待开发文字，不提供开关、不注册、不执行",
+  "approvedFix": "用户同意隐藏循环累计两次灰色终态后结束",
+  "commonRule": "终态后公共返回大厅连续确认才提交；无限恢复151"
+}

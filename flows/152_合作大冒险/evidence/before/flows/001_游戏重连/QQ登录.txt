@@ -1,0 +1,80 @@
+﻿Function ClickQQAuthorization(patternName, label, offsetX, offsetY)
+    ClickQQAuthorization = False
+    If LoginExpired() Then
+        Exit Function
+    End If
+    If MatchPattern(patternName) Then
+        Call Note("QQ授权R3：" & label & "，模板=" & patternName & "，点击=" & (foundX + offsetX) & "," & (foundY + offsetY))
+        Call TouchPoint(foundX + offsetX, foundY + offsetY, 1000)
+        ClickQQAuthorization = True
+    End If
+End Function
+Function HandleQQ()
+    Dim anchorX, anchorY, authorizationHandled, diagnosticRound
+    HandleQQ = False
+    authorizationHandled = False
+    diagnosticRound = False
+    If TickCount() - qqLastDiagnosticAt >= 5000 Then
+        qqLastDiagnosticAt = TickCount()
+        diagnosticRound = True
+        Call Note("QQ授权R3：原版图色巡检，登录已用毫秒=" & (TickCount() - loginStarted))
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    // root.793 L3694-3752: one-click check precedes the three authorization groups.
+    If MatchPattern("QQ一键登录") Then
+        anchorX = foundX
+        anchorY = foundY
+        Call Note("QQ授权R3：一键登录")
+        Call TouchPoint(anchorX - 151, anchorY + 86, 1000)
+        If Not LoginExpired() Then
+            Call TouchPoint(anchorX + 63, anchorY, 1000)
+        End If
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    // Keep the original candidates first. Add screenshot-derived fallback only.
+    If ClickQQAuthorization("QQ授权登录一", "授权登录", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ授权登录二", "授权登录", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ现版头像昵称同意", "头像昵称同意", 120, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    // root.793 L4012/L4026: confirmation has two original candidates.
+    If ClickQQAuthorization("QQ授权确认", "VIP会员确认", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ授权登录二", "VIP会员确认候选二", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ现版VIP会员确认", "VIP会员确认", 120, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    If ClickQQAuthorization("QQ授权同意", "游戏信息同意", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ现版游戏信息同意", "游戏信息同意", 120, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If Not authorizationHandled And diagnosticRound Then
+        Call Note("QQ授权R3：未命中授权页面，继续登录总计时")
+    End If
+    // root.793 L4113-4117: authorization-section tail, not a new timeout.
+    Delay 50
+End Function

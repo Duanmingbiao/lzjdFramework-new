@@ -1,0 +1,448 @@
+﻿Sub TimedStage(value)
+    staminaPhase = value
+    Call SetTimedStaminaPhase(currentTask, value)
+    Call SetStage(value)
+End Sub
+Sub TimedTouch(name, x, y, waitMs)
+    Call Note("[定时体力] 命中=" & name & " 点击=" & x & "," & y & " 点击偏移=0,0 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+End Sub
+Function TimedActivityFrame()
+    TimedActivityFrame = True
+    If StaminaMatch("050_活动框一") Then
+        Exit Function
+    End If
+    TimedActivityFrame = StaminaMatch("050_活动框二")
+End Function
+Function TimedHallKnown()
+    TimedHallKnown = True
+    If StaminaMatch("050_大厅识别一") Then
+        Exit Function
+    End If
+    If StaminaMatch("050_大厅识别二") Then
+        Exit Function
+    End If
+    TimedHallKnown = StaminaMatch("050_大厅识别三")
+End Function
+Function TimedActivityIcon()
+    TimedActivityIcon = True
+    If StaminaMatch("050_大厅活动入口一") Then
+        Exit Function
+    End If
+    TimedActivityIcon = StaminaMatch("050_大厅活动入口二")
+End Function
+Sub TimedResourcePrompt()
+    Dim x, y, text
+    If Not staminaKeepDownload Then
+        If StaminaMatch("050_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = ReadActivityText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                Call TimedTouch("050_资源下载提示标题", x, y, 0)
+            End If
+            text = ReadActivityText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                Call TimedTouch("050_资源下载提示网络", x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function EnterTimedActivities()
+    Dim initialStarted, enterStarted, text, hallResult
+    EnterTimedActivities = RESULT_TIMEOUT
+    Call TimedStage("定时体力进入活动")
+    Call Note("[定时体力] 入口 EnterTimedActivities")
+    initialStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 出口：活动位置检查超时或前台中断")
+            Exit Function
+        End If
+        If TimedActivityFrame() Then
+            EnterTimedActivities = RESULT_OK
+            Call Note("[定时体力] 出口：原活动框已确认")
+            Exit Function
+        End If
+        If TickCount() - initialStarted > 2000 Then
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    hallResult = ReturnToHall()
+    If hallResult <> RESULT_OK Then
+        Call Note("[定时体力] 出口：进入活动前返回大厅失败")
+        Exit Function
+    End If
+    enterStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 出口：进入活动业务总超时或前台中断")
+            Exit Function
+        End If
+        Call TimedResourcePrompt()
+        If TimedActivityFrame() Then
+            EnterTimedActivities = RESULT_OK
+            Call Note("[定时体力] 出口：专业版当前位置活动框复核成功，进入体力分页")
+            Exit Function
+        End If
+        text = ReadActivityText(65, 7, 247, 59)
+        If text = "活动" Then
+            EnterTimedActivities = RESULT_OK
+            Call Note("[定时体力] 出口：OCR活动标题已确认")
+            Exit Function
+        Else
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Call Note("[定时体力] 出口：活动标题未成立且公共返回失败")
+                Exit Function
+            End If
+        End If
+        If TimedHallKnown() Then
+            If TimedActivityIcon() Then
+                Call TimedTouch("050_大厅活动入口", foundX, foundY, 1500)
+            Else
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Call Note("[定时体力] 出口：无活动图标且公共返回失败")
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 300
+        If TickCount() - enterStarted > 60000 Then
+            Call Note("[定时体力] 出口：专业版活动入口60秒超时；不提交完成")
+            Delay 2000
+            Exit Function
+        End If
+    Loop
+End Function
+Function StaminaMatch(name)
+    Dim matched
+    matched = MatchPattern(name)
+    StaminaMatch = matched
+    If matched Then
+        Call Note("[定时体力] 编号=" & currentTask & " 阶段=" & staminaPhase & " 命中模板=" & name & " 搜索区域=见图色登记 锚点=" & foundX & "," & foundY)
+    End If
+End Function
+Function StaminaTap(x, y, waitMs)
+    StaminaTap = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Call Note("[定时体力] 失败原因=动作前等待前台时超时或中断；未提交")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[定时体力] 失败原因=动作前公共超时或中断；未提交")
+        Exit Function
+    End If
+    Call Note("[定时体力] 编号=" & currentTask & " 点击坐标=" & x & "," & y & " 点击偏移=0,0（模板锚点或已记录的固定坐标） 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    StaminaTap = Not BusinessExpired()
+End Function
+Function StaminaSlotName(slot)
+    StaminaSlotName = "晚上"
+    If slot = 1 Then
+        StaminaSlotName = "上午"
+    ElseIf slot = 2 Then
+        StaminaSlotName = "中午"
+    ElseIf slot = 3 Then
+        StaminaSlotName = "下午"
+    End If
+End Function
+Function EnterTimedStaminaPage()
+    Dim started, lastAction, swipeCount, direction, name
+    EnterTimedStaminaPage = RESULT_TIMEOUT
+    If EnterTimedActivities() <> RESULT_OK Then
+        Call Note("[定时体力] 失败原因=公共活动入口未确认")
+        Exit Function
+    End If
+    started = TickCount()
+    lastAction = TickCount() + 1500
+    swipeCount = 0
+    direction = 0
+    Call TimedStage("定时体力查找分页")
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=查找分页公共超时或前台中断")
+            Exit Function
+        End If
+        If direction < 4 Then
+            direction = direction + 1
+        Else
+            direction = 0
+        End If
+        If StaminaMatch("050_体力页面一") Then
+            EnterTimedStaminaPage = RESULT_OK
+            Exit Function
+        End If
+        If StaminaMatch("050_体力页面二") Then
+            EnterTimedStaminaPage = RESULT_OK
+            Exit Function
+        End If
+        If TimedActivityFrame() Then
+            If StaminaMatch("050_体力图标") Then
+                If Not StaminaTap(foundX, foundY, 1500) Then
+                    Exit Function
+                End If
+                lastAction = TickCount()
+            End If
+            If TickCount() - lastAction > 1500 Then
+                swipeCount = swipeCount + 1
+                Call Note("[定时体力] 分页滑动序号=" & swipeCount & " 专业版辅助搜索方向=" & direction)
+                If swipeCount <= 7 Then
+                    Call SwipeActivityPage(False)
+                Else
+                    Call SwipeActivityPage(True)
+                    If swipeCount = 14 Then
+                        swipeCount = 0
+                    End If
+                End If
+                lastAction = TickCount()
+            End If
+        End If
+        If TickCount() - started > 35000 Then
+            Call Note("[定时体力] 超时原因=分页查找超过35000毫秒 等待2000后公共恢复")
+            Delay 2000
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function DetectStaminaSlot(slot)
+    Dim prefix, name
+    DetectStaminaSlot = RESULT_TIMEOUT
+    prefix = "050_" & StaminaSlotName(slot)
+    Call TimedStage(prefix)
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=初始时段状态未知；未提交完成")
+            Exit Function
+        End If
+        name = prefix & "已领"
+        If StaminaMatch(name) Then
+            Call Note("[定时体力] 初始状态=已领取；不是最终完成提交")
+            Delay 200
+            DetectStaminaSlot = RESULT_OK
+            Exit Function
+        End If
+        name = prefix & "可补"
+        If StaminaMatch(name) Then
+            Call Note("[定时体力] 初始状态=可补领")
+            Delay 200
+            DetectStaminaSlot = RESULT_OK
+            Exit Function
+        End If
+        name = prefix & "可领"
+        If StaminaMatch(name) Then
+            Call Note("[定时体力] 初始状态=免费未领取")
+            Delay 200
+            DetectStaminaSlot = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ClaimTimedStamina(slot)
+    Dim actionSlot, name, prefix, terminalName
+    ClaimTimedStamina = RESULT_TIMEOUT
+    terminalName = "050_" & StaminaSlotName(slot) & "已领"
+    If staminaGem Then
+        If slot = 2 Then
+            terminalName = "050_前两档已领"
+        ElseIf slot = 3 Then
+            terminalName = "050_前三档已领"
+        ElseIf slot = 4 Then
+            terminalName = "050_四档已领"
+        End If
+    End If
+    Call TimedStage("定时体力领取与补领")
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=领取未确认已领终态；未提交完成")
+            Exit Function
+        End If
+        actionSlot = slot
+        If staminaGem Then
+            actionSlot = 1
+        End If
+        Do While actionSlot <= slot
+            prefix = "050_" & StaminaSlotName(actionSlot)
+            name = prefix & "可领"
+            If StaminaMatch(name) Then
+                If Not StaminaTap(foundX, foundY, 200) Then
+                    Exit Function
+                End If
+            End If
+            If staminaGem Then
+                name = prefix & "可补"
+                If StaminaMatch(name) Then
+                    If Not StaminaTap(foundX, foundY, 200) Then
+                        Exit Function
+                    End If
+                End If
+            End If
+            actionSlot = actionSlot + 1
+        Loop
+        If StaminaMatch(terminalName) Then
+            Call Note("[定时体力] 领取正常终态=" & terminalName & " 等待毫秒=200；已领取或已无本档奖励")
+            Delay 200
+            ClaimTimedStamina = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function TimedStaminaExtras()
+    Dim started, phase, text, attempt, balance
+    TimedStaminaExtras = RESULT_TIMEOUT
+    If Not staminaRecover And Not staminaExchange Then
+        TimedStaminaExtras = RESULT_OK
+        Exit Function
+    End If
+    Call TimedStage("定时体力追回兑换")
+    started = TickCount()
+    phase = 0
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=追回兑换公共超时或前台中断")
+            Exit Function
+        End If
+        If StaminaMatch("050_追回入口") Then
+            Call Note("[定时体力] 固定点击追回入口630,260")
+            If Not StaminaTap(630, 260, 1000) Then
+                Exit Function
+            End If
+        End If
+        If phase = 0 Then
+            If staminaRecover Then
+                If StaminaMatch("050_追回灰色") Then
+                    Call Note("[定时体力] 追回灰色，进入兑换阶段")
+                    phase = 1
+                End If
+                If StaminaMatch("050_追回可用") Then
+                    If Not StaminaTap(570, 400, 1000) Then
+                        Exit Function
+                    End If
+                End If
+                If StaminaMatch("050_追回确认") Then
+                    ReleaseCapture
+                    text = Image.OcrText(141, 543, 564, 651, 0, 0)
+                    If IsNull(text) Then
+                        text = ""
+                    End If
+                    Call Note("[定时体力] 追回确认OCR 区域141,543,564,651 关键词是否消耗/5日内未 模糊 文本=" & text)
+                    If InStr(1, text, "是否消耗") > 0 Or InStr(1, text, "5日内未") > 0 Then
+                        If Not StaminaTap(440, 785, 1000) Then
+                            Exit Function
+                        End If
+                        phase = 1
+                    End If
+                End If
+            Else
+                phase = 1
+            End If
+        ElseIf phase = 1 Then
+            If staminaExchange Then
+                If StaminaMatch("050_兑换弹窗") Then
+                    If Not StaminaTap(612, 650, 1000) Then
+                        Exit Function
+                    End If
+                    If Not StaminaTap(412, 750, 1000) Then
+                        Exit Function
+                    End If
+                    If Not StaminaTap(412, 750, 1000) Then
+                        Exit Function
+                    End If
+                    TimedStaminaExtras = RESULT_OK
+                    Call Note("[定时体力] 兑换正常出口=专业版特殊弹窗三次点击完成")
+                    Exit Function
+                End If
+                If StaminaMatch("050_兑换灰色") Then
+                    TimedStaminaExtras = RESULT_OK
+                    Call Note("[定时体力] 兑换正常出口=灰色不可兑换")
+                    Exit Function
+                End If
+                If StaminaMatch("050_兑换可用") Then
+                    attempt = 1
+                    Do While attempt <= 2
+                        ReleaseCapture
+                        text = Image.OcrText(95, 262, 184, 294, 2, 0)
+                        If IsNull(text) Then
+                            text = ""
+                        End If
+                        Call Note("[定时体力] 兑换余额OCR 区域95,262,184,294 参数2 次数=" & attempt & " 文本=" & text)
+                        If IsNumeric(text) Then
+                            balance = Int(CDbl(text))
+                            If balance >= 40 Then
+                                If Not StaminaTap(570, 777, 1000) Then
+                                    Exit Function
+                                End If
+                                Exit Do
+                            Else
+                                TimedStaminaExtras = RESULT_OK
+                                Call Note("[定时体力] 兑换正常出口=已识别余额不足40")
+                                Exit Function
+                            End If
+                        End If
+                        Delay 500
+                        attempt = attempt + 1
+                    Loop
+                End If
+            Else
+                TimedStaminaExtras = RESULT_OK
+                Call Note("[定时体力] 可选追回流程完成，兑换关闭")
+                Exit Function
+            End If
+        End If
+        If TickCount() - started > 15000 Then
+            Call Note("[定时体力] 超时原因=追回兑换15000毫秒保护出口，未确认终态，不提交")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteTimedStamina(taskId)
+    Dim slot, checkSlot, result
+    ExecuteTimedStamina = RESULT_TIMEOUT
+    terminalConfirmed = False
+    staminaTerminal = False
+    slot = taskId - 49
+    If slot = 5 Then
+        slot = 4
+    End If
+    Call Note("[定时体力] 业务入口 名称=" & StaminaName(taskId) & " 编号=" & taskId & " 开始时间Unix=" & Time())
+    result = EnterTimedStaminaPage()
+    If result <> RESULT_OK Then
+        Call Note("[定时体力] 失败或超时原因=进入体力页面失败，等待公共恢复原任务；未提交")
+        Exit Function
+    End If
+    checkSlot = 1
+    Do While checkSlot <= slot
+        If DetectStaminaSlot(checkSlot) <> RESULT_OK Then
+            Exit Function
+        End If
+        Call Progress()
+        checkSlot = checkSlot + 1
+    Loop
+    Call Note("[定时体力] 初始状态确认完成 等待毫秒=3000")
+    Delay 3000
+    Call Progress()
+    If ClaimTimedStamina(slot) <> RESULT_OK Then
+        Exit Function
+    End If
+    If TimedStaminaExtras() <> RESULT_OK Then
+        Exit Function
+    End If
+    If BusinessExpired() Then
+        Call Note("[定时体力] 终态出口前公共超时或中断，未提交完成")
+        Exit Function
+    End If
+    staminaTerminal = True
+    terminalConfirmed = True
+    ExecuteTimedStamina = RESULT_OK
+    Call TimedStage("定时体力业务终态确认")
+    Call Note("[定时体力] 正常终态确认；等待公共返回大厅与连续确认，是否提交完成=否")
+End Function

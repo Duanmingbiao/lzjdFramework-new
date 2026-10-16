@@ -1,0 +1,46 @@
+﻿Function ReadActivityText(x1, y1, x2, y2)
+    Dim text
+    ReadActivityText = ""
+    If ForegroundInterrupted() Then
+        Exit Function
+    End If
+    ReleaseCapture
+    text = Image.OcrText(x1, y1, x2, y2, 0, 0)
+    If IsNull(text) Then
+        text = ""
+    End If
+    If text <> activityOcrLast Or TickCount() - activityOcrLogAt >= 5000 Then
+        Call Note("[活动OCR] 区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 文本=" & text)
+        activityOcrLast = text
+        activityOcrLogAt = TickCount()
+    End If
+    ReadActivityText = text
+End Function
+Sub SwipeActivityPage(reverse)
+    If ForegroundInterrupted() Then
+        Call Note("[活动滑动] 出口：前台中断，未执行")
+        Exit Sub
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call Note("[活动滑动] 出口：游戏不在前台，未执行")
+        Exit Sub
+    End If
+    ReleaseCapture
+    If reverse Then
+        Call Note("[活动滑动] 159,137到609,137，300毫秒")
+        Swipe 159, 137, 609, 137, 300
+    Else
+        Call Note("[活动滑动] 609,137到159,137，300毫秒")
+        Swipe 609, 137, 159, 137, 300
+    End If
+    If ForegroundInterrupted() Then
+        Call Note("[活动滑动] 出口：后续短滑前中断")
+        Exit Sub
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call Note("[活动滑动] 出口：后续短滑前离开游戏")
+        Exit Sub
+    End If
+    Swipe 100, 100, 100, 50, 100
+    Call Note("[活动滑动] 出口：已完成及100,100到100,50短滑")
+End Sub

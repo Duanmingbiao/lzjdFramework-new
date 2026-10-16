@@ -1,0 +1,482 @@
+﻿Sub CoopStage(value)
+    coopPhase = value
+    coopLastMatch = ""
+    Call SetStage(value)
+    Call Note("[合作大冒险152] 当前阶段=" & value)
+End Sub
+Function CoopMatch(name)
+    Dim matched, token
+    matched = MatchPattern(name)
+    CoopMatch = matched
+    If matched Then
+        token = name & ":" & foundX & "," & foundY
+        If token <> coopLastMatch Then
+        Call Note("[合作大冒险152] 命中模板=" & name & " 区域=见152图色登记 相似度0.9 锚点=" & foundX & "," & foundY)
+            coopLastMatch = token
+        End If
+    End If
+End Function
+Function CoopTap(x, y, waitMs)
+    CoopTap = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Call Note("[合作大冒险152] 失败原因=等待游戏前台时公共超时或中断；未提交")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[合作大冒险152] 失败原因=动作前公共超时或中断；未提交")
+        Exit Function
+    End If
+    Call Note("[合作大冒险152] 点击坐标=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    CoopTap = Not BusinessExpired()
+End Function
+Function CoopAction(name, waitMs)
+    CoopAction = False
+    If CoopMatch(name) Then
+        Call Note("[合作大冒险152] 点击偏移=0,0")
+        CoopAction = CoopTap(foundX, foundY, waitMs)
+    End If
+End Function
+Function CoopSwipe(x1, y1, x2, y2, duration, waitMs)
+    CoopSwipe = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    ReleaseCapture
+    Call Note("[合作大冒险152] 固定滑动=" & x1 & "," & y1 & "到" & x2 & "," & y2 & " 时长=" & duration & " 等待毫秒=" & waitMs)
+    Swipe x1, y1, x2, y2, duration
+    Delay waitMs
+    CoopSwipe = Not BusinessExpired()
+End Function
+Function CoopReadText(x1, y1, x2, y2)
+    Dim text, token
+    ReleaseCapture
+    text = Image.OcrText(x1, y1, x2, y2, 0, 0)
+    If IsNull(text) Then
+        text = ""
+    End If
+    token = x1 & "," & y1 & "," & x2 & "," & y2 & ":" & text
+    If token <> coopLastOcr Then
+    Call Note("[合作大冒险152] OCR区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 文本=" & text)
+        coopLastOcr = token
+    End If
+    CoopReadText = text
+End Function
+Sub CoopResourcePrompt()
+    Dim x, y, text, clicked
+    If Not coopKeepDownload Then
+        If CoopMatch("152_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = CoopReadText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                Call Note("[合作大冒险152] 资源下载提示 点击偏移=0,0")
+                clicked = CoopTap(x, y, 0)
+            End If
+            text = CoopReadText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                clicked = CoopTap(x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function CoopEntryReached()
+    CoopEntryReached = CoopMatch("152_大厅入口二")
+End Function
+Function CoopHallKnown()
+    CoopHallKnown = True
+    If CoopMatch("152_大厅条件一") Then
+        Exit Function
+    End If
+    If CoopMatch("152_大厅条件二") Then
+        Exit Function
+    End If
+    CoopHallKnown = CoopMatch("152_大厅底部条件")
+End Function
+Function CoopHallIcon()
+    CoopHallIcon = True
+    If CoopMatch("152_大厅入口一") Then
+        Exit Function
+    End If
+    CoopHallIcon = CoopMatch("152_大厅入口二")
+End Function
+Function EnterCoopAdventure()
+    Dim started, misses, x, y, result
+    EnterCoopAdventure = RESULT_TIMEOUT
+    started = TickCount()
+    misses = 0
+    Call CoopStage("152大厅入口")
+    Do
+        If BusinessExpired() Then
+            Call Note("[合作大冒险152] 超时原因=大厅入口公共超时或前台中断")
+            Exit Function
+        End If
+        Call CoopResourcePrompt()
+        If CoopEntryReached() Then
+            EnterCoopAdventure = RESULT_OK
+            Exit Function
+        ElseIf misses > 10 Then
+            result = ReturnToHall()
+            Call Note("[合作大冒险152] 入口补救返回大厅结果=" & result)
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            misses = 0
+        Else
+            misses = misses + 1
+        End If
+        If CoopHallKnown() Then
+            If CoopHallIcon() Then
+                x = foundX
+                y = foundY
+                Call Note("[合作大冒险152] 大厅入口点击偏移=160,-60")
+                If Not CoopTap(x + 160, y - 60, 1500) Then
+                    Exit Function
+                End If
+                misses = 0
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Call Note("[合作大冒险152] 大厅无入口时返回失败，未提交")
+                    Exit Function
+                End If
+                If Not CoopSwipe(150, 545, 500, 545, 300, 0) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 300
+        If TickCount() - started > 60000 Then
+            Call Note("[合作大冒险152] 超时原因=专业版大厅入口60秒，等待2000后恢复原152，不沿用标完成")
+            Delay 2000
+            Exit Function
+        End If
+    Loop
+End Function
+Function CoopOffsetAction(name, dx, dy, waitMs)
+    CoopOffsetAction = False
+    If CoopMatch(name) Then
+        Call Note("[合作大冒险152] 点击偏移=" & dx & "," & dy)
+        CoopOffsetAction = CoopTap(foundX + dx, foundY + dy, waitMs)
+    End If
+End Function
+Function EnterCoopTeam()
+    Dim started, actions, soloChecks, name
+    EnterCoopTeam = RESULT_TIMEOUT
+    started = TickCount()
+    actions = 0
+    soloChecks = 0
+    Call CoopStage("152创建或加入队伍")
+    Call Note("[合作大冒险152] 队伍模式=" & coopTeamMode & " 0快速加入/1创队独玩")
+    Do
+        If BusinessExpired() Then
+            Call Note("[合作大冒险152] 超时原因=组队公共超时或前台中断")
+            Exit Function
+        End If
+        Call CoopResourcePrompt()
+        If CoopOffsetAction("152_模式入口", 0, 0, 200) Then
+            Call Note("[合作大冒险152] 进入合作模式")
+        End If
+        If coopTeamMode = 0 Then
+            If CoopOffsetAction("152_组队首页", 404, -120, 200) Then
+                actions = actions + 1
+            End If
+        Else
+            If CoopOffsetAction("152_组队首页", 100, -120, 200) Then
+                actions = actions + 1
+            End If
+        End If
+        If coopTeamMode = 1 Then
+            If CoopOffsetAction("152_独玩勾选前", 417, -119, 200) Then
+                soloChecks = soloChecks + 1
+            End If
+        End If
+        name = "152_独玩开启"
+        If coopTeamMode = 0 Or soloChecks > 5 Then
+            name = "152_快速离开"
+        End If
+        If CoopOffsetAction(name, 251, -124, 200) Then
+            actions = actions + 1
+        End If
+        If CoopMatch("152_冒险主界面") Then
+            Delay 200
+            Call Progress()
+            EnterCoopTeam = RESULT_OK
+            Call Note("[合作大冒险152] 队伍进入冒险主界面确认")
+            Exit Function
+        End If
+        If TickCount() - started > 10000 Or actions > 10 Then
+            Call Note("[合作大冒险152] 失败原因=组队超过10000毫秒或操作次数超过10，等待1000后恢复152；未提交")
+            Delay 1000
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function RunCoopAdventure()
+    Dim started, openFailures, diceAttempts, bossAttempts, x, y, matched
+    RunCoopAdventure = RESULT_TIMEOUT
+    started = TickCount()
+    openFailures = 0
+    diceAttempts = 0
+    bossAttempts = 0
+    Call CoopStage("152合作冒险事件")
+    Do
+        If BusinessExpired() Then
+            Call Note("[合作大冒险152] 超时原因=冒险事件公共超时或前台中断；未提交")
+            Exit Function
+        End If
+        If CoopOffsetAction("152_模式入口", 0, 0, 200) Then
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_冒险主界面", 516, -87, 50) Then
+            openFailures = 0
+            diceAttempts = diceAttempts + 1
+        End If
+        If CoopOffsetAction("152_抽牌事件", 410, -227, 50) Then
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_抽牌完成", 120, 12, 50) Then
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_随机事件", 0, 0, 1000) Then
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_胜利一", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_转盘未抽", 250, -570, 2000) Then
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_转盘已抽", 0, 0, 1000) Then
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_奖励一", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_奖励二", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_传送一", 0, 0, 1000) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_传送二", 0, 0, 1000) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopMatch("152_挑战对话") Then
+            x = foundX
+            y = foundY
+            Call Note("[合作大冒险152] 挑战对话同锚点双击 点击偏移=0,0 等待200/200后50")
+            If Not CoopTap(x, y, 200) Then
+                Exit Function
+            End If
+            If Not CoopTap(x, y, 200) Then
+                Exit Function
+            End If
+            Delay 50
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_胜利二", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_战斗失败", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_小芳奖励", -164, 526, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_进度箱子", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_圣水奖励", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If CoopMatch("152_开战图标6") Then
+            Call Note("[合作大冒险152] 开战固定坐标398,982→587,982，等待500/500")
+            If Not CoopTap(398, 982, 500) Then
+                Exit Function
+            End If
+            If Not CoopTap(587, 982, 500) Then
+                Exit Function
+            End If
+            openFailures = openFailures + 1
+            diceAttempts = 0
+        End If
+        If CoopOffsetAction("152_跳过", -311, 87, 500) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        // Original repeats this template at a distinct priority after skip; retain both checks.
+        If CoopOffsetAction("152_圣水奖励", 0, 0, 50) Then
+            Call Progress()
+            openFailures = 0
+            diceAttempts = 0
+        End If
+        If bossAttempts < 5 Then
+            matched = CoopOffsetAction("152_BOSS一", 0, 0, 500)
+            If Not matched Then
+                matched = CoopOffsetAction("152_BOSS二", 0, 0, 500)
+            End If
+            If matched Then
+                bossAttempts = bossAttempts + 1
+                Call Note("[合作大冒险152] BOSS点击累计=" & bossAttempts)
+            End If
+        End If
+        If CoopMatch("152_体力购买") Then
+            Call Progress()
+            Call Note("[合作大冒险152] 识别体力购买界面，进入原版收尾；未购买体力、尚未确认本轮结束")
+            RunCoopAdventure = RESULT_OK
+            Exit Function
+        End If
+        If openFailures > 10 Then
+            Call Note("[合作大冒险152] 失败原因=专业版开战计数超过10；不跳过，交公共恢复152")
+            RunCoopAdventure = RESULT_FAIL
+            Exit Function
+        End If
+        If TickCount() - started > 300000 Then
+            Call Note("[合作大冒险152] 超时原因=专业版冒险300000毫秒，等待1000后恢复152")
+            Delay 1000
+            Exit Function
+        End If
+        If diceAttempts > 5 Then
+            Call Note("[合作大冒险152] 未确认终态=专业版连续投骰超过5称次数不足；不属用户批准的两类本轮结束，等待1000后恢复152")
+            Delay 1000
+            RunCoopAdventure = RESULT_FAIL
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function FinishCoopAdventure()
+    Dim started, boardActions, toggle, acted
+    FinishCoopAdventure = RESULT_TIMEOUT
+    started = TickCount()
+    boardActions = 0
+    toggle = 0
+    Call CoopStage("152合作冒险收尾")
+    Do
+        If BusinessExpired() Then
+            Call Note("[合作大冒险152] 超时原因=收尾公共超时或前台中断；未提交")
+            Exit Function
+        End If
+        If CoopOffsetAction("152_体力购买", 298, -306, 50) Then
+            Call Progress()
+        End If
+        If CoopOffsetAction("152_小芳奖励", -164, 526, 50) Then
+            Call Progress()
+            boardActions = 0
+        End If
+        If CoopOffsetAction("152_奖励通用", 0, 0, 50) Then
+            Call Progress()
+            boardActions = 0
+        End If
+        If CoopOffsetAction("152_购买关闭", 0, 0, 50) Then
+            Call Progress()
+        End If
+        If CoopOffsetAction("152_已领取关闭", 0, 0, 50) Then
+            Call Progress()
+            coopTerminalReason = "专业版领取界面已领取并关闭"
+            FinishCoopAdventure = RESULT_OK
+            Exit Function
+        End If
+        If toggle = 1 Then
+            acted = CoopOffsetAction("152_冒险主界面", 530, -1093, 1000)
+        Else
+            acted = CoopOffsetAction("152_冒险主界面", 10, -793, 1000)
+            If acted Then
+                toggle = 0
+            End If
+        End If
+        If acted Then
+            Call Progress()
+            toggle = toggle + 1
+            boardActions = boardActions + 1
+            Call Note("[合作大冒险152] 主界面收尾操作累计=" & boardActions)
+        End If
+        If boardActions > 4 Then
+            coopTerminalReason = "用户批准的专业版主界面累计5次收尾操作"
+            FinishCoopAdventure = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 300000 Then
+            Call Note("[合作大冒险152] 超时原因=专业版收尾300000毫秒，等待1000后恢复152")
+            Delay 1000
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteCoopAdventure()
+    Dim result
+    ExecuteCoopAdventure = RESULT_TIMEOUT
+    terminalConfirmed = False
+    coopTerminal = False
+    coopTerminalReason = ""
+    Call Note("[合作大冒险152] 业务入口 开始时间Unix=" & Time() & " 队伍模式=" & coopTeamMode)
+    result = EnterCoopAdventure()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterCoopTeam()
+    If result <> RESULT_OK Then
+        ExecuteCoopAdventure = result
+        Exit Function
+    End If
+    result = RunCoopAdventure()
+    If result <> RESULT_OK Then
+        ExecuteCoopAdventure = result
+        Exit Function
+    End If
+    result = FinishCoopAdventure()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    Delay 500
+    If BusinessExpired() Then
+        Call Note("[合作大冒险152] 终态后公共超时或中断，未提交完成")
+        Exit Function
+    End If
+    coopTerminal = True
+    terminalConfirmed = True
+    ExecuteCoopAdventure = RESULT_OK
+    Call CoopStage("152本轮业务终态确认")
+    Call Note("[合作大冒险152] 正常终态=" & coopTerminalReason & " 等待公共返回大厅连续确认；是否提交完成=否")
+End Function

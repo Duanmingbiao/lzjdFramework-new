@@ -49,6 +49,12 @@
     If result = RESULT_OK And terminalConfirmed Then
         hallResult = ReturnToHall()
         Call Note("[流程] ReturnToHall() 返回=" & hallResult)
+        If currentTask = 152 Then
+            Call Note("[合作大冒险152] 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If currentTask = 151 Then
+            Call Note("[悟空的冒险151] 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
         If IsTimedStamina(currentTask) Then
             Call Note("[定时体力] 编号=" & currentTask & " 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
         End If
@@ -57,7 +63,11 @@
         End If
         If hallResult = RESULT_OK Then
             committed = CommitTask(True)
-            Call Note("[流程] CommitTask(True) 返回=" & committed)
+            If committed Then
+                Call Note("[流程] CommitTask(True) 返回=true")
+            Else
+                Call Note("[流程] CommitTask(True) 返回=false")
+            End If
             If committed Then
                 Exit Sub
             End If

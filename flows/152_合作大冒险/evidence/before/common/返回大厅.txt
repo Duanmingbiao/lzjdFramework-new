@@ -1,0 +1,24 @@
+﻿Function ReturnToHall()
+    Dim returnStarted, acted
+    Call Note("[流程] 入口 ReturnToHall")
+    ReturnToHall = RESULT_TIMEOUT
+    returnStarted = TickCount()
+    Call SetStage("大厅清障与绿色箭头返回")
+    Call ResetHallCheck()
+    Call ResetHallClearing()
+    Do
+        If ForegroundInterrupted() Or TickCount() - returnStarted >= businessLimit Then
+            Call Note("[流程] 出口 ReturnToHall 分支1 路径条件 ForegroundInterrupted() Or TickCount() - returnStarted >= businessLimit")
+            Exit Function
+        End If
+        If ConfirmHall() Then
+            ReturnToHall = RESULT_OK
+            Call Note("[流程] 结果 ReturnToHall RESULT_OK")
+            Call Note("[流程] 出口 ReturnToHall 分支2 路径条件 ConfirmHall()")
+            Exit Function
+        End If
+        acted = ClearHallObstacle()
+        Delay 100
+    Loop
+    Call Note("[流程] 出口 ReturnToHall 到达函数末尾（不代表任务已提交）")
+End Function

@@ -43,6 +43,8 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    Call LoadCoopSettings()
+    Call LoadWukongSettings()
     Call LoadTimedStaminaSettings()
     qfriendEnabled = QFriendBooleanSetting("Q友体力启用")
     qfriendOneClick = QFriendBooleanSetting("Q友一键领取")

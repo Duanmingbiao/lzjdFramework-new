@@ -1,4 +1,6 @@
 ﻿Sub NewSession()
+    Call NewCoopSession()
+    Call NewWukongSession()
     Call NewTimedStaminaSession()
     qfriendDone = False
     qfriendFailed = False
@@ -69,6 +71,12 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 152 Then
+        Call StartCoopTask()
+    End If
+    If taskId = 151 Then
+        Call StartWukongTask()
+    End If
     If IsTimedStamina(taskId) Then
         Call StartTimedStamina(taskId)
     End If
@@ -98,6 +106,12 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
+    If currentTask = 152 Then
+        Call RecoverCoopTask()
+    End If
+    If currentTask = 151 Then
+        Call RecoverWukongTask()
+    End If
     If IsTimedStamina(currentTask) Then
         Call RecoverTimedStamina(currentTask)
     End If
@@ -135,7 +149,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) Then
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -151,7 +165,11 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If IsTimedStamina(currentTask) Then
+    If currentTask = 152 Then
+        Call CommitCoopTask()
+    ElseIf currentTask = 151 Then
+        Call CommitWukongTask()
+    ElseIf IsTimedStamina(currentTask) Then
         Call CommitTimedStamina(currentTask)
     ElseIf currentTask = 56 Then
         qfriendDone = True

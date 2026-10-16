@@ -1,0 +1,76 @@
+﻿Function GreenArrow()
+    GreenArrow = True
+    If MatchPattern("绿色返回一") Then
+        Exit Function
+    End If
+    GreenArrow = MatchPattern("绿色返回二")
+End Function
+Function HallCandidate()
+    Dim candidateFound
+    candidateFound = False
+    HallCandidate = False
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    If MatchPattern("大厅主体") Then
+        candidateFound = True
+    ElseIf MatchPattern("大厅底部") Then
+        candidateFound = True
+    End If
+    If Not candidateFound Then
+        Exit Function
+    End If
+    HallCandidate = True
+    If FindHallObstacle(True) Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("大厅清障特殊分支") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("获得奖励") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("邮件关闭弹窗") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("关闭一") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("关闭二") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("关闭三") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("我知道了") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("回归公告") Then
+        HallCandidate = False
+    End If
+End Function
+Sub ResetHallCheck()
+    hallFrames = 0
+    hallSampleAt = TickCount() - 500
+End Sub
+Function ConfirmHall()
+    ConfirmHall = False
+    If TickCount() - hallSampleAt < 500 Then
+        Exit Function
+    End If
+    hallSampleAt = TickCount()
+    If HallCandidate() Then
+        hallFrames = hallFrames + 1
+    Else
+        hallFrames = 0
+    End If
+    ConfirmHall = hallFrames >= 2
+End Function
