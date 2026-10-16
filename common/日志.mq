@@ -1,0 +1,9 @@
+﻿Sub Note(message)
+    TracePrint "[龙珠激斗脚本][" & stageName & "] " & message
+End Sub
+Sub SetStage(value)
+    If stageName <> value Then
+        stageName = value
+        Call Note("进入阶段")
+    End If
+End Sub

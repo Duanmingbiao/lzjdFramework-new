@@ -1,0 +1,19 @@
+﻿Function ReturnToHall()
+    Dim returnStarted, acted
+    ReturnToHall = RESULT_TIMEOUT
+    returnStarted = TickCount()
+    Call SetStage("大厅清障与绿色箭头返回")
+    Call ResetHallCheck()
+    Call ResetHallClearing()
+    Do
+        If TickCount() - returnStarted >= businessLimit Then
+            Exit Function
+        End If
+        If ConfirmHall() Then
+            ReturnToHall = RESULT_OK
+            Exit Function
+        End If
+        acted = ClearHallObstacle()
+        Delay 100
+    Loop
+End Function

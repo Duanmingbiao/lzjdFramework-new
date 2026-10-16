@@ -1,0 +1,137 @@
+﻿// root.784: public return/clearance actions only. No business state submission.
+Sub ResetHallClearing()
+    hallMisses = 0
+    hallExtended = False
+    hallActionIndex = 0
+End Sub
+Function HallActionWait()
+    HallActionWait = 1000
+    If hallReturnDelaySeconds > 0 Then
+        HallActionWait = hallReturnDelaySeconds * 1000
+    End If
+End Function
+Function FindHallObstacle(includeExtended)
+    FindHallObstacle = False
+    hallActionIndex = 0
+    If MatchPattern("大厅清障01") Then
+        hallActionIndex = 1
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障02") Then
+        hallActionIndex = 2
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障03") Then
+        hallActionIndex = 3
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障04") Then
+        hallActionIndex = 4
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障05") Then
+        hallActionIndex = 5
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障06") Then
+        hallActionIndex = 6
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If includeExtended Then
+        If MatchPattern("大厅清障07") Then
+            hallActionIndex = 7
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障08") Then
+            hallActionIndex = 8
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障09") Then
+            hallActionIndex = 9
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障10") Then
+            hallActionIndex = 10
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障11") Then
+            hallActionIndex = 11
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障12") Then
+            hallActionIndex = 12
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障13") Then
+            hallActionIndex = 13
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障14") Then
+            hallActionIndex = 14
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障15") Then
+            hallActionIndex = 15
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障16") Then
+            hallActionIndex = 16
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障17") Then
+            hallActionIndex = 17
+            FindHallObstacle = True
+            Exit Function
+        End If
+    End If
+End Function
+Function ClearHallObstacle()
+    Dim selected, selectedIndex, selectedX, selectedY, waitMs
+    ClearHallObstacle = False
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    // The prototype keeps expanded candidate descriptors after the counter resets.
+    If hallMisses > 3 Then
+        hallMisses = 0
+        hallExtended = True
+    End If
+    selected = FindHallObstacle(hallExtended)
+    selectedIndex = hallActionIndex
+    selectedX = foundX
+    selectedY = foundY
+    waitMs = HallActionWait()
+    // Special lookup comes after selection but its action takes precedence.
+    If MatchPattern("大厅清障特殊分支") Then
+        Call Note("大厅清障：特殊分支，点击=" & (foundX - 311) & "," & (foundY + 10) & "，等待毫秒=" & waitMs)
+        Call TouchPoint(foundX - 311, foundY + 10, waitMs)
+        hallMisses = 0
+        Call ResetHallCheck()
+        ClearHallObstacle = True
+    ElseIf selected Then
+        Call Note("大厅清障：候选=" & selectedIndex & "，点击=" & selectedX & "," & selectedY & "，等待毫秒=" & waitMs)
+        Call TouchPoint(selectedX, selectedY, waitMs)
+        hallMisses = 0
+        Call ResetHallCheck()
+        ClearHallObstacle = True
+    Else
+        hallMisses = hallMisses + 1
+    End If
+    // Caller supplies the original 100ms tail once per clearance round.
+End Function

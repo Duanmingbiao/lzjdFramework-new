@@ -1,0 +1,58 @@
+{
+  "scope": "UIP display only",
+  "pages": [
+    "模块总览",
+    "公共设置",
+    "邮件奖励"
+  ],
+  "editableConfigCount": 6,
+  "configurationContractUnchanged": true,
+  "editableContracts": {
+    "登录总超时秒": {
+      "type": "输入框",
+      "初始文本": "600",
+      "仅输入数字": true,
+      "最大输入长度": 5
+    },
+    "业务总超时秒": {
+      "type": "输入框",
+      "初始文本": "120",
+      "仅输入数字": true,
+      "最大输入长度": 5
+    },
+    "返回延迟秒": {
+      "type": "输入框",
+      "初始文本": "0",
+      "仅输入数字": true,
+      "最大输入长度": 4
+    },
+    "邮件启用": {
+      "type": "多选框",
+      "选中": true
+    },
+    "邮件间隔秒": {
+      "type": "输入框",
+      "初始文本": "21600",
+      "仅输入数字": true,
+      "最大输入长度": 7
+    },
+    "消息邮件": {
+      "type": "下拉框",
+      "选项": [
+        "手动阅读",
+        "自动阅读"
+      ],
+      "初始选项": 0
+    }
+  },
+  "textControlCount": 77,
+  "textDisplayProperty": "显示内容",
+  "mqModulesUnchanged": 18,
+  "assistantMQ_LC_PROP_Unchanged": true,
+  "targetUI": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).uip",
+  "targetUISHA256": "4a21bf012053e660e7fe2cb1eb1fe84788a374d78685b188ecfb48374fc22e2f",
+  "encoding": "source UTF-8 BOM CRLF; assistant GBK",
+  "reference": "professional app observed in MuMu; tab navigation and scroll only",
+  "nativeUICompilationOrRendering": "not performed; no assistant UI operation",
+  "backup": "D:\\game\\anjian-new\\reports\\同步备份\\ui-only-20261015-234311-537647"
+}

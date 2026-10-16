@@ -1,0 +1,37 @@
+{
+  "change": "QQ authorization screenshot fallback and R2 diagnostics only",
+  "screenshots": 3,
+  "newScreenshotTemplateMatchCounts": [
+    [
+      1,
+      0,
+      0
+    ],
+    [
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      0,
+      1
+    ]
+  ],
+  "originalParametersPreserved": true,
+  "priorTemplatesAlsoMatchSomeScreenshots": "yes; runtime cause not conclusively established",
+  "structuralEncodingChecks": "18 MQ modules passed",
+  "offlineAndSimulatedTests": 60,
+  "mailFilesUnchanged": {
+    "flows\\168_领邮件奖励\\领邮件奖励.mq": true,
+    "flows\\168_领邮件奖励\\evidence\\专业版行为映射.md": true,
+    "flows\\168_领邮件奖励\\evidence\\原始图色.json": true,
+    "flows\\168_领邮件奖励\\evidence\\图色转换.json": true,
+    "flows\\168_领邮件奖励\\evidence\\实机验收.md": true
+  },
+  "syncTarget": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "syncSHA256": "200e54345c2f5c359b9b803921f0b87ae3c6cdeb668398353930e32b980ca34a",
+  "validationBoundary": "not official assistant compilation or device execution",
+  "assistantUIAutomation": "not used",
+  "gitCommitPush": "not performed"
+}

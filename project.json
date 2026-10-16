@@ -1,0 +1,28 @@
+{
+  "name": "龙珠激斗脚本",
+  "entry": "app/入口.mq",
+  "modules": [
+    "common/常量.mq",
+    "common/日志.mq",
+    "common/配置读取.mq",
+    "common/任务状态.mq",
+    "common/运行计时.mq",
+    "common/点击操作.mq",
+    "common/图色参数.mq",
+    "common/大厅清障.mq",
+    "common/页面识别.mq",
+    "common/游戏控制.mq",
+    "common/返回大厅.mq",
+    "common/任务注册.mq",
+    "common/任务分派.mq",
+    "common/任务调度.mq",
+    "flows/001_游戏重连/QQ登录.mq",
+    "flows/001_游戏重连/登录游戏.mq",
+    "flows/168_领邮件奖励/领邮件奖励.mq"
+  ],
+  "ui": "ui/最小配置.uip",
+  "registeredTasks": [
+    168
+  ],
+  "stage": "邮件首版＋专业版大厅清障；待用户助手编译及实机验收"
+}

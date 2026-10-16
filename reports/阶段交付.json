@@ -1,0 +1,19 @@
+{
+  "project": "D:\\game\\anjian-new",
+  "scriptName": "龙珠激斗脚本",
+  "assistantTarget": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "syncMatches": {
+    ".mq": true,
+    ".uip": true
+  },
+  "moduleCount": 17,
+  "simulatedChecks": 22,
+  "staticCheck": "passed",
+  "officialCompilation": "not performed",
+  "assistantUILoad": "not verified",
+  "deviceRuntime": "not performed",
+  "businessTasks": [
+    168
+  ],
+  "noGitCommit": true
+}

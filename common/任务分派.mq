@@ -1,0 +1,7 @@
+﻿Function DispatchTask(taskId)
+    DispatchTask = RESULT_FAIL
+    If taskId = 168 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMail()
+    End If
+End Function

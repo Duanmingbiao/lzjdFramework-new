@@ -1,0 +1,37 @@
+{
+  "candidateRecords": 17,
+  "specialPriorityBranches": 1,
+  "sourceEvidence": "static reconstructed root.784 + decoded retained prototype; not executed",
+  "mqStaticCheck": "18 modules passed; structural/encoding only",
+  "mockControlFlowTests": {
+    "passed": 47,
+    "newHallTests": 23,
+    "existingTests": 24
+  },
+  "mailFilesUnchanged": {
+    "flows\\168_领邮件奖励\\领邮件奖励.mq": true,
+    "flows\\168_领邮件奖励\\evidence\\专业版行为映射.md": true,
+    "flows\\168_领邮件奖励\\evidence\\原始图色.json": true,
+    "flows\\168_领邮件奖励\\evidence\\图色转换.json": true,
+    "flows\\168_领邮件奖励\\evidence\\实机验收.md": true
+  },
+  "modifiedMQ": [
+    "app\\入口.mq",
+    "common\\任务状态.mq",
+    "common\\图色参数.mq",
+    "common\\大厅清障.mq",
+    "common\\返回大厅.mq",
+    "common\\配置读取.mq",
+    "common\\页面识别.mq",
+    "flows\\001_游戏重连\\登录游戏.mq"
+  ],
+  "assistantTarget": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "syncByteEqual": {
+    ".mq": true,
+    ".uip": true
+  },
+  "assistantUIAutomation": "not used",
+  "officialCompilation": "awaiting user log",
+  "deviceRuntime": "awaiting user log",
+  "gitCommitPush": "not performed"
+}

@@ -1,0 +1,22 @@
+{
+  "revision": "QQ授权R3",
+  "changedMQ": [
+    "flows\\001_游戏重连\\QQ登录.mq"
+  ],
+  "syncByteEqual": true,
+  "targetSHA256": "d5464b2e4845253cb2232244441bb7547bfc171d984969ec062556a2c0091d8b",
+  "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "compiledFileOlderThanNewSource": true,
+  "professionalDifferencesCorrected": [
+    "removed added exact-package gate",
+    "one-click check before the three independent authorization groups",
+    "restored 50ms authorization tail"
+  ],
+  "existingTemplatesAndFallbacks": "unchanged",
+  "checks": {
+    "MQModules": 18,
+    "offlineAndControlFlowTestsPassed": 63
+  },
+  "deviceResult": "awaiting user compilation and runtime; no claim of verified fix",
+  "assistantUIUsed": false
+}

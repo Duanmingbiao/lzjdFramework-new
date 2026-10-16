@@ -1,0 +1,60 @@
+﻿Sub NewSession()
+    currentTask = 0
+    resumeTask = 0
+    mailDone = False
+    mailFailed = False
+    mailCount = 0
+    mailFailures = 0
+    mailDue = 0
+    mailFirst = True
+    mailPhase = "未开始"
+    businessStarted = 0
+    loginStarted = 0
+    progressAt = 0
+    hallMisses = 0
+    hallExtended = False
+    hallActionIndex = 0
+    hallFrames = 0
+    hallSampleAt = TickCount() - 500
+    qqLastForeground = ""
+    qqLastDiagnosticAt = TickCount() - 5000
+    loginFailures = 0
+    stageName = "新会话"
+    terminalConfirmed = False
+End Sub
+Sub SaveCurrentTask(taskId)
+    currentTask = taskId
+    resumeTask = taskId
+    terminalConfirmed = False
+    mailDone = False
+    mailFailed = False
+End Sub
+Sub SaveRecovery()
+    resumeTask = currentTask
+    mailFailed = True
+    mailFailures = mailFailures + 1
+    Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & mailFailures)
+End Sub
+Function CommitTask(hallConfirmed)
+    CommitTask = False
+    If currentTask <> 168 Then
+        Exit Function
+    End If
+    If Not terminalConfirmed Then
+        Exit Function
+    End If
+    If Not hallConfirmed Then
+        Exit Function
+    End If
+    mailDone = True
+    mailFailed = False
+    mailCount = mailCount + 1
+    mailDue = TickCount() + mailInterval * 1000
+    mailFirst = False
+    mailPhase = "完成"
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    Call Note("邮件提交完成，次数=" & mailCount & "，间隔秒=" & mailInterval)
+    CommitTask = True
+End Function

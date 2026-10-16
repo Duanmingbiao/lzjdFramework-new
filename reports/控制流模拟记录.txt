@@ -1,0 +1,27 @@
+test_claim_deadline_does_not_refresh_on_click (test_control.ControlFlow.test_claim_deadline_does_not_refresh_on_click) ... ok
+test_claim_popups_independent_order (test_control.ControlFlow.test_claim_popups_independent_order) ... ok
+test_commit_schedules_interval_and_cannot_repeat (test_control.ControlFlow.test_commit_schedules_interval_and_cannot_repeat) ... ok
+test_disabled_task_skipped (test_control.ControlFlow.test_disabled_task_skipped) ... ok
+test_entry_empty_layout_one (test_control.ControlFlow.test_entry_empty_layout_one) ... ok
+test_entry_empty_layout_two (test_control.ControlFlow.test_entry_empty_layout_two) ... ok
+test_entry_empty_skips_auto_messages (test_control.ControlFlow.test_entry_empty_skips_auto_messages) ... ok
+test_fresh_session_runs_selected (test_control.ControlFlow.test_fresh_session_runs_selected) ... ok
+test_live_qq_authorization_does_not_relaunch_game (test_control.ControlFlow.test_live_qq_authorization_does_not_relaunch_game) ... ok
+test_login_deadline_not_reset_on_qq_foreground (test_control.ControlFlow.test_login_deadline_not_reset_on_qq_foreground) ... ok
+test_message_terminal_waits_threshold (test_control.ControlFlow.test_message_terminal_waits_threshold) ... ok
+test_messages_unknown_times_out (test_control.ControlFlow.test_messages_unknown_times_out) ... ok
+test_new_script_resets_runtime_not_configuration (test_control.ControlFlow.test_new_script_resets_runtime_not_configuration) ... ok
+test_notice_background_cannot_confirm_hall (test_control.ControlFlow.test_notice_background_cannot_confirm_hall) ... ok
+test_recovery_has_priority (test_control.ControlFlow.test_recovery_has_priority) ... ok
+test_restart_launches_game_even_if_qq_remains_front (test_control.ControlFlow.test_restart_launches_game_even_if_qq_remains_front) ... ok
+test_return_failure_cannot_commit (test_control.ControlFlow.test_return_failure_cannot_commit) ... ok
+test_scheduler_return_failure_preserves_original_task (test_control.ControlFlow.test_scheduler_return_failure_preserves_original_task) ... ok
+test_scheduler_success_commits_after_return (test_control.ControlFlow.test_scheduler_success_commits_after_return) ... ok
+test_scheduler_timeout_never_calls_return_or_commit (test_control.ControlFlow.test_scheduler_timeout_never_calls_return_or_commit) ... ok
+test_unconfirmed_terminal_cannot_commit (test_control.ControlFlow.test_unconfirmed_terminal_cannot_commit) ... ok
+test_unknown_never_succeeds (test_control.ControlFlow.test_unknown_never_succeeds) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.085s
+
+OK

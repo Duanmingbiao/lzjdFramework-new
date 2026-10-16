@@ -1,0 +1,52 @@
+"""Execute only the actual MQ control-flow subset under mocked APIs. Not an MQ compiler."""
+import re
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+def expression(s):
+ s=re.sub(r'\bAnd\b','and',s);s=re.sub(r'\bOr\b','or',s);s=re.sub(r'\bNot\b','not',s)
+ s=s.replace('<>','!=');s=re.sub(r'(?<![<>=!])=(?!=)','==',s)
+ return s
+
+def load(paths, env):
+ env['mqcat']=lambda *args: ''.join(str(x) for x in args)
+ allglobals=[]
+ for line in (ROOT/'app/入口.mq').read_text('utf-8-sig').splitlines():
+  if line.startswith('Dim '):allglobals.extend(x.strip() for x in line[4:].split(','))
+ for path in paths:
+  lines=(ROOT/path).read_text('utf-8-sig').splitlines();out=[];indent=0;fn=None;isfun=False
+  for raw in lines:
+   s=raw.strip()
+   if not s or s.startswith('//'):continue
+   m=re.match(r'(Function|Sub) (\w+)\((.*?)\)$',s)
+   if m:
+    isfun=m[1]=='Function';fn=m[2];out.append(f'def {fn}({m[3]}):');indent=1
+    out.append('    global '+','.join(allglobals));out.append('    mq_result = None');continue
+   if s in ('End Function','End Sub'):
+    out.append('    return mq_result');indent=0;fn=None;continue
+   if s.startswith('Dim '):continue
+   if s=='End If':indent-=1;continue
+   if s=='Loop':indent-=1;continue
+   if s.startswith('ElseIf '):
+    indent-=1;out.append('    '*indent+'elif '+expression(s[7:-5])+':');indent+=1;continue
+   if s=='Else':
+    indent-=1;out.append('    '*indent+'else:');indent+=1;continue
+   if s.startswith('If ') and s.endswith(' Then'):
+    out.append('    '*indent+'if '+expression(s[3:-5])+':');indent+=1;continue
+   if s=='Do' or s.startswith('Do While '):
+    out.append('    '*indent+'while '+(expression(s[9:]) if s.startswith('Do While ') else 'True')+':');indent+=1;continue
+   if s in ('Exit Function','Exit Sub'):s='return mq_result'
+   elif s=='Exit Do':s='break'
+   elif s.startswith('Call '):s=s[5:]
+   elif s.startswith('Delay '):s='Delay('+s[6:]+')'
+   elif s.startswith('RunApp '):s='RunApp('+s[7:]+')'
+   elif s.startswith('KillApp '):s='KillApp('+s[8:]+')'
+   elif s.startswith(fn+' ='):s='mq_result'+s[len(fn):]
+   # MQ concatenation is only used in diagnostic messages here.
+   if ' & ' in s:
+    call=re.fullmatch(r'(\w+)\((.*)\)',s)
+    if not call:raise ValueError('Unsupported MQ concatenation: '+s)
+    s=call[1]+'(mqcat('+call[2].replace(' & ', ', ')+'))'
+   out.append('    '*indent+s)
+  code='\n'.join(out);exec(compile(code,str(path),'exec'),env)
+ return env
+

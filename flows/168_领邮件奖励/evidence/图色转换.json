@@ -1,0 +1,222 @@
+[
+  {
+    "name": "邮件专业入口",
+    "id": "root-728_L106",
+    "originalRegion": [
+      6,
+      1143,
+      488,
+      1279
+    ],
+    "definition": [
+      6,
+      1143,
+      488,
+      1279,
+      "FFFFFF-101010",
+      "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "低客户端提示",
+    "id": "root-728_L198",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "0698FE-101010",
+      "-13|-24|FFFFFF-101010,18|-27|FFFFFF-101010,50|-21|23BFFF-101010,-188|-17|96543B-101010,167|-22|96543B-101010,0|-153|5B3328-101010,-254|426|454848-101010,-311|453|0A220F-101010,-232|-725|19100B-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件空一",
+    "id": "root-728_L290",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "D7F0E8-101010",
+      "-14|13|739589-101010,0|14|3CC69C-101010,266|-114|EAEAEA-101010,324|-103|D2D2D2-101010,-67|-150|845131-101010,-76|-159|845131-101010,-65|-1069|39498C-101010,200|-1036|424D6B-101010,-32|-1000|2C2213-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件空二",
+    "id": "root-728_L316",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "D7F0E8-101010",
+      "-14|13|739589-101010,1|15|39BE94-101010,109|-113|8CF7E7-101010,-60|-1069|39498C-101010,-76|-1062|394584-101010,-40|-140|211C10-101010,-60|-150|845131-101010,393|-112|E9E9E9-101010,471|-85|ABABAB-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件可领一",
+    "id": "root-728_L450",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "D7F0E8-101010",
+      "-14|13|739589-101010,1|15|39BE94-101010,98|-140|211C10-101010,-60|-1069|39498C-101010,-76|-1062|394584-101010,-40|-140|211C10-101010,-60|-150|845131-101010,248|-110|73F3FF-101010,325|-76|088EFF-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件可领二",
+    "id": "root-728_L476",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "D7F0E8-101010",
+      "-14|13|739589-101010,1|15|39BE94-101010,109|-113|8CF7E7-101010,-60|-1069|39498C-101010,-76|-1062|394584-101010,-40|-140|211C10-101010,-60|-150|845131-101010,393|-112|75F4FF-101010,471|-85|0F9EFF-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "获得奖励",
+    "id": "root-728_L714",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "00003A-101010",
+      "-39|-30|27F5FD-101010,258|-32|2BF9FF-101010,255|0|099DFE-101010,191|-34|00003A-101010,81|-24|00003A-101010,71|-20|20DBFE-101010,44|12|00003A-101010,8|-16|00003A-101010,65|-54|00003A-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件关闭弹窗",
+    "id": "root-728_L786",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "FFE3A5-101010",
+      "13|21|CB8239-101010,17|22|9C5519-101010,-581|32|496287-101010,-628|40|814B28-101010,-619|652|8C5129-101010,-15|649|523021-101010,-501|515|96604B-101010,-549|913|3D4442-101010,-563|926|202A27-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件消息打开",
+    "id": "root-728_L1160",
+    "originalRegion": [
+      40,
+      208,
+      221,
+      1066
+    ],
+    "definition": [
+      40,
+      208,
+      221,
+      1066,
+      "1605E2-101010",
+      "5|-10|0DBADB-101010,7|-32|5E453D-101010,28|29|0DBADB-101010,6|39|756453-101010,8|-52|8A7161-101010,8|-41|402F27-101010,-58|-16|925F34-101010,-59|-16|B07642-101010,20|19|0E00E5-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  },
+  {
+    "name": "邮件消息终态",
+    "id": "root-728_L1276",
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "C6EDE4-101010",
+      "-14|12|93BBAE-101010,-55|26|149753-101010,269|-147|543B23-101010,-76|-178|7E5C3A-101010,118|-1059|8080A4-101010,46|-1069|27498D-101010,324|-1021|3D5587-101010,283|-1073|543B2B-101010,-76|-1054|27498D-101010",
+      1,
+      0.9
+    ],
+    "reason": "Explicit full screen or clipped rectangle; color offsets unchanged",
+    "verification": "static evidence only"
+  }
+]

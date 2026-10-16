@@ -1,0 +1,18 @@
+﻿Sub RegisterTasks()
+    registeredTask = 168
+    Call Note("仅注册邮件168；登录重连是公共流程")
+End Sub
+Function SelectDueTask()
+    SelectDueTask = 0
+    If resumeTask = registeredTask Then
+        SelectDueTask = resumeTask
+        Exit Function
+    End If
+    If mailEnabled Then
+        If mailFirst Then
+            SelectDueTask = registeredTask
+        ElseIf TickCount() >= mailDue Then
+            SelectDueTask = registeredTask
+        End If
+    End If
+End Function

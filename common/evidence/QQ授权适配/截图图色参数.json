@@ -1,0 +1,104 @@
+[
+  {
+    "index": 1,
+    "name": "QQ现版头像昵称同意",
+    "id": "user-qq-screenshot-1",
+    "source": "user screenshot, 2026-10-15; not professional original parameters",
+    "screenshot": "截图/1.png",
+    "screenshotSHA256": "ac9e0801da5317471d75dd4285f2d0b637aa692f86eefdf0ff1d00b1fece3425",
+    "anchor": [
+      240,
+      1027
+    ],
+    "clickOffset": [
+      120,
+      0
+    ],
+    "expectedClick": [
+      360,
+      1027
+    ],
+    "definition": [
+      228,
+      1015,
+      252,
+      1039,
+      "FF9900-080808",
+      "-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,92|-395|1E1C1A-080808,-180|-400|1E1C1A-080808,348|-381|1E1C1A-080808,-43|-394|1E1C1A-080808,221|-411|1E1C1A-080808,-112|-379|1E1C1A-080808,23|-410|1E1C1A-080808,280|-379|1E1C1A-080808,158|-385|1E1C1A-080808,116|-1|FFFFFF-080808,147|12|FFFFFF-080808,92|14|FFFFFF-080808,92|-12|FFFFFF-080808,139|-11|FFFFFF-080808,130|9|FFFFFF-080808,111|14|FFFFFE-080808",
+      0,
+      1
+    ],
+    "pointCount": 23,
+    "waitMs": 1000,
+    "pageMeaning": "QQ头像昵称授权，同意",
+    "verification": "derived from supplied720x1280 screenshot; device pending"
+  },
+  {
+    "index": 2,
+    "name": "QQ现版VIP会员确认",
+    "id": "user-qq-screenshot-2",
+    "source": "user screenshot, 2026-10-15; not professional original parameters",
+    "screenshot": "截图/2.png",
+    "screenshotSHA256": "999f5c749c039ad9c11fd644b143d93a1dc1a861ac17c908965fbedbcdc46ff8",
+    "anchor": [
+      240,
+      1030
+    ],
+    "clickOffset": [
+      120,
+      0
+    ],
+    "expectedClick": [
+      360,
+      1030
+    ],
+    "definition": [
+      228,
+      1018,
+      252,
+      1042,
+      "FF9900-080808",
+      "-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,-20|-717|1E1C1A-080808,150|-704|1E1C1A-080808,-180|-722|1E1C1A-080808,65|-711|1E1C1A-080808,-99|-712|1E1C1A-080808,109|-729|1E1C1A-080808,24|-733|1E1C1A-080808,-138|-729|1E1C1A-080808,-60|-729|1E1C1A-080808,114|0|FFFFFF-080808,148|13|FFFFFF-080808,140|-14|FFFFFF-080808,91|-12|FFFFFF-080808,93|12|FFFFFF-080808,130|9|FFFFFF-080808,106|-13|FFFFFF-080808,360|-538|FF9900-080808,360|-398|FF9900-080808",
+      0,
+      1
+    ],
+    "pointCount": 25,
+    "waitMs": 1000,
+    "pageMeaning": "VIP/会员信息，确认",
+    "verification": "derived from supplied720x1280 screenshot; device pending"
+  },
+  {
+    "index": 3,
+    "name": "QQ现版游戏信息同意",
+    "id": "user-qq-screenshot-3",
+    "source": "user screenshot, 2026-10-15; not professional original parameters",
+    "screenshot": "截图/3.png",
+    "screenshotSHA256": "ce862b6fd8f4d2a76d19ce8cf6bbaebe93f88ed1c3a016c31143066b21178ff6",
+    "anchor": [
+      240,
+      996
+    ],
+    "clickOffset": [
+      120,
+      0
+    ],
+    "expectedClick": [
+      360,
+      996
+    ],
+    "definition": [
+      228,
+      984,
+      252,
+      1008,
+      "FF9900-080808",
+      "-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,28|-681|1E1C1A-080808,254|-665|1E1C1A-080808,-180|-683|1E1C1A-080808,142|-693|1E1C1A-080808,-76|-662|1E1C1A-080808,88|-662|1E1C1A-080808,194|-661|1E1C1A-080808,-125|-695|1E1C1A-080808,-27|-689|1E1C1A-080808,116|0|FFFFFF-080808,147|13|FFFFFF-080808,92|15|FFFFFF-080808,92|-11|FFFFFF-080808,139|-10|FFFFFF-080808,130|10|FFFFFF-080808,111|15|FFFFFE-080808,-20|66|E6E6E6-080808,260|134|E6E6E6-080808",
+      0,
+      1
+    ],
+    "pointCount": 25,
+    "waitMs": 1000,
+    "pageMeaning": "QQ读取游戏信息，同意",
+    "verification": "derived from supplied720x1280 screenshot; device pending"
+  }
+]

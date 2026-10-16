@@ -1,0 +1,31 @@
+{
+  "protectedMailFiles": {
+    "flows\\168_领邮件奖励\\领邮件奖励.mq": "4f6edacc713f66d2778432004e6ccaafe3a2a4c7e62424660069a7ad5607c113",
+    "flows\\168_领邮件奖励\\evidence\\专业版行为映射.md": "a1538982521be989d98f82b2df4ec6c4055b82b1a2255beed0f204464b277ea6",
+    "flows\\168_领邮件奖励\\evidence\\原始图色.json": "96143a81aed6b3cfd014afc196affbff6d762ea692c9fee7c65e89872c485820",
+    "flows\\168_领邮件奖励\\evidence\\图色转换.json": "6967983b41c409ad210a2acf73980e8d96333c3ed576b6b7764791871fc2e27c",
+    "flows\\168_领邮件奖励\\evidence\\实机验收.md": "cc29ad867d7cb0fef25de3330b720afe3d3d2fa6076539f591e85981ba279948"
+  },
+  "sourceHash": "5167239b00c3b07a2c343e58b8b5f9056a92b814e21198f8f10e287a64d030dd",
+  "prototypeHash": "bbbb6fa14c703138930bd9c4519e17e4adcb11ee01059f96dc097daaafacccf3",
+  "publicSourceHashes": {
+    "app\\入口.mq": "d76e5086fc11495bb3b75142b177c28d2c71a5936165a9954e7efba39e44b269",
+    "common\\任务分派.mq": "2d50a0990339d0cb2a36cfcbc54ee5611995eb5159cc3fcfcc62481a391c841c",
+    "common\\任务注册.mq": "e56d65193ccd247e9225fb2a25c644d20a7c82e1a3ab28dc1e9131d846a41bb8",
+    "common\\任务状态.mq": "671e8ec326c889f34ed32142306c1cda2eea575f66932b96aa5b8d755aa4e48d",
+    "common\\任务调度.mq": "4f305d5baabf78882154c926f83128deb86502552fa657a04a0a10477f79cddc",
+    "common\\图色参数.mq": "30fdacc66abe4e3ed80286643475e8de5da4d958b45a7ab2e161da0aad23142d",
+    "common\\常量.mq": "bf398dd42b6f30096354db1e06f777660f18f170593e40149f1a191325275cd7",
+    "common\\日志.mq": "36fd3807e7c58f38e6ee471af8022ca89d260fe14cc7e648dae1a42e746ef659",
+    "common\\游戏控制.mq": "09e3542b892cc154c62eb1104275ead83ca7acf8551c074432852d7495bc6177",
+    "common\\点击操作.mq": "d44e8e2ff4b1a49009d7fce8fb302d9206d4cd94c93d095a13038ab954cd3d15",
+    "common\\运行计时.mq": "fe47c13431af42e93aa962dd42c79d504c1cbdc677cd99fce50d79353f686d3e",
+    "common\\返回大厅.mq": "891a807e18afdd6295f263bc5b17f6d8d69213273b94521ee3492aa89fe68ed8",
+    "common\\配置读取.mq": "f771625385e52795d69aa901a002051ecae9247cfdd20cf079df0107cf0aa955",
+    "common\\页面识别.mq": "a4ff32f485d504989e1604241b1a65f9b80edfe519fec9ad37a8f9f5239f95cd",
+    "flows\\001_游戏重连\\QQ登录.mq": "0d76881588161361c5672f45ae0b8ea488611625b0ff88c1de4da3209fb950ee",
+    "flows\\001_游戏重连\\登录游戏.mq": "2db0a9b3e5fda982cc2c9e2e218b10640e18c0b5af4391682292c0d3e4ff1823",
+    "flows\\168_领邮件奖励\\领邮件奖励.mq": "4f6edacc713f66d2778432004e6ccaafe3a2a4c7e62424660069a7ad5607c113"
+  },
+  "phase": "mapping first, before public code edits"
+}
