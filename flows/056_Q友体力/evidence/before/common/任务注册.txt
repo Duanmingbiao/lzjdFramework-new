@@ -1,0 +1,78 @@
+﻿Sub RegisterTasks()
+    friendRegisteredTask = 55
+    registeredTask = 168
+    rewardRegisteredTask = 169
+    signRegisteredTask = 167
+    monthRegisteredTask = 166
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55；使用唯一串行调度器")
+End Sub
+Function SelectDueTask()
+    Dim selected, selectedDue
+    SelectDueTask = 0
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Then
+        If resumeTask <> 0 Then
+            SelectDueTask = resumeTask
+            Exit Function
+        End If
+    End If
+    If mailEnabled And mailFirst Then
+        SelectDueTask = registeredTask
+        Exit Function
+    End If
+    If rewardEnabled And rewardFirst Then
+        SelectDueTask = rewardRegisteredTask
+        Exit Function
+    End If
+    If signEnabled And signFirst Then
+        SelectDueTask = signRegisteredTask
+        Exit Function
+    End If
+    If monthEnabled And monthFirst Then
+        SelectDueTask = monthRegisteredTask
+        Exit Function
+    End If
+    If friendEnabled And friendFirst Then
+        SelectDueTask = friendRegisteredTask
+        Exit Function
+    End If
+    selected = 0
+    selectedDue = 0
+    If mailEnabled Then
+        If TickCount() >= mailDue Then
+            selected = registeredTask
+            selectedDue = mailDue
+        End If
+    End If
+    If rewardEnabled Then
+        If TickCount() >= rewardDue Then
+            If selected = 0 Or rewardDue < selectedDue Then
+                selected = rewardRegisteredTask
+                selectedDue = rewardDue
+            End If
+        End If
+    End If
+    If signEnabled Then
+        If TickCount() >= signDue Then
+            If selected = 0 Or signDue < selectedDue Then
+                selected = signRegisteredTask
+                selectedDue = signDue
+            End If
+        End If
+    End If
+    If monthEnabled Then
+        If TickCount() >= monthDue Then
+            If selected = 0 Or monthDue < selectedDue Then
+                selected = monthRegisteredTask
+                selectedDue = monthDue
+            End If
+        End If
+    End If
+    If friendEnabled Then
+        If TickCount() >= friendDue Then
+            If selected = 0 Or friendDue < selectedDue Then
+                selected = friendRegisteredTask
+            End If
+        End If
+    End If
+    SelectDueTask = selected
+End Function

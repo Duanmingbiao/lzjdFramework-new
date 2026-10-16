@@ -1,4 +1,38 @@
-﻿Function PositiveSetting(key, fallback)
+﻿Function QFriendBooleanSetting(key)
+    Dim raw, rawText, rawKind, normalized, resultText
+    raw = ReadUIConfig(key, False)
+    QFriendBooleanSetting = False
+    rawText = "<null>"
+    rawKind = "null"
+    normalized = ""
+    If Not IsNull(raw) Then
+        rawText = CStr(raw)
+        normalized = LCase(Trim(rawText))
+        // MQ equality keeps primitive types distinct; no truthiness test of raw.
+        If raw = rawText Then
+            rawKind = "string"
+        ElseIf raw = True Or raw = False Then
+            rawKind = "boolean"
+        ElseIf IsNumeric(raw) Then
+            rawKind = "number"
+        Else
+            rawKind = "other"
+        End If
+        If normalized = "true" Or normalized = "1" Then
+            QFriendBooleanSetting = True
+        End If
+    End If
+    resultText = "关闭"
+    If normalized = "true" Or normalized = "1" Then
+        resultText = "开启"
+    End If
+    // LoadSettings precedes NewSession: do not concatenate uninitialized stageName.
+    Call WriteMainLog("[龙珠激斗脚本][Q友体力56配置] 键=" & key & " 读取原值=[" & rawText & "] 返回类型=" & rawKind & " 规范值=[" & normalized & "] 解析结果=" & resultText)
+    If normalized <> "true" And normalized <> "false" And normalized <> "1" And normalized <> "0" Then
+        Call WriteMainLog("[龙珠激斗脚本][Q友体力56配置] 未识别配置值，按默认关闭处理；未改写保存值")
+    End If
+End Function
+Function PositiveSetting(key, fallback)
     Dim raw
     raw = ReadUIConfig(key, fallback)
     PositiveSetting = fallback
@@ -9,6 +43,10 @@
     End If
 End Function
 Sub LoadSettings()
+    Call LoadTimedStaminaSettings()
+    qfriendEnabled = QFriendBooleanSetting("Q友体力启用")
+    qfriendOneClick = QFriendBooleanSetting("Q友一键领取")
+    qfriendInterval = PositiveSetting("Q友体力间隔秒", 14400)
     friendEnabled = ReadUIConfig("好友体力启用", False)
     friendInterval = PositiveSetting("好友体力间隔秒", 14400)
     monthEnabled = ReadUIConfig("月卡龙石启用", False)

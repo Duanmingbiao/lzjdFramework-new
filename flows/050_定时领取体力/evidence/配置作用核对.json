@@ -1,0 +1,40 @@
+{
+  "taskIds": [
+    50,
+    51,
+    52,
+    53,
+    54
+  ],
+  "professionalFunction": "root.706",
+  "entryFunctions": [
+    "root.787活动界面",
+    "root.788领取体力分页"
+  ],
+  "defaults": {
+    "定时体力启用": false,
+    "体力龙石补领": false,
+    "体力追回": false,
+    "体力兑换": false
+  },
+  "starts": [
+    "07:00:05",
+    "12:00:05",
+    "18:00:05",
+    "21:00:05",
+    "00:00:05"
+  ],
+  "endsInclusive": [
+    "12:00:00",
+    "18:00:00",
+    "21:00:00",
+    "23:58:30",
+    "04:59:00"
+  ],
+  "timezone": "Asia/Shanghai UTC+08",
+  "slot54Requires": "体力龙石补领",
+  "runsAtBootUnconditionally": false,
+  "weekdays": "专业版未见星期配置，不新增",
+  "initialInterval3600": "静态初始化字段；不作为每小时循环。按用户定时与普通分开规则，每天各窗口执行并独立提交后安排下次对应时段。",
+  "recover": "保留原编号优先恢复，不清会话、不设最大次数"
+}

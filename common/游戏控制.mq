@@ -14,6 +14,9 @@
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If IsTimedStamina(currentTask) Then
+        Call RestartTimedStamina(currentTask)
+    End If
     Call Note("[流程] 入口 RestartGame")
     Call BeginForegroundRecovery()
     foregroundLoginPending = True

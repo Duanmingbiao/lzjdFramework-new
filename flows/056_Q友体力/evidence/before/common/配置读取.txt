@@ -1,0 +1,28 @@
+﻿Function PositiveSetting(key, fallback)
+    Dim raw
+    raw = ReadUIConfig(key, fallback)
+    PositiveSetting = fallback
+    If IsNumeric(raw) Then
+        If CDbl(raw) > 0 Then
+            PositiveSetting = CDbl(raw)
+        End If
+    End If
+End Function
+Sub LoadSettings()
+    friendEnabled = ReadUIConfig("好友体力启用", False)
+    friendInterval = PositiveSetting("好友体力间隔秒", 14400)
+    monthEnabled = ReadUIConfig("月卡龙石启用", False)
+    monthInterval = PositiveSetting("月卡间隔秒", 3600)
+    monthKeepDownload = ReadUIConfig("保留下载提示", False)
+    signEnabled = ReadUIConfig("日常签到启用", False)
+    signInterval = PositiveSetting("签到间隔秒", 3600)
+    rewardEnabled = ReadUIConfig("任务奖励启用", True)
+    rewardInterval = PositiveSetting("任务奖励间隔秒", 21600)
+    mailEnabled = ReadUIConfig("邮件启用", True)
+    mailInterval = PositiveSetting("邮件间隔秒", 21600)
+    loginLimit = PositiveSetting("登录总超时秒", 600) * 1000
+    businessLimit = PositiveSetting("业务总超时秒", 120) * 1000
+    messageMode = ReadUIConfig("消息邮件", 0)
+    // root.784: zero means 1000ms; positive values are seconds.
+    hallReturnDelaySeconds = PositiveSetting("返回延迟秒", 0)
+End Sub

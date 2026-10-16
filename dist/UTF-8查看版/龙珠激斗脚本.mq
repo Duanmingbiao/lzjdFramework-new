@@ -1,4 +1,8 @@
 ﻿// app/入口.mq
+Dim stamina50Failed, stamina50Phase, stamina50Restarts, stamina50Recoveries, stamina51Failed, stamina51Phase, stamina51Restarts, stamina51Recoveries, stamina52Failed, stamina52Phase, stamina52Restarts, stamina52Recoveries, stamina53Failed, stamina53Phase, stamina53Restarts, stamina53Recoveries, stamina54Failed, stamina54Phase, stamina54Restarts, stamina54Recoveries
+Dim staminaKeepDownload
+Dim staminaEnabled, staminaGem, staminaRecover, staminaExchange, staminaPhase, staminaRestartCount, staminaRecoveryCount, staminaTerminal, stamina50Due, stamina50Count, stamina50Failures, stamina50Done, stamina51Due, stamina51Count, stamina51Failures, stamina51Done, stamina52Due, stamina52Count, stamina52Failures, stamina52Done, stamina53Due, stamina53Count, stamina53Failures, stamina53Done, stamina54Due, stamina54Count, stamina54Failures, stamina54Done
+Dim qfriendEnabled, qfriendOneClick, qfriendInterval, qfriendRegisteredTask, qfriendDone, qfriendFailed, qfriendCount, qfriendFailures, qfriendDue, qfriendFirst, qfriendPhase, qfriendTerminal, qfriendRecovery
 Dim friendEnabled, friendInterval, friendRegisteredTask, friendDone, friendFailed, friendCount, friendFailures, friendDue, friendFirst, friendPhase
 // 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
 Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
@@ -191,7 +195,7 @@ Function HandleForegroundRecovery()
         Exit Function
     End If
     Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
-    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Then
+    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Then
         Call SaveRecovery()
     End If
     terminalConfirmed = False
@@ -237,7 +241,362 @@ Sub SetStage(value)
 End Sub
 
 
+// common/定时体力状态.mq
+Function StaminaBooleanSetting(key)
+    Dim raw, text
+    StaminaBooleanSetting = False
+    raw = ReadUIConfig(key, False)
+    text = "<null>"
+    If Not IsNull(raw) Then
+        text = LCase(Trim(CStr(raw)))
+        If text = "true" Or text = "1" Then
+            StaminaBooleanSetting = True
+        End If
+    End If
+    Call WriteMainLog("[龙珠激斗脚本][定时体力配置] 键=" & key & " 原值=" & text)
+End Function
+Sub LoadTimedStaminaSettings()
+    staminaKeepDownload = StaminaBooleanSetting("保留下载提示")
+    staminaEnabled = StaminaBooleanSetting("定时体力启用")
+    staminaGem = StaminaBooleanSetting("体力龙石补领")
+    staminaRecover = StaminaBooleanSetting("体力追回")
+    staminaExchange = StaminaBooleanSetting("体力兑换")
+End Sub
+Function IsTimedStamina(taskId)
+    IsTimedStamina = taskId >= 50 And taskId <= 54
+End Function
+Function StaminaDayStart(stamp)
+    // Game schedules use Asia/Shanghai UTC+08, Unix seconds; TickCount only for durations.
+    StaminaDayStart = Int((stamp + 28800) / 86400) * 86400 - 28800
+End Function
+Function StaminaName(taskId)
+    StaminaName = "定时领取体力"
+    If taskId = 50 Then
+        StaminaName = "定时领取体力_上午"
+    ElseIf taskId = 51 Then
+        StaminaName = "定时领取体力_中午"
+    ElseIf taskId = 52 Then
+        StaminaName = "定时领取体力_下午"
+    ElseIf taskId = 53 Then
+        StaminaName = "定时领取体力_晚上"
+    ElseIf taskId = 54 Then
+        StaminaName = "定时领取体力_补领"
+    End If
+End Function
+Function StaminaStartSecond(taskId)
+    StaminaStartSecond = 0
+    If taskId = 50 Then
+        StaminaStartSecond = 25205
+    ElseIf taskId = 51 Then
+        StaminaStartSecond = 43205
+    ElseIf taskId = 52 Then
+        StaminaStartSecond = 64805
+    ElseIf taskId = 53 Then
+        StaminaStartSecond = 75605
+    ElseIf taskId = 54 Then
+        StaminaStartSecond = 5
+    End If
+End Function
+Function StaminaEndSecond(taskId)
+    StaminaEndSecond = 0
+    If taskId = 50 Then
+        StaminaEndSecond = 43200
+    ElseIf taskId = 51 Then
+        StaminaEndSecond = 64800
+    ElseIf taskId = 52 Then
+        StaminaEndSecond = 75600
+    ElseIf taskId = 53 Then
+        StaminaEndSecond = 86310
+    ElseIf taskId = 54 Then
+        StaminaEndSecond = 17940
+    End If
+End Function
+Sub NewTimedStaminaSession()
+    staminaPhase = "未开始"
+    staminaRestartCount = 0
+    staminaRecoveryCount = 0
+    staminaTerminal = False
+    stamina50Due = StaminaDayStart(Time()) + StaminaStartSecond(50)
+    stamina50Count = 0
+    stamina50Failures = 0
+    stamina50Done = False
+    stamina50Failed = False
+    stamina50Phase = "未开始"
+    stamina50Restarts = 0
+    stamina50Recoveries = 0
+    stamina51Due = StaminaDayStart(Time()) + StaminaStartSecond(51)
+    stamina51Count = 0
+    stamina51Failures = 0
+    stamina51Done = False
+    stamina51Failed = False
+    stamina51Phase = "未开始"
+    stamina51Restarts = 0
+    stamina51Recoveries = 0
+    stamina52Due = StaminaDayStart(Time()) + StaminaStartSecond(52)
+    stamina52Count = 0
+    stamina52Failures = 0
+    stamina52Done = False
+    stamina52Failed = False
+    stamina52Phase = "未开始"
+    stamina52Restarts = 0
+    stamina52Recoveries = 0
+    stamina53Due = StaminaDayStart(Time()) + StaminaStartSecond(53)
+    stamina53Count = 0
+    stamina53Failures = 0
+    stamina53Done = False
+    stamina53Failed = False
+    stamina53Phase = "未开始"
+    stamina53Restarts = 0
+    stamina53Recoveries = 0
+    stamina54Due = StaminaDayStart(Time()) + StaminaStartSecond(54)
+    stamina54Count = 0
+    stamina54Failures = 0
+    stamina54Done = False
+    stamina54Failed = False
+    stamina54Phase = "未开始"
+    stamina54Restarts = 0
+    stamina54Recoveries = 0
+End Sub
+Function SelectTimedStamina()
+    Dim nowStamp, dayStart, eligible
+    SelectTimedStamina = 0
+    If Not staminaEnabled Then
+        Exit Function
+    End If
+    nowStamp = Time()
+    dayStart = StaminaDayStart(nowStamp)
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina50Due Then
+            If nowStamp < dayStart + 25205 Then
+                stamina50Due = dayStart + 25205
+            ElseIf nowStamp <= dayStart + 43200 Then
+                SelectTimedStamina = 50
+                Exit Function
+            Else
+                stamina50Due = dayStart + 86400 + 25205
+                Call Note("[定时体力50] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina50Due)
+            End If
+        End If
+    End If
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina51Due Then
+            If nowStamp < dayStart + 43205 Then
+                stamina51Due = dayStart + 43205
+            ElseIf nowStamp <= dayStart + 64800 Then
+                SelectTimedStamina = 51
+                Exit Function
+            Else
+                stamina51Due = dayStart + 86400 + 43205
+                Call Note("[定时体力51] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina51Due)
+            End If
+        End If
+    End If
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina52Due Then
+            If nowStamp < dayStart + 64805 Then
+                stamina52Due = dayStart + 64805
+            ElseIf nowStamp <= dayStart + 75600 Then
+                SelectTimedStamina = 52
+                Exit Function
+            Else
+                stamina52Due = dayStart + 86400 + 64805
+                Call Note("[定时体力52] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina52Due)
+            End If
+        End If
+    End If
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina53Due Then
+            If nowStamp < dayStart + 75605 Then
+                stamina53Due = dayStart + 75605
+            ElseIf nowStamp <= dayStart + 86310 Then
+                SelectTimedStamina = 53
+                Exit Function
+            Else
+                stamina53Due = dayStart + 86400 + 75605
+                Call Note("[定时体力53] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina53Due)
+            End If
+        End If
+    End If
+    eligible = True
+    eligible = staminaGem
+    If eligible Then
+        If nowStamp >= stamina54Due Then
+            If nowStamp < dayStart + 5 Then
+                stamina54Due = dayStart + 5
+            ElseIf nowStamp <= dayStart + 17940 Then
+                SelectTimedStamina = 54
+                Exit Function
+            Else
+                stamina54Due = dayStart + 86400 + 5
+                Call Note("[定时体力54] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina54Due)
+            End If
+        End If
+    End If
+End Function
+Sub StartTimedStamina(taskId)
+    If taskId = 50 Then
+        staminaRestartCount = stamina50Restarts
+        staminaRecoveryCount = stamina50Recoveries
+        stamina50Done = False
+        stamina50Failed = False
+    ElseIf taskId = 51 Then
+        staminaRestartCount = stamina51Restarts
+        staminaRecoveryCount = stamina51Recoveries
+        stamina51Done = False
+        stamina51Failed = False
+    ElseIf taskId = 52 Then
+        staminaRestartCount = stamina52Restarts
+        staminaRecoveryCount = stamina52Recoveries
+        stamina52Done = False
+        stamina52Failed = False
+    ElseIf taskId = 53 Then
+        staminaRestartCount = stamina53Restarts
+        staminaRecoveryCount = stamina53Recoveries
+        stamina53Done = False
+        stamina53Failed = False
+    ElseIf taskId = 54 Then
+        staminaRestartCount = stamina54Restarts
+        staminaRecoveryCount = stamina54Recoveries
+        stamina54Done = False
+        stamina54Failed = False
+    End If
+    staminaTerminal = False
+    Call Note("[定时体力] 任务名称=" & StaminaName(taskId) & " 编号=" & taskId & " 任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & staminaRestartCount & " 恢复次数=" & staminaRecoveryCount)
+End Sub
+Sub RecoverTimedStamina(taskId)
+    staminaRecoveryCount = staminaRecoveryCount + 1
+    staminaTerminal = False
+    If taskId = 50 Then
+        stamina50Failures = stamina50Failures + 1
+        stamina50Failed = True
+        stamina50Recoveries = staminaRecoveryCount
+    ElseIf taskId = 51 Then
+        stamina51Failures = stamina51Failures + 1
+        stamina51Failed = True
+        stamina51Recoveries = staminaRecoveryCount
+    ElseIf taskId = 52 Then
+        stamina52Failures = stamina52Failures + 1
+        stamina52Failed = True
+        stamina52Recoveries = staminaRecoveryCount
+    ElseIf taskId = 53 Then
+        stamina53Failures = stamina53Failures + 1
+        stamina53Failed = True
+        stamina53Recoveries = staminaRecoveryCount
+    ElseIf taskId = 54 Then
+        stamina54Failures = stamina54Failures + 1
+        stamina54Failed = True
+        stamina54Recoveries = staminaRecoveryCount
+    End If
+    Call Note("[定时体力] 任务=" & taskId & " 未提交完成；恢复次数=" & staminaRecoveryCount & " 当前阶段=" & staminaPhase)
+End Sub
+Sub CommitTimedStamina(taskId)
+    Dim nextStamp
+    nextStamp = StaminaDayStart(Time()) + StaminaStartSecond(taskId)
+    If nextStamp <= Time() Then
+        nextStamp = nextStamp + 86400
+    End If
+    If taskId = 50 Then
+        stamina50Done = True
+        stamina50Failed = False
+        stamina50Phase = "完成"
+        stamina50Count = stamina50Count + 1
+        stamina50Due = nextStamp
+    ElseIf taskId = 51 Then
+        stamina51Done = True
+        stamina51Failed = False
+        stamina51Phase = "完成"
+        stamina51Count = stamina51Count + 1
+        stamina51Due = nextStamp
+    ElseIf taskId = 52 Then
+        stamina52Done = True
+        stamina52Failed = False
+        stamina52Phase = "完成"
+        stamina52Count = stamina52Count + 1
+        stamina52Due = nextStamp
+    ElseIf taskId = 53 Then
+        stamina53Done = True
+        stamina53Failed = False
+        stamina53Phase = "完成"
+        stamina53Count = stamina53Count + 1
+        stamina53Due = nextStamp
+    ElseIf taskId = 54 Then
+        stamina54Done = True
+        stamina54Failed = False
+        stamina54Phase = "完成"
+        stamina54Count = stamina54Count + 1
+        stamina54Due = nextStamp
+    End If
+    Call Note("[定时体力] 任务名称=" & StaminaName(taskId) & " 编号=" & taskId & " 是否提交完成=是；下一次执行时间Unix=" & nextStamp & " 重启次数=" & staminaRestartCount & " 恢复次数=" & staminaRecoveryCount)
+End Sub
+Sub SetTimedStaminaPhase(taskId, value)
+    If taskId = 50 Then
+        stamina50Phase = value
+    ElseIf taskId = 51 Then
+        stamina51Phase = value
+    ElseIf taskId = 52 Then
+        stamina52Phase = value
+    ElseIf taskId = 53 Then
+        stamina53Phase = value
+    ElseIf taskId = 54 Then
+        stamina54Phase = value
+    End If
+End Sub
+Sub RestartTimedStamina(taskId)
+    staminaRestartCount = staminaRestartCount + 1
+    If taskId = 50 Then
+        stamina50Restarts = staminaRestartCount
+    ElseIf taskId = 51 Then
+        stamina51Restarts = staminaRestartCount
+    ElseIf taskId = 52 Then
+        stamina52Restarts = staminaRestartCount
+    ElseIf taskId = 53 Then
+        stamina53Restarts = staminaRestartCount
+    ElseIf taskId = 54 Then
+        stamina54Restarts = staminaRestartCount
+    End If
+    Call Note("[定时体力] 重启原任务=" & taskId & " 重启次数=" & staminaRestartCount & " 恢复次数=" & staminaRecoveryCount)
+End Sub
+
+
 // common/配置读取.mq
+Function QFriendBooleanSetting(key)
+    Dim raw, rawText, rawKind, normalized, resultText
+    raw = ReadUIConfig(key, False)
+    QFriendBooleanSetting = False
+    rawText = "<null>"
+    rawKind = "null"
+    normalized = ""
+    If Not IsNull(raw) Then
+        rawText = CStr(raw)
+        normalized = LCase(Trim(rawText))
+        // MQ equality keeps primitive types distinct; no truthiness test of raw.
+        If raw = rawText Then
+            rawKind = "string"
+        ElseIf raw = True Or raw = False Then
+            rawKind = "boolean"
+        ElseIf IsNumeric(raw) Then
+            rawKind = "number"
+        Else
+            rawKind = "other"
+        End If
+        If normalized = "true" Or normalized = "1" Then
+            QFriendBooleanSetting = True
+        End If
+    End If
+    resultText = "关闭"
+    If normalized = "true" Or normalized = "1" Then
+        resultText = "开启"
+    End If
+    // LoadSettings precedes NewSession: do not concatenate uninitialized stageName.
+    Call WriteMainLog("[龙珠激斗脚本][Q友体力56配置] 键=" & key & " 读取原值=[" & rawText & "] 返回类型=" & rawKind & " 规范值=[" & normalized & "] 解析结果=" & resultText)
+    If normalized <> "true" And normalized <> "false" And normalized <> "1" And normalized <> "0" Then
+        Call WriteMainLog("[龙珠激斗脚本][Q友体力56配置] 未识别配置值，按默认关闭处理；未改写保存值")
+    End If
+End Function
 Function PositiveSetting(key, fallback)
     Dim raw
     raw = ReadUIConfig(key, fallback)
@@ -249,6 +608,10 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    Call LoadTimedStaminaSettings()
+    qfriendEnabled = QFriendBooleanSetting("Q友体力启用")
+    qfriendOneClick = QFriendBooleanSetting("Q友一键领取")
+    qfriendInterval = PositiveSetting("Q友体力间隔秒", 14400)
     friendEnabled = ReadUIConfig("好友体力启用", False)
     friendInterval = PositiveSetting("好友体力间隔秒", 14400)
     monthEnabled = ReadUIConfig("月卡龙石启用", False)
@@ -270,6 +633,16 @@ End Sub
 
 // common/任务状态.mq
 Sub NewSession()
+    Call NewTimedStaminaSession()
+    qfriendDone = False
+    qfriendFailed = False
+    qfriendCount = 0
+    qfriendFailures = 0
+    qfriendDue = 0
+    qfriendFirst = True
+    qfriendPhase = "未开始"
+    qfriendTerminal = False
+    qfriendRecovery = False
     friendDone = False
     friendFailed = False
     friendCount = 0
@@ -330,7 +703,15 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
-    If taskId = 55 Then
+    If IsTimedStamina(taskId) Then
+        Call StartTimedStamina(taskId)
+    End If
+    If taskId = 56 Then
+        qfriendDone = False
+        qfriendFailed = False
+        qfriendTerminal = False
+        qfriendRecovery = False
+    ElseIf taskId = 55 Then
         friendDone = False
         friendFailed = False
     ElseIf taskId = 166 Then
@@ -351,7 +732,17 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
-    If currentTask = 55 Then
+    If IsTimedStamina(currentTask) Then
+        Call RecoverTimedStamina(currentTask)
+    End If
+    If currentTask = 56 Then
+        qfriendFailed = True
+        qfriendRecovery = True
+        qfriendTerminal = False
+        qfriendFailures = qfriendFailures + 1
+        qfriendPhase = "等待恢复"
+        Call Note("[Q友体力56] 保存原任务=" & resumeTask & " 失败次数=" & qfriendFailures)
+    ElseIf currentTask = 55 Then
         friendFailed = True
         friendFailures = friendFailures + 1
         friendPhase = "等待恢复"
@@ -378,8 +769,8 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 Then
-        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55")
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) Then
+        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
     If Not terminalConfirmed Then
@@ -394,7 +785,18 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 55 Then
+    If IsTimedStamina(currentTask) Then
+        Call CommitTimedStamina(currentTask)
+    ElseIf currentTask = 56 Then
+        qfriendDone = True
+        qfriendFailed = False
+        qfriendRecovery = False
+        qfriendCount = qfriendCount + 1
+        qfriendDue = TickCount() + qfriendInterval * 1000
+        qfriendFirst = False
+        qfriendPhase = "完成"
+        Call Note("[Q友体力56] 返回大厅连续确认后提交 次数=" & qfriendCount & " 间隔秒=" & qfriendInterval)
+    ElseIf currentTask = 55 Then
         friendDone = True
         friendFailed = False
         friendCount = friendCount + 1
@@ -554,6 +956,117 @@ Function MatchPattern(name)
     foundY = -1
     ReleaseCapture
     Select Case name
+    Case "050_大厅活动入口一"
+        // Same professional root.787 common-entry evidence, independent registration
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","1|12|231E2B-101010,-18|9|5555AA-101010,23|9|5555AA-101010,11|29|42ECFD-101010,-6|33|38E6FD-101010,5|14|E8E5EA-101010,10|12|292529-101010,-4|1|FFFFFF-101010,1|1|FFFFFF-101010",1,0.9,foundX,foundY
+    Case "050_大厅活动入口二"
+        // Same professional root.787 common-entry evidence, independent registration
+        FindMultiColor 0,0,719,1279,"42ECFD","15|0|42ECFD,3|-29|FFFFFF,4|-35|FFFFFF,-8|-9|CBEEFE,37|8|D1C1B0,-21|8|CEBDAD,34|-9|4B822A,9|-43|454589,7|-43|454589",1,0.9,foundX,foundY
+    Case "050_大厅识别一"
+        // Same professional root.787 common-entry evidence, independent registration
+        FindMultiColor 0,0,719,1279,"D1E0FF-101010","1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010",1,0.9,foundX,foundY
+    Case "050_大厅识别二"
+        // Same professional root.787 common-entry evidence, independent registration
+        FindMultiColor 0,0,719,1279,"8391AB-101010","20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010",1,0.9,foundX,foundY
+    Case "050_大厅识别三"
+        // Same professional root.787 common-entry evidence, independent registration
+        FindMultiColor 6,1133,153,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",0,0.9,foundX,foundY
+    Case "050_资源下载提示"
+        // Same professional root.787 common-entry evidence, independent registration
+        FindMultiColor 0,0,719,1279,"0A7DFF-202020","-51|-37|75F1FF-202020,-299|8|069250-202020,-428|-39|37DC9A-202020,-365|54|894F2E-202020,-540|23|C06C39-202020,-171|-69|221510-202020,-173|-309|20110C-202020,104|-377|D8A75C-202020,-243|-205|5B3328-202020,-13|-18|25BFFF-202020,-103|-14|1BB0FE-202020,-313|-16|42C69D-202020,-396|-13|3ABE95-202020",1,0.9,foundX,foundY
+    Case "050_上午已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDA875","0|47|FDAB71,-1|8|895E4D,31|59|A0A0A0,9|376|2DBF85,-22|365|FFFFFF,-41|366|FFFFFF,-70|364|7EECE1,-1|148|CCA382,-58|182|8E5C33,206|-572|E9E0C8,223|-585|EDDCC4,170|129|010302,307|128|000201,1|129|010302",1,0.9,foundX,foundY
+    Case "050_上午可补"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FFFFFF","23|6|FFFFFF,10|-24|3BF14C,10|48|3BF14C,19|363|2DBF85,-12|352|FFFFFF,-31|353|FFFFFF,-60|351|7EECE1,9|135|CCA382,-48|169|8E5C33,216|-585|E9E0C8,233|-598|EDDCC4,180|116|010302,317|115|000201,11|116|010302",1,0.9,foundX,foundY
+    Case "050_上午可领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"1C493D","10|6|2A5F4F,12|-23|0048A3,7|-23|0048A3,19|349|2DBF85,-12|338|FFFFFF,-31|339|FFFFFF,-60|337|7EECE1,9|121|CCA382,-48|155|8E5C33,216|-599|E9E0C8,233|-612|EDDCC4,180|102|010302,317|101|000201,11|102|010302",1,0.9,foundX,foundY
+    Case "050_中午已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDAB71","2|-47|FDA875,65|-23|CACACA,54|19|808080,-149|329|2DBF85,-180|318|FFFFFF,-199|319|FFFFFF,-228|317|7EECE1,-159|101|CCA382,-216|135|8E5C33,48|-619|E9E0C8,65|-632|EDDCC4,12|82|010302,149|81|000201,-157|82|010302",1,0.9,foundX,foundY
+    Case "050_中午可补"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"3BF14C","-2|72|3BF14C,10|31|FFFFFF,-3|-28|E3E3E3,-153|388|2DBF85,-184|377|FFFFFF,-203|378|FFFFFF,-232|376|7EECE1,-163|160|CCA382,-220|194|8E5C33,44|-560|E9E0C8,61|-573|EDDCC4,8|141|010302,145|140|000201,-161|141|010302",1,0.9,foundX,foundY
+    Case "050_中午可领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"0254AF","-28|16|2320D1,-36|44|2320D1,-37|11|2320D1,-175|366|2DBF85,-206|355|FFFFFF,-225|356|FFFFFF,-254|354|7EECE1,-185|138|CCA382,-242|172|8E5C33,22|-582|E9E0C8,39|-595|EDDCC4,-14|119|010302,123|118|000201,-183|119|010302",1,0.9,foundX,foundY
+    Case "050_下午已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDAA72","-1|-48|FDA875,46|-28|0E0E0E,38|-29|B7B7B7,-311|328|2DBF85,-342|317|FFFFFF,-361|318|FFFFFF,-390|316|7EECE1,-321|100|CCA382,-378|134|8E5C33,-114|-620|E9E0C8,-97|-633|EDDCC4,-150|81|010302,-13|80|000201,-319|81|010302",1,0.9,foundX,foundY
+    Case "050_下午可补"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"3BF14C","1|-71|3BF14C,13|-41|FFFFFF,15|-51|456149,-310|316|2DBF85,-341|305|FFFFFF,-360|306|FFFFFF,-389|304|7EECE1,-320|88|CCA382,-377|122|8E5C33,-113|-632|E9E0C8,-96|-645|EDDCC4,-149|69|010302,-12|68|000201,-318|69|010302",1,0.9,foundX,foundY
+    Case "050_下午可领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"11138F","3|21|11138F,-21|9|11138F,0|-4|11138F,-326|367|2DBF85,-357|356|FFFFFF,-376|357|FFFFFF,-405|355|7EECE1,-336|139|CCA382,-393|173|8E5C33,-129|-581|E9E0C8,-112|-594|EDDCC4,-165|120|010302,-28|119|000201,-334|120|010302",1,0.9,foundX,foundY
+    Case "050_晚上已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDAB71","-1|-47|FDA875,31|-49|959595,42|-22|7E7E7E,-472|329|2DBF85,-503|318|FFFFFF,-522|319|FFFFFF,-551|317|7EECE1,-482|101|CCA382,-539|135|8E5C33,-275|-619|E9E0C8,-258|-632|EDDCC4,-311|82|010302,-174|81|000201,-480|82|010302",1,0.9,foundX,foundY
+    Case "050_晚上可补"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"3BF14C","-1|-71|3BF14C,11|-41|FFFFFF,-4|-100|E3E3E3,-472|316|2DBF85,-503|305|FFFFFF,-522|306|FFFFFF,-551|304|7EECE1,-482|88|CCA382,-539|122|8E5C33,-275|-632|E9E0C8,-258|-645|EDDCC4,-311|69|010302,-174|68|000201,-480|69|010302",1,0.9,foundX,foundY
+    Case "050_晚上可领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"163DA1","-49|-9|163DA1,-19|17|163DA1,-25|20|163DA1,-493|352|2DBF85,-524|341|FFFFFF,-543|342|FFFFFF,-572|340|7EECE1,-503|124|CCA382,-560|158|8E5C33,-296|-596|E9E0C8,-279|-609|EDDCC4,-332|105|010302,-195|104|000201,-501|105|010302",1,0.9,foundX,foundY
+    Case "050_前两档已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDA875","0|47|FDAB71,160|47|FDAB71,160|0|FDA875,9|376|2DBF85,-22|365|FFFFFF,-41|366|FFFFFF,-70|364|7EECE1,-1|148|CCA382,-58|182|8E5C33,206|-572|E9E0C8,223|-585|EDDCC4,170|129|010302,307|128|000201,1|129|010302,30|56|A0A0A0,149|63|5F5F5F",1,0.9,foundX,foundY
+    Case "050_前三档已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDA875","0|47|FDAB71,160|47|FDAB71,160|0|FDA875,9|376|2DBF85,-22|365|FFFFFF,-41|366|FFFFFF,-70|364|7EECE1,-1|148|CCA382,-58|182|8E5C33,206|-572|E9E0C8,223|-585|EDDCC4,170|129|010302,307|128|000201,1|129|010302,30|56|A0A0A0,149|63|5F5F5F,320|47|FDAB71,320|0|FDA875,266|34|797979",1,0.9,foundX,foundY
+    Case "050_四档已领"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FDAB71","-1|-47|FDA875,31|-49|959595,42|-22|7E7E7E,-472|329|2DBF85,-503|318|FFFFFF,-522|319|FFFFFF,-551|317|7EECE1,-482|101|CCA382,-539|135|8E5C33,-275|-619|E9E0C8,-258|-632|EDDCC4,-311|82|010302,-174|81|000201,-480|82|010302,-480|0|FDAB71,-481|-47|FDA875,-321|0|FDAB71,-322|-47|FDA875,-159|0|FDAB71,-162|-47|FDA875,-122|-27|B7B7B7",1,0.9,foundX,foundY
+    Case "050_追回入口"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"2EBA80","-78|8|247935,-81|5|36CA88,117|-73|B2782E,-88|-97|82481F,562|-961|24B076,510|-988|8AF5ED,445|-956|068A50,445|-956|068A50,453|-926|00D1FA",1,0.9,foundX,foundY
+    Case "050_追回灰色"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FAD99F-202020","14|16|F9BF5E-202020,18|-19|FEFCF2-202020,-593|-14|0E37FD-202020,-584|72|00D4FD-202020,-569|81|26C2FC-202020,-588|63|9A82FD-202020,-598|79|89432D-202020,-532|642|96543B-202020,-522|655|894F2E-202020,-63|183|E6E6E6,-16|219|858585,-134|219|6A6A6A,-69|184|E6E6E6",1,0.9,foundX,foundY
+    Case "050_追回可用"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FAD99F-202020","14|16|F9BF5E-202020,18|-19|FEFCF2-202020,-593|-14|0E37FD-202020,-584|72|00D4FD-202020,-569|81|26C2FC-202020,-588|63|9A82FD-202020,-598|79|89432D-202020,-532|642|96543B-202020,-522|655|894F2E-202020,-63|183|8AF5ED,-16|219|1FA371,-134|219|068A50,-69|184|8AF5ED",1,0.9,foundX,foundY
+    Case "050_追回确认"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"0D36FF","20|0|0E37FD,34|-10|66C0FF,636|1|D8A75C,632|26|D08E4C,629|34|CC8248,21|59|96543B,17|72|5B3328,17|69|20110C,6|291|221510,33|314|96543B,45|432|894F2E,43|428|522F25,48|425|884635,374|-8|566FA1",1,0.9,foundX,foundY
+    Case "050_兑换弹窗"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FCDDA4-202020","13|17|F9BF63-202020,17|-18|FFFCF4-202020,-597|-13|0D36FE-202020,-358|90|65FFFF-202020,-304|99|06BB48-202020,-496|252|016EFE-202020,-254|251|0071FD-202020,-159|251|0071FD-202020,-349|277|5B3328-202020,-371|355|026DF9-202020,-224|345|0A8EFF-202020,-346|389|00D1FA-202020,-304|420|894F2E-202020",1,0.9,foundX,foundY
+    Case "050_兑换灰色"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FAD99F-202020","14|16|F9BF5E-202020,18|-19|FEFCF2-202020,-593|-14|0E37FD-202020,-584|72|00D4FD-202020,-569|81|26C2FC-202020,-588|63|9A82FD-202020,-598|79|89432D-202020,-532|642|96543B-202020,-522|655|894F2E-202020,-29|593|797979,-78|557|E6E6E6,-140|590|6B6B6B,-79|556|E6E6E6",1,0.9,foundX,foundY
+    Case "050_兑换可用"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"FAD99F-202020","14|16|F9BF5E-202020,18|-19|FEFCF2-202020,-593|-14|0E37FD-202020,-584|72|00D4FD-202020,-569|81|26C2FC-202020,-588|63|9A82FD-202020,-598|79|89432D-202020,-532|642|96543B-202020,-522|655|894F2E-202020,-29|593|1A9665,-136|593|068A50,-81|555|8AF5ED,-52|555|86F1E9",1,0.9,foundX,foundY
+    Case "050_活动框一"
+        // root.706/root.788 evidence
+        FindMultiColor 1,3,717,222,"F7FDFF-101010","54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,-20|148|8A5724-101010,-11|148|533416-101010,-16|146|3B1C12-101010,-27|146|5E2B1A-101010,-29|150|644825-101010",1,0.9,foundX,foundY
+    Case "050_活动框二"
+        // root.706/root.788 evidence
+        FindMultiColor 1,3,717,222,"F7FDFF-101010","54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,630|148|865320-101010,631|147|6D3A1C-101010,610|147|452613-101010,631|150|644825-101010,630|145|5D2B1A-101010",1,0.9,foundX,foundY
+    Case "050_体力图标"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"5CF9FF-101010","14|-15|F5FFFF-101010,16|-22|5698EB-101010,-21|32|57E6DD-101010,-27|29|75BF9E-101010,-34|16|050D36-101010,31|32|B2B63D-101010,51|3|E0CDCB-101010,-47|4|E8CFC7-101010,-25|-35|571302-101010",1,0.9,foundX,foundY
+    Case "050_体力页面一"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"E0FFFF-101010","5|-10|5799EC-101010,-16|43|0AC8F1-101010,-13|-29|68260A-101010,-57|21|597A59-101010,18|42|9F8623-101010,18|42|9F8623-101010,-26|-13|6DE1E5-101010,-15|89|F0A62A-101010,-14|98|C6C6C6-101010",1,0.9,foundX,foundY
+    Case "050_体力页面二"
+        // root.706/root.788 evidence
+        FindMultiColor 0,0,719,1279,"C6EDE4-101010","-14|12|93BBAE-101010,-58|27|247935-101010,172|-225|9B9B9B-101010,22|-225|9B9B9B-101010,-65|-108|7F451C-101010,158|-965|D9B81C-101010,81|-10|3B9E6D-101010,61|-74|965C2B-101010,106|-57|AF7533-101010",1,0.9,foundX,foundY
+    Case "056_大厅入口"
+        // root.708; full screen expanded only
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",1,0.9,foundX,foundY
+    Case "056_游戏好友页"
+        // root.708; full screen expanded only
+        FindMultiColor 0,0,719,1279,"2DBF85","-30|-14|FFFFFF,-80|13|0A8E54,419|-21|6DF1FF,365|-24|25B1FB,154|22|0A8E54,156|-23|37DC9A,-37|-1035|443B4C,155|-1062|0D4FD3,48|-1058|0A4CD8,104|-1047|65E0FF,105|-1044|71E5FD",1,0.9,foundX,foundY
+    Case "056_Q友页面"
+        // root.708; full screen expanded only
+        FindMultiColor 0,0,719,1279,"2DBF85","-30|-14|FFFFFF,-80|13|0A8E54,419|-21|6DF1FF,365|-24|25B1FB,154|22|0A8E54,156|-23|37DC9A,-37|-1035|443B4C,87|-1035|4C3B44,20|-1062|0D4FD3,-74|-1057|0E60DC,-27|-1044|71E5FD",1,0.9,foundX,foundY
+    Case "056_单项领取"
+        // root.708; full screen expanded only
+        FindMultiColor 0,0,719,1279,"27DC79-101010","-7|-9|1F79ED-101010,-7|2|20D267-101010,-5|12|FFFFFF-101010,-30|-4|0A9E44-101010,11|-8|09A653-101010,-5|12|FFFFFF-101010,-27|8|068A27-101010,-16|1|0AC8F1-101010,11|-11|0DAA59-101010",1,0.9,foundX,foundY
     Case "055_大厅入口锚点"
         // root.707; full screen semantics only converted
         FindMultiColor 0,0,719,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",1,0.9,foundX,foundY
@@ -1092,6 +1605,9 @@ Sub StartGame()
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If IsTimedStamina(currentTask) Then
+        Call RestartTimedStamina(currentTask)
+    End If
     Call Note("[流程] 入口 RestartGame")
     Call BeginForegroundRecovery()
     foregroundLoginPending = True
@@ -1135,21 +1651,27 @@ End Function
 
 // common/任务注册.mq
 Sub RegisterTasks()
+    qfriendRegisteredTask = 56
     friendRegisteredTask = 55
     registeredTask = 168
     rewardRegisteredTask = 169
     signRegisteredTask = 167
     monthRegisteredTask = 166
-    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55；使用唯一串行调度器")
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55、Q友体力56；定时体力50至54；使用唯一串行调度器")
 End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
-    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Then
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Or resumeTask = qfriendRegisteredTask Or IsTimedStamina(resumeTask) Then
         If resumeTask <> 0 Then
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    selected = SelectTimedStamina()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
     End If
     If mailEnabled And mailFirst Then
         SelectDueTask = registeredTask
@@ -1169,6 +1691,10 @@ Function SelectDueTask()
     End If
     If friendEnabled And friendFirst Then
         SelectDueTask = friendRegisteredTask
+        Exit Function
+    End If
+    If qfriendEnabled And qfriendFirst Then
+        SelectDueTask = qfriendRegisteredTask
         Exit Function
     End If
     selected = 0
@@ -1207,6 +1733,14 @@ Function SelectDueTask()
         If TickCount() >= friendDue Then
             If selected = 0 Or friendDue < selectedDue Then
                 selected = friendRegisteredTask
+                selectedDue = friendDue
+            End If
+        End If
+    End If
+    If qfriendEnabled Then
+        If TickCount() >= qfriendDue Then
+            If selected = 0 Or qfriendDue < selectedDue Then
+                selected = qfriendRegisteredTask
             End If
         End If
     End If
@@ -1218,7 +1752,13 @@ End Function
 Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 55 Then
+    If IsTimedStamina(taskId) Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteTimedStamina(taskId)
+    ElseIf taskId = 56 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteQQFriendStamina()
+    ElseIf taskId = 55 Then
         terminalConfirmed = False
         DispatchTask = ExecuteFriendEnergy()
     ElseIf taskId = 166 Then
@@ -1290,6 +1830,9 @@ Sub SchedulerStep()
     If result = RESULT_OK And terminalConfirmed Then
         hallResult = ReturnToHall()
         Call Note("[流程] ReturnToHall() 返回=" & hallResult)
+        If IsTimedStamina(currentTask) Then
+            Call Note("[定时体力] 编号=" & currentTask & " 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
         If HandleForegroundRecovery() Then
             Exit Sub
         End If
@@ -2412,4 +2955,666 @@ Function ExecuteFriendEnergy()
             Delay 20
         End If
     Loop
+End Function
+
+
+// flows/056_Q友体力/Q友体力.mq
+Sub QFriendStage(value)
+    qfriendPhase = value
+    Call SetStage(value)
+    Call Note("[Q友体力56] 当前阶段=" & value)
+End Sub
+Function QFriendTap(x, y, waitMs)
+    QFriendTap = False
+    // Public foreground grace remains five seconds; never count a skipped click.
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 点击出口=前台等待期间公共超时或中断，保留56恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[Q友体力56] 点击出口=动作前公共超时或中断，未执行点击")
+        Exit Function
+    End If
+    Call Note("[Q友体力56] 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    If Not BusinessExpired() Then
+        QFriendTap = True
+    Else
+        Call Note("[Q友体力56] 点击出口=动作等待期间公共超时或中断，不计为完成")
+    End If
+End Function
+Function QFriendMatch(name)
+    Dim matched
+    matched = MatchPattern(name)
+    QFriendMatch = matched
+    If matched Then
+        Call Note("[Q友体力56] 命中模板=" & name & " 搜索区域=0,0,719,1279 相似度=0.9 方向=1 锚点=" & foundX & "," & foundY)
+    End If
+End Function
+Function ExecuteQQFriendStamina()
+    Dim entryProgress, lastClaim, lastScroll, actionStarted, scrollCount, claimRun, scrollLocked, anchorX, anchorY, text, lastText, idleMs
+    ExecuteQQFriendStamina = RESULT_TIMEOUT
+    terminalConfirmed = False
+    qfriendTerminal = False
+    entryProgress = TickCount()
+    Call QFriendStage("Q友体力56进入")
+    If qfriendOneClick Then
+        Call Note("[Q友体力56] 业务入口；一键领取配置=开启")
+    Else
+        Call Note("[Q友体力56] 业务入口；一键领取配置=关闭")
+    End If
+    Do
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 超时阶段=进入；公共超时或前台中断，等待公共恢复56")
+            Exit Function
+        End If
+        If QFriendMatch("056_大厅入口") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[Q友体力56] 点击偏移=538,-28")
+            If Not QFriendTap(anchorX + 538, anchorY - 28, 1000) Then
+                Exit Function
+            End If
+            entryProgress = TickCount()
+        End If
+        If QFriendMatch("056_游戏好友页") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[Q友体力56] 切换QQ好友页签 点击偏移=10,-1046 等待毫秒=0")
+            If Not QFriendTap(anchorX + 10, anchorY - 1046, 0) Then
+                Exit Function
+            End If
+        End If
+        If QFriendMatch("056_Q友页面") Then
+            Call Note("[Q友体力56] Q友页面确认 等待毫秒=6000")
+            // Reuse interruptible wait in public TouchPoint only for clicks; this is an explicit source Delay.
+            Delay 6000
+            Exit Do
+        End If
+        If TickCount() - entryProgress > 20000 Then
+            Call Note("[Q友体力56] 失败原因=进入20秒无进展；不沿用原版标完成，交公共超时恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    actionStarted = TickCount()
+    lastScroll = actionStarted
+    Call QFriendStage("Q友体力56第一组")
+    Do
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 超时阶段=第一组；公共超时或前台中断")
+            Exit Function
+        End If
+        If QFriendMatch("056_Q友页面") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[Q友体力56] 第一组双点击 点击偏移=250,-110 等待毫秒=500/1000；不作为已赠送画面证明")
+            If Not QFriendTap(anchorX + 250, anchorY - 110, 500) Then
+                Exit Function
+            End If
+            If Not QFriendTap(anchorX + 250, anchorY - 110, 1000) Then
+                Exit Function
+            End If
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    lastClaim = entryProgress
+    scrollCount = 0
+    claimRun = 0
+    scrollLocked = True
+    lastText = "<未识别>"
+    Call QFriendStage("Q友体力56领取")
+    Do
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 超时阶段=领取；公共超时或前台中断，保留56")
+            Exit Function
+        End If
+        If qfriendOneClick Then
+            If QFriendMatch("056_Q友页面") Then
+                anchorX = foundX
+                anchorY = foundY
+                Call Note("[Q友体力56] 一键领取 点击偏移=460,-110 等待毫秒=500/0")
+                If Not QFriendTap(anchorX + 460, anchorY - 110, 500) Then
+                    Exit Function
+                End If
+                If Not QFriendTap(anchorX + 460, anchorY - 110, 0) Then
+                    Exit Function
+                End If
+                Call Note("[Q友体力56] 业务终态确认=用户批准的批量双点击完成；等待公共返回大厅")
+                Exit Do
+            End If
+        Else
+            If TickCount() - lastScroll > 2000 And Not scrollLocked Then
+                If QFriendMatch("056_Q友页面") Then
+                    anchorX = foundX
+                    anchorY = foundY
+                    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+                        Call Note("[Q友体力56] 滚动暂停：游戏不在前台")
+                    Else
+                        ReleaseCapture
+                        If scrollCount < 10 Then
+                            Call Note("[Q友体力56] 向上滚动 偏移250,-200到250,-580 时长200 等待1000")
+                            Swipe anchorX + 250, anchorY - 200, anchorX + 250, anchorY - 580, 200
+                            Delay 1000
+                        ElseIf scrollCount < 20 Then
+                            Call Note("[Q友体力56] 向下滚动 偏移250,-580到250,-200 时长200 等待1000")
+                            Swipe anchorX + 250, anchorY - 580, anchorX + 250, anchorY - 200, 200
+                            Delay 1000
+                        Else
+                            scrollCount = 0
+                        End If
+                        scrollCount = scrollCount + 1
+                        claimRun = 0
+                        Call Progress()
+                    End If
+                End If
+                lastScroll = TickCount()
+            End If
+            If QFriendMatch("056_单项领取") Then
+                anchorX = foundX
+                anchorY = foundY
+                Call Note("[Q友体力56] 单项领取 点击偏移=0,0 等待毫秒=500")
+                If Not QFriendTap(anchorX, anchorY, 500) Then
+                    Exit Function
+                End If
+                lastClaim = TickCount()
+                lastScroll = TickCount()
+                claimRun = claimRun + 1
+                Call Progress()
+            End If
+            If QFriendMatch("056_Q友页面") Then
+                ReleaseCapture
+                text = Image.OcrText(555, 215, 623, 248, 0, 0)
+                If IsNull(text) Then
+                    text = ""
+                End If
+                If text <> lastText Then
+                    Call Note("[Q友体力56] OCR 搜索区域=555,215,623,248 参数0 文本=" & text)
+                    lastText = text
+                End If
+                If text = "60/60" Or text = "6060" Then
+                    If Not BusinessExpired() Then
+                        Call Note("[Q友体力56] 业务终态确认=Q友页OCR满额；等待公共返回大厅")
+                        Exit Do
+                    End If
+                End If
+            End If
+            idleMs = TickCount() - lastClaim
+            If idleMs > 2000 And idleMs <= 20000 Then
+                scrollLocked = False
+            ElseIf idleMs > 30000 Then
+                Call Note("[Q友体力56] 失败原因=30秒无领取进展且未确认OCR终态；交公共恢复56")
+                Exit Function
+            End If
+            If TickCount() - actionStarted > 180000 Or claimRun > 10 Then
+                Call Note("[Q友体力56] 失败原因=专业版操作保护出口，未确认终态；交公共恢复56")
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[Q友体力56] 终态提交前公共超时或前台中断，不返回成功")
+        Exit Function
+    End If
+    qfriendTerminal = True
+    terminalConfirmed = True
+    Call QFriendStage("Q友体力56待返回大厅")
+    ExecuteQQFriendStamina = RESULT_OK
+    Call Note("[Q友体力56] 业务出口=成功；尚未提交完成次数")
+End Function
+
+
+// flows/050_定时领取体力/定时领取体力.mq
+Sub TimedStage(value)
+    staminaPhase = value
+    Call SetTimedStaminaPhase(currentTask, value)
+    Call SetStage(value)
+End Sub
+Sub TimedTouch(name, x, y, waitMs)
+    Call Note("[定时体力] 命中=" & name & " 点击=" & x & "," & y & " 点击偏移=0,0 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+End Sub
+Function TimedActivityFrame()
+    TimedActivityFrame = True
+    If StaminaMatch("050_活动框一") Then
+        Exit Function
+    End If
+    TimedActivityFrame = StaminaMatch("050_活动框二")
+End Function
+Function TimedHallKnown()
+    TimedHallKnown = True
+    If StaminaMatch("050_大厅识别一") Then
+        Exit Function
+    End If
+    If StaminaMatch("050_大厅识别二") Then
+        Exit Function
+    End If
+    TimedHallKnown = StaminaMatch("050_大厅识别三")
+End Function
+Function TimedActivityIcon()
+    TimedActivityIcon = True
+    If StaminaMatch("050_大厅活动入口一") Then
+        Exit Function
+    End If
+    TimedActivityIcon = StaminaMatch("050_大厅活动入口二")
+End Function
+Sub TimedResourcePrompt()
+    Dim x, y, text
+    If Not staminaKeepDownload Then
+        If StaminaMatch("050_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = ReadActivityText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                Call TimedTouch("050_资源下载提示标题", x, y, 0)
+            End If
+            text = ReadActivityText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                Call TimedTouch("050_资源下载提示网络", x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function EnterTimedActivities()
+    Dim initialStarted, enterStarted, text, hallResult
+    EnterTimedActivities = RESULT_TIMEOUT
+    Call TimedStage("定时体力进入活动")
+    Call Note("[定时体力] 入口 EnterTimedActivities")
+    initialStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 出口：活动位置检查超时或前台中断")
+            Exit Function
+        End If
+        If TimedActivityFrame() Then
+            EnterTimedActivities = RESULT_OK
+            Call Note("[定时体力] 出口：原活动框已确认")
+            Exit Function
+        End If
+        If TickCount() - initialStarted > 2000 Then
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    hallResult = ReturnToHall()
+    If hallResult <> RESULT_OK Then
+        Call Note("[定时体力] 出口：进入活动前返回大厅失败")
+        Exit Function
+    End If
+    enterStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 出口：进入活动业务总超时或前台中断")
+            Exit Function
+        End If
+        Call TimedResourcePrompt()
+        If TimedActivityFrame() Then
+            EnterTimedActivities = RESULT_OK
+            Call Note("[定时体力] 出口：专业版当前位置活动框复核成功，进入体力分页")
+            Exit Function
+        End If
+        text = ReadActivityText(65, 7, 247, 59)
+        If text = "活动" Then
+            EnterTimedActivities = RESULT_OK
+            Call Note("[定时体力] 出口：OCR活动标题已确认")
+            Exit Function
+        Else
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Call Note("[定时体力] 出口：活动标题未成立且公共返回失败")
+                Exit Function
+            End If
+        End If
+        If TimedHallKnown() Then
+            If TimedActivityIcon() Then
+                Call TimedTouch("050_大厅活动入口", foundX, foundY, 1500)
+            Else
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Call Note("[定时体力] 出口：无活动图标且公共返回失败")
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 300
+        If TickCount() - enterStarted > 60000 Then
+            Call Note("[定时体力] 出口：专业版活动入口60秒超时；不提交完成")
+            Delay 2000
+            Exit Function
+        End If
+    Loop
+End Function
+Function StaminaMatch(name)
+    Dim matched
+    matched = MatchPattern(name)
+    StaminaMatch = matched
+    If matched Then
+        Call Note("[定时体力] 编号=" & currentTask & " 阶段=" & staminaPhase & " 命中模板=" & name & " 搜索区域=见图色登记 锚点=" & foundX & "," & foundY)
+    End If
+End Function
+Function StaminaTap(x, y, waitMs)
+    StaminaTap = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Call Note("[定时体力] 失败原因=动作前等待前台时超时或中断；未提交")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[定时体力] 失败原因=动作前公共超时或中断；未提交")
+        Exit Function
+    End If
+    Call Note("[定时体力] 编号=" & currentTask & " 点击坐标=" & x & "," & y & " 点击偏移=0,0（模板锚点或已记录的固定坐标） 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    StaminaTap = Not BusinessExpired()
+End Function
+Function StaminaSlotName(slot)
+    StaminaSlotName = "晚上"
+    If slot = 1 Then
+        StaminaSlotName = "上午"
+    ElseIf slot = 2 Then
+        StaminaSlotName = "中午"
+    ElseIf slot = 3 Then
+        StaminaSlotName = "下午"
+    End If
+End Function
+Function EnterTimedStaminaPage()
+    Dim started, lastAction, swipeCount, direction, name
+    EnterTimedStaminaPage = RESULT_TIMEOUT
+    If EnterTimedActivities() <> RESULT_OK Then
+        Call Note("[定时体力] 失败原因=公共活动入口未确认")
+        Exit Function
+    End If
+    started = TickCount()
+    lastAction = TickCount() + 1500
+    swipeCount = 0
+    direction = 0
+    Call TimedStage("定时体力查找分页")
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=查找分页公共超时或前台中断")
+            Exit Function
+        End If
+        If direction < 4 Then
+            direction = direction + 1
+        Else
+            direction = 0
+        End If
+        If StaminaMatch("050_体力页面一") Then
+            EnterTimedStaminaPage = RESULT_OK
+            Exit Function
+        End If
+        If StaminaMatch("050_体力页面二") Then
+            EnterTimedStaminaPage = RESULT_OK
+            Exit Function
+        End If
+        If TimedActivityFrame() Then
+            If StaminaMatch("050_体力图标") Then
+                If Not StaminaTap(foundX, foundY, 1500) Then
+                    Exit Function
+                End If
+                lastAction = TickCount()
+            End If
+            If TickCount() - lastAction > 1500 Then
+                swipeCount = swipeCount + 1
+                Call Note("[定时体力] 分页滑动序号=" & swipeCount & " 专业版辅助搜索方向=" & direction)
+                If swipeCount <= 7 Then
+                    Call SwipeActivityPage(False)
+                Else
+                    Call SwipeActivityPage(True)
+                    If swipeCount = 14 Then
+                        swipeCount = 0
+                    End If
+                End If
+                lastAction = TickCount()
+            End If
+        End If
+        If TickCount() - started > 35000 Then
+            Call Note("[定时体力] 超时原因=分页查找超过35000毫秒 等待2000后公共恢复")
+            Delay 2000
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function DetectStaminaSlot(slot)
+    Dim prefix, name
+    DetectStaminaSlot = RESULT_TIMEOUT
+    prefix = "050_" & StaminaSlotName(slot)
+    Call TimedStage(prefix)
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=初始时段状态未知；未提交完成")
+            Exit Function
+        End If
+        name = prefix & "已领"
+        If StaminaMatch(name) Then
+            Call Note("[定时体力] 初始状态=已领取；不是最终完成提交")
+            Delay 200
+            DetectStaminaSlot = RESULT_OK
+            Exit Function
+        End If
+        name = prefix & "可补"
+        If StaminaMatch(name) Then
+            Call Note("[定时体力] 初始状态=可补领")
+            Delay 200
+            DetectStaminaSlot = RESULT_OK
+            Exit Function
+        End If
+        name = prefix & "可领"
+        If StaminaMatch(name) Then
+            Call Note("[定时体力] 初始状态=免费未领取")
+            Delay 200
+            DetectStaminaSlot = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ClaimTimedStamina(slot)
+    Dim actionSlot, name, prefix, terminalName
+    ClaimTimedStamina = RESULT_TIMEOUT
+    terminalName = "050_" & StaminaSlotName(slot) & "已领"
+    If staminaGem Then
+        If slot = 2 Then
+            terminalName = "050_前两档已领"
+        ElseIf slot = 3 Then
+            terminalName = "050_前三档已领"
+        ElseIf slot = 4 Then
+            terminalName = "050_四档已领"
+        End If
+    End If
+    Call TimedStage("定时体力领取与补领")
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=领取未确认已领终态；未提交完成")
+            Exit Function
+        End If
+        actionSlot = slot
+        If staminaGem Then
+            actionSlot = 1
+        End If
+        Do While actionSlot <= slot
+            prefix = "050_" & StaminaSlotName(actionSlot)
+            name = prefix & "可领"
+            If StaminaMatch(name) Then
+                If Not StaminaTap(foundX, foundY, 200) Then
+                    Exit Function
+                End If
+            End If
+            If staminaGem Then
+                name = prefix & "可补"
+                If StaminaMatch(name) Then
+                    If Not StaminaTap(foundX, foundY, 200) Then
+                        Exit Function
+                    End If
+                End If
+            End If
+            actionSlot = actionSlot + 1
+        Loop
+        If StaminaMatch(terminalName) Then
+            Call Note("[定时体力] 领取正常终态=" & terminalName & " 等待毫秒=200；已领取或已无本档奖励")
+            Delay 200
+            ClaimTimedStamina = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function TimedStaminaExtras()
+    Dim started, phase, text, attempt, balance
+    TimedStaminaExtras = RESULT_TIMEOUT
+    If Not staminaRecover And Not staminaExchange Then
+        TimedStaminaExtras = RESULT_OK
+        Exit Function
+    End If
+    Call TimedStage("定时体力追回兑换")
+    started = TickCount()
+    phase = 0
+    Do
+        If BusinessExpired() Then
+            Call Note("[定时体力] 超时原因=追回兑换公共超时或前台中断")
+            Exit Function
+        End If
+        If StaminaMatch("050_追回入口") Then
+            Call Note("[定时体力] 固定点击追回入口630,260")
+            If Not StaminaTap(630, 260, 1000) Then
+                Exit Function
+            End If
+        End If
+        If phase = 0 Then
+            If staminaRecover Then
+                If StaminaMatch("050_追回灰色") Then
+                    Call Note("[定时体力] 追回灰色，进入兑换阶段")
+                    phase = 1
+                End If
+                If StaminaMatch("050_追回可用") Then
+                    If Not StaminaTap(570, 400, 1000) Then
+                        Exit Function
+                    End If
+                End If
+                If StaminaMatch("050_追回确认") Then
+                    ReleaseCapture
+                    text = Image.OcrText(141, 543, 564, 651, 0, 0)
+                    If IsNull(text) Then
+                        text = ""
+                    End If
+                    Call Note("[定时体力] 追回确认OCR 区域141,543,564,651 关键词是否消耗/5日内未 模糊 文本=" & text)
+                    If InStr(1, text, "是否消耗") > 0 Or InStr(1, text, "5日内未") > 0 Then
+                        If Not StaminaTap(440, 785, 1000) Then
+                            Exit Function
+                        End If
+                        phase = 1
+                    End If
+                End If
+            Else
+                phase = 1
+            End If
+        ElseIf phase = 1 Then
+            If staminaExchange Then
+                If StaminaMatch("050_兑换弹窗") Then
+                    If Not StaminaTap(612, 650, 1000) Then
+                        Exit Function
+                    End If
+                    If Not StaminaTap(412, 750, 1000) Then
+                        Exit Function
+                    End If
+                    If Not StaminaTap(412, 750, 1000) Then
+                        Exit Function
+                    End If
+                    TimedStaminaExtras = RESULT_OK
+                    Call Note("[定时体力] 兑换正常出口=专业版特殊弹窗三次点击完成")
+                    Exit Function
+                End If
+                If StaminaMatch("050_兑换灰色") Then
+                    TimedStaminaExtras = RESULT_OK
+                    Call Note("[定时体力] 兑换正常出口=灰色不可兑换")
+                    Exit Function
+                End If
+                If StaminaMatch("050_兑换可用") Then
+                    attempt = 1
+                    Do While attempt <= 2
+                        ReleaseCapture
+                        text = Image.OcrText(95, 262, 184, 294, 2, 0)
+                        If IsNull(text) Then
+                            text = ""
+                        End If
+                        Call Note("[定时体力] 兑换余额OCR 区域95,262,184,294 参数2 次数=" & attempt & " 文本=" & text)
+                        If IsNumeric(text) Then
+                            balance = Int(CDbl(text))
+                            If balance >= 40 Then
+                                If Not StaminaTap(570, 777, 1000) Then
+                                    Exit Function
+                                End If
+                                Exit Do
+                            Else
+                                TimedStaminaExtras = RESULT_OK
+                                Call Note("[定时体力] 兑换正常出口=已识别余额不足40")
+                                Exit Function
+                            End If
+                        End If
+                        Delay 500
+                        attempt = attempt + 1
+                    Loop
+                End If
+            Else
+                TimedStaminaExtras = RESULT_OK
+                Call Note("[定时体力] 可选追回流程完成，兑换关闭")
+                Exit Function
+            End If
+        End If
+        If TickCount() - started > 15000 Then
+            Call Note("[定时体力] 超时原因=追回兑换15000毫秒保护出口，未确认终态，不提交")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteTimedStamina(taskId)
+    Dim slot, checkSlot, result
+    ExecuteTimedStamina = RESULT_TIMEOUT
+    terminalConfirmed = False
+    staminaTerminal = False
+    slot = taskId - 49
+    If slot = 5 Then
+        slot = 4
+    End If
+    Call Note("[定时体力] 业务入口 名称=" & StaminaName(taskId) & " 编号=" & taskId & " 开始时间Unix=" & Time())
+    result = EnterTimedStaminaPage()
+    If result <> RESULT_OK Then
+        Call Note("[定时体力] 失败或超时原因=进入体力页面失败，等待公共恢复原任务；未提交")
+        Exit Function
+    End If
+    checkSlot = 1
+    Do While checkSlot <= slot
+        If DetectStaminaSlot(checkSlot) <> RESULT_OK Then
+            Exit Function
+        End If
+        Call Progress()
+        checkSlot = checkSlot + 1
+    Loop
+    Call Note("[定时体力] 初始状态确认完成 等待毫秒=3000")
+    Delay 3000
+    Call Progress()
+    If ClaimTimedStamina(slot) <> RESULT_OK Then
+        Exit Function
+    End If
+    If TimedStaminaExtras() <> RESULT_OK Then
+        Exit Function
+    End If
+    If BusinessExpired() Then
+        Call Note("[定时体力] 终态出口前公共超时或中断，未提交完成")
+        Exit Function
+    End If
+    staminaTerminal = True
+    terminalConfirmed = True
+    ExecuteTimedStamina = RESULT_OK
+    Call TimedStage("定时体力业务终态确认")
+    Call Note("[定时体力] 正常终态确认；等待公共返回大厅与连续确认，是否提交完成=否")
 End Function

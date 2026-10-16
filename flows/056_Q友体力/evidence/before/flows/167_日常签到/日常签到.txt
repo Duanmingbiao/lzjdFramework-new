@@ -1,0 +1,145 @@
+﻿Sub SignStage(value)
+    signPhase = value
+    Call SetStage(value)
+End Sub
+Sub SignTouch(name, x, y, waitMs)
+    Call Note("[签到167] 命中=" & name & " 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+End Sub
+Function EnterDailySign()
+    EnterDailySign = RESULT_TIMEOUT
+    Call SignStage("167进入签到中心")
+    Call Note("[签到167] 入口 EnterDailySign")
+    Do
+        If BusinessExpired() Then
+            Call Note("[签到167] 出口 EnterDailySign：业务总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("167_入口") Then
+            Call SignTouch("167_入口", foundX, foundY, 100)
+        End If
+        If MatchPattern("167_中心页面") Then
+            Call SignTouch("167_中心页面", 150, 50, 200)
+            If BusinessExpired() Then
+                Call Note("[签到167] 出口 EnterDailySign：点击后超时或中断")
+                Exit Function
+            End If
+            EnterDailySign = RESULT_OK
+            Call Note("[签到167] 出口 EnterDailySign：中心已识别，进入领取")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ClaimDailySign()
+    Dim claimStarted, cumulativeLogged
+    ClaimDailySign = RESULT_TIMEOUT
+    claimStarted = TickCount()
+    cumulativeLogged = False
+    Call SignStage("167领取签到奖励")
+    Call Note("[签到167] 入口 ClaimDailySign；累计检查门槛大于5000毫秒")
+    Do
+        If BusinessExpired() Then
+            Call Note("[签到167] 出口 ClaimDailySign：业务总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("167_领取一") Then
+            Call SignTouch("167_领取一", foundX + 5, foundY, 500)
+        End If
+        If MatchPattern("167_领取二") Then
+            Call SignTouch("167_领取二", foundX + 50, foundY - 20, 500)
+        End If
+        If MatchPattern("167_领取三") Then
+            Call SignTouch("167_领取三", foundX + 50, foundY - 20, 500)
+        End If
+        If MatchPattern("167_领取四") Then
+            Call SignTouch("167_领取四", foundX + 50, foundY - 20, 500)
+        End If
+        If MatchPattern("167_奖励弹窗") Then
+            Call SignTouch("167_奖励弹窗", 5, 5, 0)
+        End If
+        If MatchPattern("167_充值提示") Then
+            Call SignTouch("167_充值提示", foundX, foundY, 0)
+        End If
+        If TickCount() - claimStarted > 5000 Then
+            If Not cumulativeLogged Then
+                Call Note("[签到167] 累计检查启用；领取起点未刷新")
+                cumulativeLogged = True
+            End If
+            If MatchPattern("167_累计可领") Then
+                Call SignTouch("167_累计可领", foundX, foundY, 0)
+            End If
+            If MatchPattern("167_累计灰色") Then
+                If BusinessExpired() Then
+                    Call Note("[签到167] 出口 ClaimDailySign：灰色命中时已超时或中断")
+                    Exit Function
+                End If
+                ClaimDailySign = RESULT_OK
+                Call Note("[签到167] 出口 ClaimDailySign：累计灰色已确认，等待收尾终态")
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+End Function
+Function FinishDailySign()
+    FinishDailySign = RESULT_TIMEOUT
+    Call SignStage("167签到收尾确认")
+    Call Progress()
+    Call Note("[签到167] 入口 FinishDailySign")
+    Do
+        If BusinessExpired() Then
+            Call Note("[签到167] 出口 FinishDailySign：业务总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("167_奖励弹窗") Then
+            Call SignTouch("167_奖励弹窗收尾", foundX, foundY, 0)
+            If BusinessExpired() Then
+                Call Note("[签到167] 出口 FinishDailySign：收尾点击后超时或中断")
+                Exit Function
+            End If
+            FinishDailySign = RESULT_OK
+            Call Note("[签到167] 出口 FinishDailySign：奖励弹窗终态已处理")
+            Exit Function
+        End If
+        If MatchPattern("167_中心页面") Then
+            If BusinessExpired() Then
+                Call Note("[签到167] 出口 FinishDailySign：中心命中时超时或中断")
+                Exit Function
+            End If
+            FinishDailySign = RESULT_OK
+            Call Note("[签到167] 出口 FinishDailySign：中心页面终态已确认")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteDailySign()
+    Dim result
+    ExecuteDailySign = RESULT_TIMEOUT
+    terminalConfirmed = False
+    Call Note("[签到167] 业务入口 ExecuteDailySign")
+    result = EnterDailySign()
+    If result <> RESULT_OK Then
+        Call Note("[签到167] 业务出口：进入失败，返回超时")
+        Exit Function
+    End If
+    result = ClaimDailySign()
+    If result <> RESULT_OK Then
+        Call Note("[签到167] 业务出口：领取未完成，返回超时")
+        Exit Function
+    End If
+    result = FinishDailySign()
+    If result <> RESULT_OK Then
+        Call Note("[签到167] 业务出口：收尾未完成，返回超时")
+        Exit Function
+    End If
+    If BusinessExpired() Then
+        Call Note("[签到167] 业务出口：终态提交前超时或中断")
+        Exit Function
+    End If
+    terminalConfirmed = True
+    ExecuteDailySign = RESULT_OK
+    Call SignStage("167签到业务终态确认")
+    Call Note("[签到167] 业务出口：成功；等待公共返回大厅后提交")
+End Function

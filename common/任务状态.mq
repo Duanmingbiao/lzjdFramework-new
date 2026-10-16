@@ -1,4 +1,14 @@
 ﻿Sub NewSession()
+    Call NewTimedStaminaSession()
+    qfriendDone = False
+    qfriendFailed = False
+    qfriendCount = 0
+    qfriendFailures = 0
+    qfriendDue = 0
+    qfriendFirst = True
+    qfriendPhase = "未开始"
+    qfriendTerminal = False
+    qfriendRecovery = False
     friendDone = False
     friendFailed = False
     friendCount = 0
@@ -59,7 +69,15 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
-    If taskId = 55 Then
+    If IsTimedStamina(taskId) Then
+        Call StartTimedStamina(taskId)
+    End If
+    If taskId = 56 Then
+        qfriendDone = False
+        qfriendFailed = False
+        qfriendTerminal = False
+        qfriendRecovery = False
+    ElseIf taskId = 55 Then
         friendDone = False
         friendFailed = False
     ElseIf taskId = 166 Then
@@ -80,7 +98,17 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
-    If currentTask = 55 Then
+    If IsTimedStamina(currentTask) Then
+        Call RecoverTimedStamina(currentTask)
+    End If
+    If currentTask = 56 Then
+        qfriendFailed = True
+        qfriendRecovery = True
+        qfriendTerminal = False
+        qfriendFailures = qfriendFailures + 1
+        qfriendPhase = "等待恢复"
+        Call Note("[Q友体力56] 保存原任务=" & resumeTask & " 失败次数=" & qfriendFailures)
+    ElseIf currentTask = 55 Then
         friendFailed = True
         friendFailures = friendFailures + 1
         friendPhase = "等待恢复"
@@ -107,8 +135,8 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 Then
-        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55")
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) Then
+        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
     If Not terminalConfirmed Then
@@ -123,7 +151,18 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 55 Then
+    If IsTimedStamina(currentTask) Then
+        Call CommitTimedStamina(currentTask)
+    ElseIf currentTask = 56 Then
+        qfriendDone = True
+        qfriendFailed = False
+        qfriendRecovery = False
+        qfriendCount = qfriendCount + 1
+        qfriendDue = TickCount() + qfriendInterval * 1000
+        qfriendFirst = False
+        qfriendPhase = "完成"
+        Call Note("[Q友体力56] 返回大厅连续确认后提交 次数=" & qfriendCount & " 间隔秒=" & qfriendInterval)
+    ElseIf currentTask = 55 Then
         friendDone = True
         friendFailed = False
         friendCount = friendCount + 1

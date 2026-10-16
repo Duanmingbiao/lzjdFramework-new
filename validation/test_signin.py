@@ -1,3 +1,4 @@
+from historical_source import before_stamina
 from historical_source import before_monthly
 import unittest,json,hashlib,re
 from pathlib import Path
@@ -71,13 +72,13 @@ class SignEvidence(unittest.TestCase):
   allowed={'app/入口.mq','common/配置读取.mq','common/任务状态.mq','common/任务注册.mq','common/任务分派.mq','common/前台监控.mq','common/图色参数.mq','ui/最小配置.uip'}
   for rel,h in json.loads((E/'修改前基线.json').read_text('utf-8')).items():
    self.assertEqual(hashlib.sha256((E/'before'/Path(rel).with_suffix('.txt')).read_bytes()).hexdigest(),h)
-   if rel not in allowed:self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)
+   if rel not in allowed:self.assertEqual(hashlib.sha256(before_stamina(ROOT/rel).read_bytes()).hexdigest(),h,rel)
  def test_exact_raw_conversion_and_append_only_catalog(self):
   raw=json.loads((E/'原始图色.json').read_text('utf-8'));converted=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(len(raw['patterns']),12);self.assertEqual(len(converted),10);self.assertEqual(hashlib.sha256(Path(raw['source']).read_bytes()).hexdigest(),raw['sha256'])
   source=(ROOT/'common/图色参数.mq').read_text('utf-8-sig')
   for item in converted:
    a=next(x for x in raw['patterns'] if x['name']==item['name']);d=item['definition'];self.assertEqual(d[4:],[a['main'],a['offsets'],1,0.9]);self.assertEqual(d[:4],[0,0,719,1279] if a['region']==[0,0,0,0] else a['region']);self.assertIn(','.join(json.dumps(x,ensure_ascii=False) for x in d)+',foundX,foundY',source)
-  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));new=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in new if not x['name'].startswith(('166_','055_'))],old+converted)
+  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));new=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in new if not x['name'].startswith(('166_','055_','056_','050_'))],old+converted)
  def test_recovery_monitor_only_accepts_additional_task(self):
   old=(E/'before/common/前台监控.txt').read_text('utf-8-sig');new=before_monthly(ROOT/'common/前台监控.mq').read_text('utf-8-sig');self.assertEqual(new,old.replace('currentTask = 168 Or currentTask = 169','currentTask = 168 Or currentTask = 169 Or currentTask = 167'))
  def test_ui_existing_controls_preserved_and_two_added(self):

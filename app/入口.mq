@@ -1,4 +1,8 @@
-﻿Dim friendEnabled, friendInterval, friendRegisteredTask, friendDone, friendFailed, friendCount, friendFailures, friendDue, friendFirst, friendPhase
+﻿Dim stamina50Failed, stamina50Phase, stamina50Restarts, stamina50Recoveries, stamina51Failed, stamina51Phase, stamina51Restarts, stamina51Recoveries, stamina52Failed, stamina52Phase, stamina52Restarts, stamina52Recoveries, stamina53Failed, stamina53Phase, stamina53Restarts, stamina53Recoveries, stamina54Failed, stamina54Phase, stamina54Restarts, stamina54Recoveries
+Dim staminaKeepDownload
+Dim staminaEnabled, staminaGem, staminaRecover, staminaExchange, staminaPhase, staminaRestartCount, staminaRecoveryCount, staminaTerminal, stamina50Due, stamina50Count, stamina50Failures, stamina50Done, stamina51Due, stamina51Count, stamina51Failures, stamina51Done, stamina52Due, stamina52Count, stamina52Failures, stamina52Done, stamina53Due, stamina53Count, stamina53Failures, stamina53Done, stamina54Due, stamina54Count, stamina54Failures, stamina54Done
+Dim qfriendEnabled, qfriendOneClick, qfriendInterval, qfriendRegisteredTask, qfriendDone, qfriendFailed, qfriendCount, qfriendFailures, qfriendDue, qfriendFirst, qfriendPhase, qfriendTerminal, qfriendRecovery
+Dim friendEnabled, friendInterval, friendRegisteredTask, friendDone, friendFailed, friendCount, friendFailures, friendDue, friendFirst, friendPhase
 // 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
 Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
 Dim GAME_PACKAGE, QQ_PACKAGE, stageName, foundX, foundY

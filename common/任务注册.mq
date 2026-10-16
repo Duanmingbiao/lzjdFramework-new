@@ -1,19 +1,25 @@
 ﻿Sub RegisterTasks()
+    qfriendRegisteredTask = 56
     friendRegisteredTask = 55
     registeredTask = 168
     rewardRegisteredTask = 169
     signRegisteredTask = 167
     monthRegisteredTask = 166
-    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55；使用唯一串行调度器")
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55、Q友体力56；定时体力50至54；使用唯一串行调度器")
 End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
-    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Then
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Or resumeTask = qfriendRegisteredTask Or IsTimedStamina(resumeTask) Then
         If resumeTask <> 0 Then
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    selected = SelectTimedStamina()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
     End If
     If mailEnabled And mailFirst Then
         SelectDueTask = registeredTask
@@ -33,6 +39,10 @@ Function SelectDueTask()
     End If
     If friendEnabled And friendFirst Then
         SelectDueTask = friendRegisteredTask
+        Exit Function
+    End If
+    If qfriendEnabled And qfriendFirst Then
+        SelectDueTask = qfriendRegisteredTask
         Exit Function
     End If
     selected = 0
@@ -71,6 +81,14 @@ Function SelectDueTask()
         If TickCount() >= friendDue Then
             If selected = 0 Or friendDue < selectedDue Then
                 selected = friendRegisteredTask
+                selectedDue = friendDue
+            End If
+        End If
+    End If
+    If qfriendEnabled Then
+        If TickCount() >= qfriendDue Then
+            If selected = 0 Or qfriendDue < selectedDue Then
+                selected = qfriendRegisteredTask
             End If
         End If
     End If

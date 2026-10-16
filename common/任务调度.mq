@@ -49,6 +49,9 @@
     If result = RESULT_OK And terminalConfirmed Then
         hallResult = ReturnToHall()
         Call Note("[流程] ReturnToHall() 返回=" & hallResult)
+        If IsTimedStamina(currentTask) Then
+            Call Note("[定时体力] 编号=" & currentTask & " 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
         If HandleForegroundRecovery() Then
             Exit Sub
         End If

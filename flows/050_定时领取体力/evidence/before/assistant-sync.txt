@@ -1,0 +1,11 @@
+{
+  "name": "龙珠激斗脚本",
+  "id": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+  "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "lastSynced": {
+    ".mq": "ca0e8576a290dd8d52c83974b81d0dee58ce10c38f1b2e4dea322c4939592040",
+    ".uip": "d58b2638925619fed581806850a397e83c55a2f4bc1a9c917d6852d8efde8ea6",
+    ".prop": "277620eb451edd534c59116305dbea59dc1a9fa19e5fdd36379c3679f7435de9"
+  },
+  "validation": "File sync verified by SHA256. Assistant UI loading, official compilation and device running are not verified."
+}

@@ -1,7 +1,13 @@
 ﻿Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 55 Then
+    If IsTimedStamina(taskId) Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteTimedStamina(taskId)
+    ElseIf taskId = 56 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteQQFriendStamina()
+    ElseIf taskId = 55 Then
         terminalConfirmed = False
         DispatchTask = ExecuteFriendEnergy()
     ElseIf taskId = 166 Then

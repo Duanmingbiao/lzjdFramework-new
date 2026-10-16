@@ -1,0 +1,44 @@
+{
+  "task": "定时领取体力",
+  "taskIds": [
+    50,
+    51,
+    52,
+    53,
+    54
+  ],
+  "professionalEvidence": "root.706及root.787/788活动入口，root.800时段分派，root.816配置初始化",
+  "implemented": true,
+  "staticChecks": "通过27个MQ文件",
+  "pythonControlFlowTests": {
+    "count": 275,
+    "passed": true
+  },
+  "officialAssistant38Compilation": "待用户打包确认",
+  "leidianRuntime": "待用户实机确认，OCR等价性待核对",
+  "oldSixBusinesses": "逐字节未修改，测试已验证",
+  "scheduledOnly": true,
+  "defaultFlags": "主开关和三个子开关均false",
+  "syncedTarget": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "sha256Match": {
+    ".mq": "8f23812af17b160e922b63b60e8c2ac5a23553a47b1046ffe68e32f9404b2cc3",
+    ".uip": "3ab79aeb5bbff60bdc105021c20c3c767e15d34fafe53f476eb04d43ff469c88"
+  },
+  "assistantOlderFile": "确认仅回退56配置修复前完整归档版本，备份后恢复已授权基线再同步",
+  "changedIntegrationFiles": [
+    "app/入口.mq",
+    "common/前台监控.mq",
+    "common/配置读取.mq",
+    "common/任务状态.mq",
+    "common/图色参数.mq",
+    "common/游戏控制.mq",
+    "common/任务注册.mq",
+    "common/任务分派.mq",
+    "common/任务调度.mq",
+    "ui/最小配置.uip",
+    "project.json",
+    "assistant-sync.json",
+    "evidence/图色参数.json"
+  ],
+  "gitCommitPush": false
+}

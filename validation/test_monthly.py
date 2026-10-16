@@ -1,3 +1,4 @@
+from historical_source import before_stamina
 from historical_source import before_friend
 import unittest,json,hashlib,re
 from pathlib import Path
@@ -105,13 +106,13 @@ class MonthlyEvidence(unittest.TestCase):
   allowed={'app/入口.mq','common/配置读取.mq','common/任务状态.mq','common/任务注册.mq','common/任务分派.mq','common/前台监控.mq','common/图色参数.mq','ui/最小配置.uip'}
   for rel,h in json.loads((E/'修改前基线.json').read_text('utf-8')).items():
    self.assertEqual(hashlib.sha256((E/'before'/Path(rel).with_suffix('.txt')).read_bytes()).hexdigest(),h)
-   if rel not in allowed:self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)
+   if rel not in allowed:self.assertEqual(hashlib.sha256(before_stamina(ROOT/rel).read_bytes()).hexdigest(),h,rel)
  def test_twenty_patterns_preserve_colors_regions_and_direction(self):
   raw=json.loads((E/'原始图色.json').read_text('utf-8'));converted=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(len(converted),20)
   for src in raw['sources']:self.assertEqual(hashlib.sha256(Path(src['file']).read_bytes()).hexdigest(),src['sha256'])
   for c in converted:
    r=next(x for x in raw['patterns'] if x['name']==c['name']);d=c['definition'];self.assertEqual(d[4:6],[r['main'],r['offsets']]);self.assertEqual(d[:4],[0,0,719,1279] if r['region']==[0,0,0,0] else r['region']);self.assertEqual(d[7],0.9)
-  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));now=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in now if not x['name'].startswith('055_')],old+converted)
+  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));now=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in now if not x['name'].startswith(('055_','056_','050_'))],old+converted)
  def test_monitor_change_only_recognizes_new_task(self):
   old=(E/'before/common/前台监控.txt').read_text('utf-8-sig');now=before_friend(ROOT/'common/前台监控.mq').read_text('utf-8-sig');self.assertEqual(now,old.replace('Or currentTask = 167 Then','Or currentTask = 167 Or currentTask = 166 Then'))
  def test_existing_ui_preserved_three_settings_added(self):

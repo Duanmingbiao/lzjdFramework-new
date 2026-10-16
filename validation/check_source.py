@@ -10,7 +10,7 @@ for p in sources:
  defs.update(re.findall(r'(?m)^(?:Function|Sub) (\w+)\(',t))
  calls.update(re.findall(r'\bCall (\w+)\(',t))
  if any(k in t.lower() for k in ['adb ', 'keycode_back','keycode back','accessibility']):issues.append('forbidden API: '+str(p))
- if any(x in str(p) for x in ['168_', '169_', '167_', '166_', '055_']) and re.search(r'\b(?:KillApp|RunApp|CommitTask|SchedulerStep)\b',t):issues.append('business boundary: '+str(p))
+ if any(x in str(p) for x in ['168_', '169_', '167_', '166_', '055_', '056_', '050_']) and re.search(r'\b(?:KillApp|RunApp|CommitTask|SchedulerStep)\b',t):issues.append('business boundary: '+str(p))
  if p.suffix=='.mq' and re.search(r'(?m)^local |LuaAuxLib|GK\.',t):issues.append('Lua syntax: '+str(p))
 # Function return assignment is legal; reading a bare function name is not.
 for path in sources:
@@ -24,7 +24,7 @@ for path in sources:
     issues.append('bare function reference: '+str(path)+':'+str(number)+': '+name)
 
 if calls-defs:issues.append('unresolved Call: '+str(calls-defs))
-if c['registeredTasks']!=[168,169,167,166,55]:issues.append('unexpected business registration')
+if c['registeredTasks']!=[168,169,167,166,55,56,50,51,52,53,54]:issues.append('unexpected business registration')
 for p in json.loads((R/'evidence/图色参数.json').read_text('utf-8')):
  x1,y1,x2,y2=p['definition'][:4]
  if not(0<=x1<=x2<=719 and 0<=y1<=y2<=1279):issues.append('invalid rectangle '+p['name'])

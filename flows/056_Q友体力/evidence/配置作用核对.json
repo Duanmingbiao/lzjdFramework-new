@@ -1,0 +1,26 @@
+{
+  "taskId": 56,
+  "enabled": {
+    "professionalKey": "日常_QQ好友体力",
+    "projectKey": "Q友体力启用",
+    "default": false
+  },
+  "oneClick": {
+    "professionalKey": "日常_QQ好友体力_一键领取",
+    "projectKey": "Q友一键领取",
+    "default": false,
+    "originalBusinessRead": "好友体力.一键领取",
+    "projectRead": "qfriendOneClick",
+    "fix": "用户批准修正串用，56只读自己开关"
+  },
+  "interval": {
+    "initialProfessional": 3600,
+    "professionalBodyNextTimeSeconds": 14400,
+    "projectDefault": 14400
+  },
+  "terminal": {
+    "single": "Q友页+OCR精确60/60或6060",
+    "batch": "用户批准专业版双点击完成",
+    "protectiveExit": "超时恢复，不成功"
+  }
+}

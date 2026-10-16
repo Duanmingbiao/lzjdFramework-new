@@ -41,3 +41,9 @@ def before_friend(path):
  rel=path.relative_to(ROOT)
  backup=ROOT/'flows/055_好友体力/evidence/before'/rel.with_suffix('.txt')
  return backup if backup.exists() else path
+
+def before_stamina(path):
+ path=Path(path)
+ rel=path.relative_to(ROOT)
+ backup=ROOT/'flows/050_定时领取体力/evidence/before'/rel.with_suffix('.txt')
+ return backup if backup.exists() else path

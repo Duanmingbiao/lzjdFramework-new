@@ -1,0 +1,204 @@
+﻿Sub QFriendStage(value)
+    qfriendPhase = value
+    Call SetStage(value)
+    Call Note("[Q友体力56] 当前阶段=" & value)
+End Sub
+Function QFriendTap(x, y, waitMs)
+    QFriendTap = False
+    // Public foreground grace remains five seconds; never count a skipped click.
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 点击出口=前台等待期间公共超时或中断，保留56恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[Q友体力56] 点击出口=动作前公共超时或中断，未执行点击")
+        Exit Function
+    End If
+    Call Note("[Q友体力56] 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    If Not BusinessExpired() Then
+        QFriendTap = True
+    Else
+        Call Note("[Q友体力56] 点击出口=动作等待期间公共超时或中断，不计为完成")
+    End If
+End Function
+Function QFriendMatch(name)
+    Dim matched
+    matched = MatchPattern(name)
+    QFriendMatch = matched
+    If matched Then
+        Call Note("[Q友体力56] 命中模板=" & name & " 搜索区域=0,0,719,1279 相似度=0.9 方向=1 锚点=" & foundX & "," & foundY)
+    End If
+End Function
+Function ExecuteQQFriendStamina()
+    Dim entryProgress, lastClaim, lastScroll, actionStarted, scrollCount, claimRun, scrollLocked, anchorX, anchorY, text, lastText, idleMs
+    ExecuteQQFriendStamina = RESULT_TIMEOUT
+    terminalConfirmed = False
+    qfriendTerminal = False
+    entryProgress = TickCount()
+    Call QFriendStage("Q友体力56进入")
+    Call Note("[Q友体力56] 业务入口；一键领取配置=" & qfriendOneClick)
+    Do
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 超时阶段=进入；公共超时或前台中断，等待公共恢复56")
+            Exit Function
+        End If
+        If QFriendMatch("056_大厅入口") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[Q友体力56] 点击偏移=538,-28")
+            If Not QFriendTap(anchorX + 538, anchorY - 28, 1000) Then
+                Exit Function
+            End If
+            entryProgress = TickCount()
+        End If
+        If QFriendMatch("056_游戏好友页") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[Q友体力56] 切换QQ好友页签 点击偏移=10,-1046 等待毫秒=0")
+            If Not QFriendTap(anchorX + 10, anchorY - 1046, 0) Then
+                Exit Function
+            End If
+        End If
+        If QFriendMatch("056_Q友页面") Then
+            Call Note("[Q友体力56] Q友页面确认 等待毫秒=6000")
+            // Reuse interruptible wait in public TouchPoint only for clicks; this is an explicit source Delay.
+            Delay 6000
+            Exit Do
+        End If
+        If TickCount() - entryProgress > 20000 Then
+            Call Note("[Q友体力56] 失败原因=进入20秒无进展；不沿用原版标完成，交公共超时恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    actionStarted = TickCount()
+    lastScroll = actionStarted
+    Call QFriendStage("Q友体力56第一组")
+    Do
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 超时阶段=第一组；公共超时或前台中断")
+            Exit Function
+        End If
+        If QFriendMatch("056_Q友页面") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[Q友体力56] 第一组双点击 点击偏移=250,-110 等待毫秒=500/1000；不作为已赠送画面证明")
+            If Not QFriendTap(anchorX + 250, anchorY - 110, 500) Then
+                Exit Function
+            End If
+            If Not QFriendTap(anchorX + 250, anchorY - 110, 1000) Then
+                Exit Function
+            End If
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    lastClaim = entryProgress
+    scrollCount = 0
+    claimRun = 0
+    scrollLocked = True
+    lastText = "<未识别>"
+    Call QFriendStage("Q友体力56领取")
+    Do
+        If BusinessExpired() Then
+            Call Note("[Q友体力56] 超时阶段=领取；公共超时或前台中断，保留56")
+            Exit Function
+        End If
+        If qfriendOneClick Then
+            If QFriendMatch("056_Q友页面") Then
+                anchorX = foundX
+                anchorY = foundY
+                Call Note("[Q友体力56] 一键领取 点击偏移=460,-110 等待毫秒=500/0")
+                If Not QFriendTap(anchorX + 460, anchorY - 110, 500) Then
+                    Exit Function
+                End If
+                If Not QFriendTap(anchorX + 460, anchorY - 110, 0) Then
+                    Exit Function
+                End If
+                Call Note("[Q友体力56] 业务终态确认=用户批准的批量双点击完成；等待公共返回大厅")
+                Exit Do
+            End If
+        Else
+            If TickCount() - lastScroll > 2000 And Not scrollLocked Then
+                If QFriendMatch("056_Q友页面") Then
+                    anchorX = foundX
+                    anchorY = foundY
+                    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+                        Call Note("[Q友体力56] 滚动暂停：游戏不在前台")
+                    Else
+                        ReleaseCapture
+                        If scrollCount < 10 Then
+                            Call Note("[Q友体力56] 向上滚动 偏移250,-200到250,-580 时长200 等待1000")
+                            Swipe anchorX + 250, anchorY - 200, anchorX + 250, anchorY - 580, 200
+                            Delay 1000
+                        ElseIf scrollCount < 20 Then
+                            Call Note("[Q友体力56] 向下滚动 偏移250,-580到250,-200 时长200 等待1000")
+                            Swipe anchorX + 250, anchorY - 580, anchorX + 250, anchorY - 200, 200
+                            Delay 1000
+                        Else
+                            scrollCount = 0
+                        End If
+                        scrollCount = scrollCount + 1
+                        claimRun = 0
+                        Call Progress()
+                    End If
+                End If
+                lastScroll = TickCount()
+            End If
+            If QFriendMatch("056_单项领取") Then
+                anchorX = foundX
+                anchorY = foundY
+                Call Note("[Q友体力56] 单项领取 点击偏移=0,0 等待毫秒=500")
+                If Not QFriendTap(anchorX, anchorY, 500) Then
+                    Exit Function
+                End If
+                lastClaim = TickCount()
+                lastScroll = TickCount()
+                claimRun = claimRun + 1
+                Call Progress()
+            End If
+            If QFriendMatch("056_Q友页面") Then
+                ReleaseCapture
+                text = Image.OcrText(555, 215, 623, 248, 0, 0)
+                If IsNull(text) Then
+                    text = ""
+                End If
+                If text <> lastText Then
+                    Call Note("[Q友体力56] OCR 搜索区域=555,215,623,248 参数0 文本=" & text)
+                    lastText = text
+                End If
+                If text = "60/60" Or text = "6060" Then
+                    If Not BusinessExpired() Then
+                        Call Note("[Q友体力56] 业务终态确认=Q友页OCR满额；等待公共返回大厅")
+                        Exit Do
+                    End If
+                End If
+            End If
+            idleMs = TickCount() - lastClaim
+            If idleMs > 2000 And idleMs <= 20000 Then
+                scrollLocked = False
+            ElseIf idleMs > 30000 Then
+                Call Note("[Q友体力56] 失败原因=30秒无领取进展且未确认OCR终态；交公共恢复56")
+                Exit Function
+            End If
+            If TickCount() - actionStarted > 180000 Or claimRun > 10 Then
+                Call Note("[Q友体力56] 失败原因=专业版操作保护出口，未确认终态；交公共恢复56")
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[Q友体力56] 终态提交前公共超时或前台中断，不返回成功")
+        Exit Function
+    End If
+    qfriendTerminal = True
+    terminalConfirmed = True
+    Call QFriendStage("Q友体力56待返回大厅")
+    ExecuteQQFriendStamina = RESULT_OK
+    Call Note("[Q友体力56] 业务出口=成功；尚未提交完成次数")
+End Function
