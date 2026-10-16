@@ -1,0 +1,61 @@
+﻿Sub SchedulerStep()
+    Dim selected, result, hallResult, committed
+    committed = HandleForegroundRecovery()
+    selected = SelectDueTask()
+    If selected = 0 Then
+        If foregroundLoginPending Then
+            result = EnsureGameHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If result = RESULT_OK Then
+                foregroundLoginPending = False
+            Else
+                Call RestartGame()
+            End If
+        End If
+        Exit Sub
+    End If
+    Call SaveCurrentTask(selected)
+    result = EnsureGameHall()
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    If result <> RESULT_OK Then
+        loginFailures = loginFailures + 1
+        Call Note("登录总超时，次数=" & loginFailures)
+        Call RestartGame()
+        Exit Sub
+    End If
+    foregroundLoginPending = False
+    businessStarted = TickCount()
+    result = DispatchTask(selected)
+    Do While result = RESULT_WAIT
+        If BusinessExpired() Then
+            result = RESULT_TIMEOUT
+        Else
+            Delay 20
+            result = DispatchTask(selected)
+        End If
+    Loop
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    If result = RESULT_OK And terminalConfirmed Then
+        hallResult = ReturnToHall()
+        If HandleForegroundRecovery() Then
+            Exit Sub
+        End If
+        If hallResult = RESULT_OK Then
+            committed = CommitTask(True)
+            If committed Then
+                Exit Sub
+            End If
+        End If
+    End If
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    Call SaveRecovery()
+    Call RestartGame()
+End Sub

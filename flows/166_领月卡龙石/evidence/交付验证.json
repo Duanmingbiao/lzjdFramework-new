@@ -1,0 +1,29 @@
+{
+  "time": "2026-10-16T13:43:27.595180",
+  "static": {
+    "modules": 23,
+    "issues": []
+  },
+  "simulatedTests": {
+    "total": 209,
+    "monthlyAdded": 34,
+    "passed": true
+  },
+  "sync": {
+    ".mq": {
+      "targetSHA256": "32cab8d77ab24047cfe8732f1134a94047f92d769b657ea27370574634a01282",
+      "buildSHA256": "32cab8d77ab24047cfe8732f1134a94047f92d769b657ea27370574634a01282",
+      "equal": true,
+      "sameText": true
+    },
+    ".uip": {
+      "targetSHA256": "469abc333c1bf88cb4546b81e8126ef657026df0e2d2264370ed9b7c408742c4",
+      "buildSHA256": "469abc333c1bf88cb4546b81e8126ef657026df0e2d2264370ed9b7c408742c4",
+      "equal": true,
+      "sameText": true
+    }
+  },
+  "officialCompilation": "未执行，由用户编译",
+  "deviceRun": "未执行，由用户重新打包测试",
+  "ocrDifference": "专业版paddleV5；标准3.8 Image.OcrText，保留区域、文本判断；需要客户端文字识别库"
+}

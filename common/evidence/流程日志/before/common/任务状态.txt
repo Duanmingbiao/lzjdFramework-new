@@ -1,0 +1,92 @@
+﻿Sub NewSession()
+    currentTask = 0
+    resumeTask = 0
+    mailDone = False
+    mailFailed = False
+    mailCount = 0
+    mailFailures = 0
+    mailDue = 0
+    mailFirst = True
+    mailPhase = "未开始"
+    rewardDone = False
+    rewardFailed = False
+    rewardCount = 0
+    rewardFailures = 0
+    rewardDue = 0
+    rewardFirst = True
+    rewardPhase = "未开始"
+    businessStarted = 0
+    loginStarted = 0
+    progressAt = 0
+    hallMisses = 0
+    hallExtended = False
+    hallActionIndex = 0
+    hallFrames = 0
+    hallSampleAt = TickCount() - 500
+    qqLastForeground = ""
+    qqLastDiagnosticAt = TickCount() - 5000
+    loginFailures = 0
+    stageName = "新会话"
+    terminalConfirmed = False
+End Sub
+Sub SaveCurrentTask(taskId)
+    currentTask = taskId
+    resumeTask = taskId
+    terminalConfirmed = False
+    If taskId = 168 Then
+        mailDone = False
+        mailFailed = False
+    ElseIf taskId = 169 Then
+        rewardDone = False
+        rewardFailed = False
+    End If
+End Sub
+Sub SaveRecovery()
+    resumeTask = currentTask
+    If currentTask = 168 Then
+        mailFailed = True
+        mailFailures = mailFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & mailFailures)
+    ElseIf currentTask = 169 Then
+        rewardFailed = True
+        rewardFailures = rewardFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & rewardFailures)
+    End If
+End Sub
+Function CommitTask(hallConfirmed)
+    CommitTask = False
+    If currentTask <> 168 And currentTask <> 169 Then
+        Exit Function
+    End If
+    If Not terminalConfirmed Then
+        Exit Function
+    End If
+    If Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    If currentTask = 168 Then
+        mailDone = True
+        mailFailed = False
+        mailCount = mailCount + 1
+        mailDue = TickCount() + mailInterval * 1000
+        mailFirst = False
+        mailPhase = "完成"
+        Call Note("邮件提交完成，次数=" & mailCount & "，间隔秒=" & mailInterval)
+    ElseIf currentTask = 169 Then
+        rewardDone = True
+        rewardFailed = False
+        rewardCount = rewardCount + 1
+        rewardDue = TickCount() + rewardInterval * 1000
+        rewardFirst = False
+        rewardPhase = "完成"
+        Call Note("任务奖励169提交完成，次数=" & rewardCount & "，间隔秒=" & rewardInterval)
+    End If
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    CommitTask = True
+    Call EndForegroundCommit()
+End Function

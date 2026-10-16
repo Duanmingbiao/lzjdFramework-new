@@ -1,0 +1,19 @@
+{
+  "staticModules": 23,
+  "staticIssues": [],
+  "simulationTests": 215,
+  "officialCompilation": "未执行",
+  "deviceRun": "待用户重新打包测试",
+  "synced": {
+    ".mq": {
+      "sameText": true,
+      "targetSHA256": "08d03871d1d02ef216efa19606d373ab5a89bcd56228c67399a1fc7cd3cbd50c",
+      "buildSHA256": "08d03871d1d02ef216efa19606d373ab5a89bcd56228c67399a1fc7cd3cbd50c"
+    },
+    ".uip": {
+      "sameText": true,
+      "targetSHA256": "469abc333c1bf88cb4546b81e8126ef657026df0e2d2264370ed9b7c408742c4",
+      "buildSHA256": "469abc333c1bf88cb4546b81e8126ef657026df0e2d2264370ed9b7c408742c4"
+    }
+  }
+}

@@ -1,0 +1,111 @@
+﻿Function MailEmpty()
+    MailEmpty = True
+    If MatchPattern("邮件空一") Then
+        Exit Function
+    End If
+    MailEmpty = MatchPattern("邮件空二")
+End Function
+Function MailClaimable()
+    MailClaimable = True
+    If MatchPattern("邮件可领一") Then
+        Exit Function
+    End If
+    MailClaimable = MatchPattern("邮件可领二")
+End Function
+Sub MailStage(value)
+    mailPhase = value
+    Call SetStage(value)
+End Sub
+Function ReadMessages()
+    Dim localStarted, elapsed
+    ReadMessages = RESULT_TIMEOUT
+    localStarted = TickCount()
+    Call MailStage("消息邮件自动阅读")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If MatchPattern("邮件关闭弹窗") Then
+            Call TouchPoint(foundX, foundY, 200)
+            localStarted = TickCount()
+        End If
+        If MatchPattern("邮件消息打开") Then
+            Call TouchPoint(foundX, foundY, 200)
+        End If
+        elapsed = TickCount() - localStarted
+        If elapsed > 2000 And elapsed <= 5000 Then
+            If MatchPattern("邮件消息终态") Then
+                ReadMessages = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If elapsed > 5000 Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteMail()
+    Dim claimStarted, messageResult
+    ExecuteMail = RESULT_TIMEOUT
+    Call MailStage("进入邮件")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If MatchPattern("邮件专业入口") Then
+            Call TouchPoint(25, 830, 200)
+        End If
+        If MatchPattern("低客户端提示") Then
+            Call TouchPoint(foundX, foundY, 1500)
+        End If
+        If MailEmpty() Then
+            terminalConfirmed = True
+            Call MailStage("入口确认无奖励")
+            ExecuteMail = RESULT_OK
+            Exit Function
+        End If
+        If MailClaimable() Then
+            Delay 200
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    Call Progress()
+    claimStarted = TickCount()
+    Call MailStage("领取邮件奖励")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If MailClaimable() Then
+            Call TouchPoint(foundX + 319, foundY - 90, 200)
+            Call Progress()
+        End If
+        If MatchPattern("获得奖励") Then
+            Call TouchPoint(foundX, foundY, 200)
+            Call Progress()
+        End If
+        If MatchPattern("邮件关闭弹窗") Then
+            Call TouchPoint(foundX, foundY, 200)
+            Call Progress()
+        End If
+        If MailEmpty() Then
+            Call Progress()
+            Exit Do
+        End If
+        If TickCount() - claimStarted > 5000 Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If messageMode = 1 Then
+        messageResult = ReadMessages()
+        If messageResult <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    terminalConfirmed = True
+    Call MailStage("邮件业务终态确认")
+    ExecuteMail = RESULT_OK
+End Function

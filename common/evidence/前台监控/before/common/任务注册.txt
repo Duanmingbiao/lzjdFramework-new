@@ -1,0 +1,39 @@
+﻿Sub RegisterTasks()
+    registeredTask = 168
+    rewardRegisteredTask = 169
+    Call Note("注册邮件168和任务奖励169；使用唯一串行调度器")
+End Sub
+Function SelectDueTask()
+    Dim selected, selectedDue
+    SelectDueTask = 0
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Then
+        If resumeTask <> 0 Then
+            SelectDueTask = resumeTask
+            Exit Function
+        End If
+    End If
+    If mailEnabled And mailFirst Then
+        SelectDueTask = registeredTask
+        Exit Function
+    End If
+    If rewardEnabled And rewardFirst Then
+        SelectDueTask = rewardRegisteredTask
+        Exit Function
+    End If
+    selected = 0
+    selectedDue = 0
+    If mailEnabled Then
+        If TickCount() >= mailDue Then
+            selected = registeredTask
+            selectedDue = mailDue
+        End If
+    End If
+    If rewardEnabled Then
+        If TickCount() >= rewardDue Then
+            If selected = 0 Or rewardDue < selectedDue Then
+                selected = rewardRegisteredTask
+            End If
+        End If
+    End If
+    SelectDueTask = selected
+End Function

@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "日常任务",
+    "公共设置"
+  ],
+  "configurationCount": 8,
+  "configurationSemanticsUnchanged": true,
+  "all19MQModulesUnchanged": true,
+  "assistantMQ_LC_PROP_Unchanged": true,
+  "uipSHA256": "d4bbac2d00cc7d9c90985d510a89d0b8332cd8f9ab7d714a4fe95cc75c00c63d",
+  "verification": "UIP syntax, encoding and 104 regression tests; native display pending user debugging"
+}

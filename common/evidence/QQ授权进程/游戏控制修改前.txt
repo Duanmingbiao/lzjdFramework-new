@@ -1,0 +1,23 @@
+﻿Sub StartGame()
+    If Sys.AppIsFront(QQ_PACKAGE) Then
+        If Sys.IsRunning(GAME_PACKAGE) Then
+            Exit Sub
+        End If
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call BeginForegroundRecovery()
+        RunApp GAME_PACKAGE
+        Call EndForegroundRecovery()
+    End If
+End Sub
+Sub RestartGame()
+    Call BeginForegroundRecovery()
+    foregroundLoginPending = True
+    Call Note("重启游戏；保持同一会话及待恢复业务=" & resumeTask)
+    KillApp GAME_PACKAGE
+    // New-engine process shutdown settling delay, not a recovered task delay.
+    Delay 1000
+    loginStarted = TickCount()
+    RunApp GAME_PACKAGE
+    Call EndForegroundRecovery()
+End Sub

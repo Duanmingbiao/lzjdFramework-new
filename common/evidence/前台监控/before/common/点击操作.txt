@@ -1,0 +1,14 @@
+﻿Sub TouchPoint(x, y, waitMs)
+    ReleaseCapture
+    Tap x, y
+    If waitMs > 0 Then
+        Delay waitMs
+    End If
+End Sub
+Function TouchPattern(name, waitMs)
+    TouchPattern = False
+    If MatchPattern(name) Then
+        Call TouchPoint(foundX, foundY, waitMs)
+        TouchPattern = True
+    End If
+End Function

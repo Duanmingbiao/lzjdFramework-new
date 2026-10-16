@@ -1,0 +1,57 @@
+-- Static reconstruction only; not executed.
+local L5_1, L6_1, L7_1, L8_1, L9_1, L10_1, L11_1, L12_1, L13_1, L14_1, L15_1, L16_1, L17_1, L18_1, L19_1, L20_1
+L5_1 = nil
+L6_1 = nil
+L7_1 = nil
+L8_1 = {}
+L7_1 = L8_1
+L8_1 = nil
+L8_1 = A4_1
+L9_1 = LuaAuxLib
+L9_1 = L9_1.OcrTextEx
+L10_1 = A0_1
+L11_1 = A1_1
+L12_1 = A2_1
+L13_1 = A3_1
+L14_1 = 0
+L15_1 = L8_1
+L16_1 = {}
+L16_1.modelType = "paddleV5"
+L9_1 = L9_1(L10_1, L11_1, L12_1, L13_1, L14_1, L15_1, L16_1)
+L6_1 = L9_1
+L9_1 = pairs
+L10_1 = L6_1
+L9_1, L10_1, L11_1 = L9_1(L10_1)
+for L12_1, L13_1 in L9_1, L10_1, L11_1 do
+  L14_1 = pairs
+  L15_1 = L13_1
+  L14_1, L15_1, L16_1 = L14_1(L15_1)
+  for L17_1, L18_1 in L14_1, L15_1, L16_1 do
+    if L17_1 == "text" and L18_1 ~= "" then
+      L19_1 = LuaAuxLib
+      L19_1 = L19_1.TableSize
+      L20_1 = L7_1
+      L19_1 = L19_1(L20_1)
+      L19_1 = L19_1 - 1
+      L19_1 = L19_1 + 1
+      L19_1 = L19_1 + 1
+      L7_1[L19_1] = L18_1
+    end
+  end
+end
+L9_1 = LuaAuxLib
+L9_1 = L9_1.TableSize
+L10_1 = L7_1
+L9_1 = L9_1(L10_1)
+L9_1 = L9_1 - 1
+if L9_1 == -1 then
+  L5_1 = false
+else
+  L9_1 = table
+  L9_1 = L9_1.concat
+  L10_1 = L7_1
+  L11_1 = "|"
+  L9_1 = L9_1(L10_1, L11_1)
+  L5_1 = L9_1
+end
+return L5_1

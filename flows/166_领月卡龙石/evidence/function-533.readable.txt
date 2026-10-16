@@ -1,0 +1,1220 @@
+-- Static reconstruction only; not executed.
+local L0_1, L1_1, L2_1, L3_1, L4_1, L5_1, L6_1, L7_1, L8_1, L9_1, L10_1, L11_1, L12_1, L13_1, L14_1, L15_1, L16_1, L17_1, L18_1, L19_1, L20_1
+L0_1 = counter
+L0_1()
+L0_1 = (...)
+L1_1 = _ENV["nil"]
+if L0_1 == L1_1 then
+  return
+end
+L0_1 = true
+L1_1 = false
+L2_1 = 0
+L3_1 = 0.9
+L4_1 = nil
+L5_1 = nil
+L6_1 = 0
+L7_1 = 0
+L8_1 = 0
+L9_1 = 0
+L10_1 = ""
+L11_1 = ""
+L12_1 = type
+L13_1, L14_1, L15_1, L16_1, L17_1, L18_1, L19_1, L20_1 = ...
+L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1, L18_1, L19_1, L20_1)
+if L12_1 == "table" then
+  L4_1 = (...)
+else
+  L12_1 = {}
+  L13_1, L14_1, L15_1, L16_1, L17_1, L18_1, L19_1, L20_1 = ...
+  L12_1[1] = L13_1
+  L12_1[2] = L14_1
+  L12_1[3] = L15_1
+  L12_1[4] = L16_1
+  L12_1[5] = L17_1
+  L12_1[6] = L18_1
+  L12_1[7] = L19_1
+  L12_1[8] = L20_1
+  L4_1 = L12_1
+end
+L12_1 = pcall
+
+function L13_1()
+  local L0_2, L1_2, L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2, L9_2, L10_2
+  L0_2 = _ENV
+  L0_2 = #L0_2
+  if L0_2 == 1 then
+    L0_2 = _ENV[1]
+    upvalue1 = L0_2
+  else
+    L0_2 = _ENV
+    L0_2 = #L0_2
+    if L0_2 == 2 then
+      L0_2 = _ENV[1]
+      upvalue1 = L0_2
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[2]
+      L0_2 = L0_2(L1_2)
+      if L0_2 == "string" then
+        L0_2 = _ENV[2]
+        upvalue3 = L0_2
+      else
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[2]
+        L0_2 = L0_2(L1_2)
+        if L0_2 == "number" then
+          L0_2 = _ENV[2]
+          if 0 < L0_2 then
+            L0_2 = _ENV[2]
+            if L0_2 < 1 then
+              L0_2 = _ENV[2]
+              upvalue4 = L0_2
+          end
+          else
+            L0_2 = _ENV[2]
+            upvalue5 = L0_2
+          end
+        else
+          L0_2 = upvalue2.type
+          L1_2 = _ENV[2]
+          L0_2 = L0_2(L1_2)
+          if L0_2 == "boolean" then
+            L0_2 = _ENV[2]
+            upvalue6 = L0_2
+          end
+        end
+      end
+    else
+      L0_2 = _ENV
+      L0_2 = #L0_2
+      if L0_2 == 3 then
+        L0_2 = _ENV[1]
+        upvalue1 = L0_2
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[2]
+        L0_2 = L0_2(L1_2)
+        if L0_2 == "string" then
+          L0_2 = _ENV[2]
+          upvalue3 = L0_2
+        else
+          L0_2 = upvalue2.type
+          L1_2 = _ENV[2]
+          L0_2 = L0_2(L1_2)
+          if L0_2 == "number" then
+            L0_2 = _ENV[2]
+            if 0 < L0_2 then
+              L0_2 = _ENV[2]
+              if L0_2 < 1 then
+                L0_2 = _ENV[2]
+                upvalue4 = L0_2
+            end
+            else
+              L0_2 = _ENV[2]
+              upvalue5 = L0_2
+            end
+          else
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[2]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "boolean" then
+              L0_2 = _ENV[2]
+              upvalue6 = L0_2
+            end
+          end
+        end
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[3]
+        L0_2 = L0_2(L1_2)
+        if L0_2 == "number" then
+          L0_2 = _ENV[3]
+          if 0 < L0_2 then
+            L0_2 = _ENV[3]
+            if L0_2 < 1 then
+              L0_2 = _ENV[3]
+              upvalue4 = L0_2
+          end
+          else
+            L0_2 = _ENV[3]
+            upvalue5 = L0_2
+          end
+        else
+          L0_2 = upvalue2.type
+          L1_2 = _ENV[3]
+          L0_2 = L0_2(L1_2)
+          if L0_2 == "boolean" then
+            L0_2 = _ENV[3]
+            upvalue6 = L0_2
+          end
+        end
+      else
+        L0_2 = _ENV
+        L0_2 = #L0_2
+        if 3 < L0_2 then
+          L0_2 = _ENV
+          L0_2 = #L0_2
+          if L0_2 < 6 then
+            L0_2 = 0
+            L1_2 = 0
+            L2_2 = 0
+            L3_2 = 0
+            upvalue10 = L3_2
+            upvalue9 = L2_2
+            upvalue8 = L1_2
+            upvalue7 = L0_2
+            L0_2 = _ENV[1]
+            upvalue1 = L0_2
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[2]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "string" then
+              L0_2 = _ENV[2]
+              upvalue3 = L0_2
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[2]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "number" then
+                L0_2 = _ENV[2]
+                if 0 < L0_2 then
+                  L0_2 = _ENV[2]
+                  if L0_2 < 1 then
+                    L0_2 = _ENV[2]
+                    upvalue4 = L0_2
+                end
+                else
+                  L0_2 = _ENV[2]
+                  upvalue5 = L0_2
+                end
+              else
+                L0_2 = upvalue2.type
+                L1_2 = _ENV[2]
+                L0_2 = L0_2(L1_2)
+                if L0_2 == "boolean" then
+                  L0_2 = _ENV[2]
+                  upvalue6 = L0_2
+                end
+              end
+            end
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[3]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "number" then
+              L0_2 = _ENV[3]
+              if 0 < L0_2 then
+                L0_2 = _ENV[3]
+                if L0_2 < 1 then
+                  L0_2 = _ENV[3]
+                  upvalue4 = L0_2
+              end
+              else
+                L0_2 = _ENV[3]
+                upvalue5 = L0_2
+              end
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[3]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "boolean" then
+                L0_2 = _ENV[3]
+                upvalue6 = L0_2
+              end
+            end
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[4]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "number" then
+              L0_2 = _ENV[4]
+              if 0 < L0_2 then
+                L0_2 = _ENV[4]
+                if L0_2 < 1 then
+                  L0_2 = _ENV[4]
+                  upvalue4 = L0_2
+              end
+              else
+                L0_2 = _ENV[4]
+                upvalue5 = L0_2
+              end
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[4]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "boolean" then
+                L0_2 = _ENV[4]
+                upvalue6 = L0_2
+              end
+            end
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[5]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "number" then
+              L0_2 = _ENV[5]
+              if 0 < L0_2 then
+                L0_2 = _ENV[5]
+                if L0_2 < 1 then
+                  L0_2 = _ENV[5]
+                  upvalue4 = L0_2
+              end
+              else
+                L0_2 = _ENV[5]
+                upvalue5 = L0_2
+              end
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[5]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "boolean" then
+                L0_2 = _ENV[5]
+                upvalue6 = L0_2
+              else
+                L0_2 = upvalue2.type
+                L1_2 = _ENV[5]
+                L0_2 = L0_2(L1_2)
+                if L0_2 == "string" then
+                  L0_2 = _ENV[1]
+                  L1_2 = _ENV[2]
+                  L2_2 = _ENV[3]
+                  L3_2 = _ENV[4]
+                  upvalue10 = L3_2
+                  upvalue9 = L2_2
+                  upvalue8 = L1_2
+                  upvalue7 = L0_2
+                  L0_2 = _ENV[5]
+                  upvalue1 = L0_2
+                end
+              end
+            end
+        end
+        else
+          L0_2 = _ENV
+          L0_2 = #L0_2
+          if 6 <= L0_2 then
+            L0_2 = _ENV[1]
+            L1_2 = _ENV[2]
+            L2_2 = _ENV[3]
+            L3_2 = _ENV[4]
+            upvalue10 = L3_2
+            upvalue9 = L2_2
+            upvalue8 = L1_2
+            upvalue7 = L0_2
+            L0_2 = _ENV[5]
+            upvalue1 = L0_2
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[6]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "string" then
+              L0_2 = _ENV[6]
+              upvalue3 = L0_2
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[6]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "number" then
+                L0_2 = _ENV[6]
+                if 0 < L0_2 then
+                  L0_2 = _ENV[6]
+                  if L0_2 < 1 then
+                    L0_2 = _ENV[6]
+                    upvalue4 = L0_2
+                end
+                else
+                  L0_2 = _ENV[6]
+                  upvalue5 = L0_2
+                end
+              else
+                L0_2 = upvalue2.type
+                L1_2 = _ENV[6]
+                L0_2 = L0_2(L1_2)
+                if L0_2 == "boolean" then
+                  L0_2 = _ENV[6]
+                  upvalue6 = L0_2
+                end
+              end
+            end
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[7]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "number" then
+              L0_2 = _ENV[7]
+              if 0 < L0_2 then
+                L0_2 = _ENV[7]
+                if L0_2 < 1 then
+                  L0_2 = _ENV[7]
+                  upvalue4 = L0_2
+              end
+              else
+                L0_2 = _ENV[7]
+                upvalue5 = L0_2
+              end
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[7]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "boolean" then
+                L0_2 = _ENV[7]
+                upvalue6 = L0_2
+              end
+            end
+            L0_2 = upvalue2.type
+            L1_2 = _ENV[8]
+            L0_2 = L0_2(L1_2)
+            if L0_2 == "number" then
+              L0_2 = _ENV[8]
+              if 0 < L0_2 then
+                L0_2 = _ENV[8]
+                if L0_2 < 1 then
+                  L0_2 = _ENV[8]
+                  upvalue4 = L0_2
+              end
+              else
+                L0_2 = _ENV[8]
+                upvalue5 = L0_2
+              end
+            else
+              L0_2 = upvalue2.type
+              L1_2 = _ENV[8]
+              L0_2 = L0_2(L1_2)
+              if L0_2 == "boolean" then
+                L0_2 = _ENV[8]
+                upvalue6 = L0_2
+              end
+            end
+            L0_2 = _ENV
+            L0_2 = #L0_2
+            if L0_2 == 9 then
+              L0_2 = _ENV[9]
+              upvalue6 = L0_2
+            end
+          end
+        end
+      end
+    end
+  end
+  L0_2 = upvalue2.type
+  L1_2 = _ENV[1]
+  L0_2 = L0_2(L1_2)
+  if L0_2 == "number" then
+    L0_2 = upvalue2.type
+    L1_2 = _ENV[2]
+    L0_2 = L0_2(L1_2)
+    if L0_2 == "number" then
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[3]
+      L0_2 = L0_2(L1_2)
+      if L0_2 == "string" then
+        L0_2 = upvalue2.ms
+        L1_2 = "CmpColor"
+        L0_2(L1_2)
+        L0_2 = _ENV[1]
+        L1_2 = _ENV[2]
+        L2_2 = _ENV[3]
+        L3_2 = _ENV[4]
+        if L3_2 == nil then
+          L3_2 = 0.9
+          upvalue4 = L3_2
+        end
+        L3_2 = upvalue2.LuaAuxLib
+        L3_2 = L3_2.CmpColor
+        L4_2 = L0_2
+        L5_2 = L1_2
+        L6_2 = L2_2
+        L7_2 = upvalue4
+        L3_2 = L3_2(L4_2, L5_2, L6_2, L7_2)
+        upvalue2.x = L3_2
+        L3_2 = upvalue2.x
+        if -1 < L3_2 then
+          L3_2 = _ENV[4]
+          if L3_2 ~= false then
+            L3_2 = upvalue2.type
+            L4_2 = _ENV[4]
+            L3_2 = L3_2(L4_2)
+            if L3_2 ~= "number" then
+              L3_2 = upvalue2.TapClick
+              L4_2 = L0_2
+              L5_2 = L1_2
+              L3_2(L4_2, L5_2)
+          end
+          else
+            L3_2 = upvalue2.type
+            L4_2 = _ENV[4]
+            L3_2 = L3_2(L4_2)
+            if L3_2 == "number" then
+              L3_2 = upvalue2.type
+              L4_2 = _ENV[5]
+              L3_2 = L3_2(L4_2)
+              if L3_2 == "null" then
+                L3_2 = upvalue2.TapClick
+                L4_2 = L0_2
+                L5_2 = L1_2
+                L3_2(L4_2, L5_2)
+            end
+            else
+              L3_2 = upvalue2.type
+              L4_2 = _ENV[4]
+              L3_2 = L3_2(L4_2)
+              if L3_2 == "number" then
+                L3_2 = _ENV[5]
+                if L3_2 == true then
+                  L3_2 = upvalue2.TapClick
+                  L4_2 = L0_2
+                  L5_2 = L1_2
+                  L3_2(L4_2, L5_2)
+                end
+              end
+            end
+          end
+          L3_2 = {}
+          L4_2 = upvalue2.x
+          L5_2 = upvalue2["nil"]
+          L6_2 = upvalue2["nil"]
+          L3_2[1] = L4_2
+          L3_2[2] = L5_2
+          L3_2[3] = L6_2
+          upvalue11 = L3_2
+          L4_2 = upvalue11
+          return L4_2
+        end
+        L3_2 = {}
+        L4_2 = -1
+        L5_2 = upvalue2["nil"]
+        L6_2 = upvalue2["nil"]
+        L3_2[1] = L4_2
+        L3_2[2] = L5_2
+        L3_2[3] = L6_2
+        upvalue11 = L3_2
+        L4_2 = upvalue11
+        return L4_2
+      end
+    end
+  end
+  L0_2 = upvalue2.type
+  L1_2 = _ENV[1]
+  L0_2 = L0_2(L1_2)
+  if L0_2 == "number" then
+    L0_2 = upvalue2.type
+    L1_2 = _ENV[2]
+    L0_2 = L0_2(L1_2)
+    if L0_2 == "number" then
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[3]
+      L0_2 = L0_2(L1_2)
+      if L0_2 == "null" then
+        L0_2 = _ENV[1]
+        L1_2 = _ENV[2]
+        L2_2 = upvalue2.ms
+        L3_2 = "GetPixelColor2"
+        L2_2(L3_2)
+        L2_2 = upvalue2.CJ4
+        L3_2 = _ENV
+        L2_2(L3_2)
+        L2_2 = upvalue12
+        L3_2 = upvalue2["nil"]
+        if L2_2 ~= L3_2 then
+          L2_2 = upvalue12
+          if L2_2 ~= 0 then
+            L0_2 = _ENV[1]
+            L1_2 = _ENV[2]
+          end
+        end
+        L2_2 = upvalue2.LuaAuxLib
+        L2_2 = L2_2.GetPixelColor
+        L3_2 = L0_2
+        L4_2 = L1_2
+        L5_2 = 0
+        L2_2 = L2_2(L3_2, L4_2, L5_2)
+        upvalue2.x = L2_2
+        L2_2 = upvalue2.x
+        upvalue11 = L2_2
+        L2_2 = upvalue11
+        return L2_2
+      end
+    end
+  end
+  L0_2 = upvalue2.string
+  L0_2 = L0_2.find
+  L1_2 = upvalue1
+  L2_2 = "png"
+  L0_2 = L0_2(L1_2, L2_2)
+  upvalue13 = L0_2
+  L0_2 = upvalue13
+  if L0_2 then
+    L0_2 = upvalue10
+    L1_2 = upvalue5
+    if L0_2 == L1_2 then
+      L0_2 = 0
+      upvalue5 = L0_2
+    end
+    L0_2 = upvalue2.ms
+    L1_2 = "FindPicture2"
+    L0_2(L1_2)
+    L0_2 = upvalue2.CJ3
+    L1_2 = _ENV
+    L0_2(L1_2)
+    L0_2 = upvalue12
+    L1_2 = upvalue2["nil"]
+    if L0_2 ~= L1_2 then
+      L0_2 = upvalue12
+      if L0_2 ~= 0 then
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[1]
+        L0_2 = L0_2(L1_2)
+        if L0_2 == "number" then
+          L0_2 = _ENV[1]
+          upvalue7 = L0_2
+          L0_2 = _ENV[2]
+          upvalue8 = L0_2
+          L0_2 = _ENV[3]
+          upvalue9 = L0_2
+          L0_2 = _ENV[4]
+          upvalue10 = L0_2
+        end
+      end
+    end
+    L0_2 = upvalue3
+    if L0_2 == "" then
+      L0_2 = "000000"
+      upvalue3 = L0_2
+    end
+    L0_2 = upvalue2.LuaAuxLib
+    L0_2 = L0_2.FindPicture
+    L1_2 = upvalue7
+    L2_2 = upvalue8
+    L3_2 = upvalue9
+    L4_2 = upvalue10
+    L5_2 = upvalue1
+    L6_2 = upvalue3
+    L7_2 = upvalue5
+    L8_2 = upvalue4
+    L0_2, L1_2, L2_2 = L0_2(L1_2, L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2)
+    upvalue2.z = L2_2
+    upvalue2.y = L1_2
+    upvalue2.x = L0_2
+    L0_2 = upvalue2.type
+    L1_2 = upvalue2.z
+    L0_2 = L0_2(L1_2)
+    if L0_2 == "number" then
+      L0_2 = upvalue2.z
+      if L0_2 ~= -1 then
+        L0_2 = {}
+        L1_2 = true
+        L2_2 = upvalue2.x
+        L3_2 = upvalue2.y
+        L4_2 = upvalue2.z
+        L0_2[1] = L1_2
+        L0_2[2] = L2_2
+        L0_2[3] = L3_2
+        L0_2[4] = L4_2
+        upvalue14 = L0_2
+      else
+        L0_2 = {}
+        L1_2 = false
+        L2_2 = upvalue2.x
+        L3_2 = upvalue2.y
+        L4_2 = upvalue2.z
+        L0_2[1] = L1_2
+        L0_2[2] = L2_2
+        L0_2[3] = L3_2
+        L0_2[4] = L4_2
+        upvalue14 = L0_2
+      end
+    else
+      L0_2 = upvalue2.type
+      L1_2 = upvalue2.z
+      L0_2 = L0_2(L1_2)
+      if L0_2 == "boolean" then
+        L0_2 = {}
+        L1_2 = upvalue2.z
+        L2_2 = upvalue2.x
+        L3_2 = upvalue2.y
+        L0_2[1] = L1_2
+        L0_2[2] = L2_2
+        L0_2[3] = L3_2
+        upvalue14 = L0_2
+      end
+    end
+    L0_2 = upvalue14
+    upvalue11 = L0_2
+    L0_2 = upvalue2.x
+    if -1 < L0_2 then
+      L0_2 = upvalue6
+      if L0_2 then
+        L0_2 = upvalue2.TapClick
+        L1_2 = upvalue2.x
+        L2_2 = upvalue2.y
+        L0_2(L1_2, L2_2)
+      end
+    end
+    L0_2 = upvalue11
+    return L0_2
+  else
+    L0_2 = _ENV
+    L0_2 = #L0_2
+    if L0_2 < 3 then
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[1]
+      L0_2 = L0_2(L1_2)
+      if L0_2 ~= "string" then
+        goto lbl_624
+      end
+    end
+    L0_2 = upvalue2.type
+    L1_2 = _ENV[1]
+    L0_2 = L0_2(L1_2)
+    if L0_2 == "string" then
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[2]
+      L0_2 = L0_2(L1_2)
+      if L0_2 == "boolean" then
+        goto lbl_624
+      end
+    end
+    L0_2 = upvalue2.type
+    L1_2 = _ENV[1]
+    L0_2 = L0_2(L1_2)
+    if L0_2 == "string" then
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[2]
+      L0_2 = L0_2(L1_2)
+      if L0_2 == "number" then
+        ::lbl_624::
+        L0_2 = upvalue2.string
+        L0_2 = L0_2.match
+        L1_2 = upvalue1
+        L2_2 = "(%w+)"
+        L0_2 = L0_2(L1_2, L2_2)
+        L1_2 = upvalue2.string
+        L1_2 = L1_2.len
+        L2_2 = upvalue2.tostring
+        L3_2 = L0_2
+        L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2, L9_2, L10_2 = L2_2(L3_2)
+        L1_2 = L1_2(L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2, L9_2, L10_2)
+        if L1_2 == 6 then
+          L1_2 = upvalue2.ms
+          L2_2 = "FindColor4"
+          L1_2(L2_2)
+          L1_2 = upvalue2.CJ3
+          L2_2 = _ENV
+          L1_2(L2_2)
+          L1_2 = upvalue12
+          L2_2 = upvalue2["nil"]
+          if L1_2 ~= L2_2 then
+            L1_2 = upvalue12
+            if L1_2 ~= 0 then
+              L1_2 = upvalue2.type
+              L2_2 = _ENV[1]
+              L1_2 = L1_2(L2_2)
+              if L1_2 == "number" then
+                L1_2 = _ENV[1]
+                upvalue7 = L1_2
+                L1_2 = _ENV[2]
+                upvalue8 = L1_2
+                L1_2 = _ENV[3]
+                upvalue9 = L1_2
+                L1_2 = _ENV[4]
+                upvalue10 = L1_2
+              end
+            end
+          end
+          L1_2 = upvalue2.LuaAuxLib
+          L1_2 = L1_2.FindColor
+          L2_2 = upvalue7
+          L3_2 = upvalue8
+          L4_2 = upvalue9
+          L5_2 = upvalue10
+          L6_2 = upvalue1
+          L7_2 = upvalue5
+          L8_2 = upvalue4
+          L1_2, L2_2, L3_2 = L1_2(L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2)
+          upvalue2.z = L3_2
+          upvalue2.y = L2_2
+          upvalue2.x = L1_2
+          L1_2 = {}
+          L2_2 = upvalue2.z
+          L3_2 = upvalue2.x
+          L4_2 = upvalue2.y
+          L1_2[1] = L2_2
+          L1_2[2] = L3_2
+          L1_2[3] = L4_2
+          upvalue14 = L1_2
+          L1_2 = upvalue14
+          upvalue11 = L1_2
+          L1_2 = upvalue2.x
+          if -1 < L1_2 then
+            L1_2 = upvalue6
+            if L1_2 then
+              L1_2 = upvalue2.TapClick
+              L2_2 = upvalue2.x
+              L3_2 = upvalue2.y
+              L1_2(L2_2, L3_2)
+            else
+            end
+          end
+          L1_2 = upvalue11
+          return L1_2
+        else
+          L1_2 = upvalue2.ms
+          L2_2 = "CmpColorEx3"
+          L1_2(L2_2)
+          L1_2 = upvalue2.CJ
+          L2_2 = _ENV
+          L1_2(L2_2)
+          L1_2 = _ENV[1]
+          upvalue1 = L1_2
+          L1_2 = upvalue2.LuaAuxLib
+          L1_2 = L1_2.CmpColorEx
+          L2_2 = upvalue1
+          L3_2 = upvalue4
+          L1_2 = L1_2(L2_2, L3_2)
+          if L1_2 == 1 then
+            L1_2 = upvalue2.string
+            L1_2 = L1_2.match
+            L2_2 = upvalue1
+            L3_2 = "(%d+)|(%d+)"
+            L1_2, L2_2 = L1_2(L2_2, L3_2)
+            upvalue2.y = L2_2
+            upvalue2.x = L1_2
+            L1_2 = upvalue2.type
+            L2_2 = _ENV[2]
+            L1_2 = L1_2(L2_2)
+            if L1_2 == "number" then
+              L1_2 = _ENV[3]
+              if L1_2 == true then
+                L1_2 = upvalue2.TapClick
+                L2_2 = upvalue2.x
+                L3_2 = upvalue2.y
+                L1_2(L2_2, L3_2)
+            end
+            else
+              L1_2 = upvalue2.type
+              L2_2 = _ENV[2]
+              L1_2 = L1_2(L2_2)
+              if L1_2 == "number" then
+                L1_2 = upvalue2.type
+                L2_2 = _ENV[3]
+                L1_2 = L1_2(L2_2)
+                if L1_2 == "null" then
+                  L1_2 = upvalue2.TapClick
+                  L2_2 = upvalue2.x
+                  L3_2 = upvalue2.y
+                  L1_2(L2_2, L3_2)
+              end
+              else
+                L1_2 = upvalue2.type
+                L2_2 = _ENV[1]
+                L1_2 = L1_2(L2_2)
+                if L1_2 == "string" then
+                  L1_2 = _ENV
+                  L1_2 = #L1_2
+                  if L1_2 == 2 then
+                    L1_2 = _ENV[2]
+                    if L1_2 == true then
+                      L1_2 = upvalue2.TapClick
+                      L2_2 = upvalue2.x
+                      L3_2 = upvalue2.y
+                      L1_2(L2_2, L3_2)
+                    end
+                  end
+                end
+              end
+            end
+            L1_2 = {}
+            L2_2 = true
+            L3_2 = upvalue2.x
+            L4_2 = upvalue2.y
+            L1_2[1] = L2_2
+            L1_2[2] = L3_2
+            L1_2[3] = L4_2
+            upvalue11 = L1_2
+          else
+            L1_2 = {}
+            L2_2 = false
+            L3_2 = -1
+            L4_2 = -1
+            L1_2[1] = L2_2
+            L1_2[2] = L3_2
+            L1_2[3] = L4_2
+            upvalue11 = L1_2
+          end
+          L1_2 = upvalue11
+          return L1_2
+        end
+    end
+    else
+      L0_2 = _ENV
+      L0_2 = #L0_2
+      if L0_2 == 3 then
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[3]
+        L0_2 = L0_2(L1_2)
+        if L0_2 == "boolean" then
+          goto lbl_807
+        end
+      end
+      L0_2 = _ENV
+      L0_2 = #L0_2
+      if L0_2 == 4 then
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[4]
+        L0_2 = L0_2(L1_2)
+        if L0_2 == "boolean" then
+          goto lbl_807
+        end
+      end
+      L0_2 = _ENV
+      L0_2 = #L0_2
+      if L0_2 == 1 then
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[1]
+        L0_2 = L0_2(L1_2)
+        ::lbl_807::
+        if L0_2 == "string" then
+          L0_2 = true
+          L1_2 = upvalue2.string
+          L1_2 = L1_2.sub
+          L2_2 = upvalue1
+          L3_2 = 1
+          L4_2 = 6
+          L1_2 = L1_2(L2_2, L3_2, L4_2)
+          L2_2 = nil
+          L3_2 = 1
+          L4_2 = 6
+          L5_2 = 1
+          for L6_2 = L3_2, L4_2, L5_2 do
+            L7_2 = upvalue2.string
+            L7_2 = L7_2.sub
+            L8_2 = upvalue2.tostring
+            L9_2 = L1_2
+            L8_2 = L8_2(L9_2)
+            L9_2 = L6_2
+            L10_2 = L6_2
+            L7_2 = L7_2(L8_2, L9_2, L10_2)
+            if L7_2 == "|" then
+              L0_2 = false
+              break
+            end
+          end
+          if L0_2 == true then
+            L3_2 = upvalue2.type
+            L4_2 = _ENV[2]
+            L3_2 = L3_2(L4_2)
+            if L3_2 ~= "string" then
+              L3_2 = upvalue2.ms
+              L4_2 = "FindColor5"
+              L3_2(L4_2)
+              L3_2 = upvalue2.CJ3
+              L4_2 = _ENV
+              L3_2(L4_2)
+              L3_2 = upvalue12
+              L4_2 = upvalue2["nil"]
+              if L3_2 ~= L4_2 then
+                L3_2 = upvalue12
+                if L3_2 ~= 0 then
+                  L3_2 = upvalue2.type
+                  L4_2 = _ENV[1]
+                  L3_2 = L3_2(L4_2)
+                  if L3_2 == "number" then
+                    L3_2 = _ENV[1]
+                    upvalue7 = L3_2
+                    L3_2 = _ENV[2]
+                    upvalue8 = L3_2
+                    L3_2 = _ENV[3]
+                    upvalue9 = L3_2
+                    L3_2 = _ENV[4]
+                    upvalue10 = L3_2
+                  end
+                end
+              end
+              L3_2 = upvalue2.LuaAuxLib
+              L3_2 = L3_2.FindColor
+              L4_2 = upvalue7
+              L5_2 = upvalue8
+              L6_2 = upvalue9
+              L7_2 = upvalue10
+              L8_2 = upvalue1
+              L9_2 = upvalue5
+              L10_2 = upvalue4
+              L3_2, L4_2, L5_2 = L3_2(L4_2, L5_2, L6_2, L7_2, L8_2, L9_2, L10_2)
+              upvalue2.z = L5_2
+              upvalue2.y = L4_2
+              upvalue2.x = L3_2
+              L3_2 = {}
+              L4_2 = upvalue2.z
+              L5_2 = upvalue2.x
+              L6_2 = upvalue2.y
+              L3_2[1] = L4_2
+              L3_2[2] = L5_2
+              L3_2[3] = L6_2
+              upvalue14 = L3_2
+              L3_2 = upvalue14
+              upvalue11 = L3_2
+              L3_2 = upvalue2.x
+              if -1 < L3_2 then
+                L3_2 = upvalue6
+                if L3_2 then
+                  L3_2 = upvalue2.TapClick
+                  L4_2 = upvalue2.x
+                  L5_2 = upvalue2.y
+                  L3_2(L4_2, L5_2)
+                else
+                end
+              end
+              L3_2 = upvalue11
+              return L3_2
+          end
+          else
+            L3_2 = upvalue2.type
+            L4_2 = _ENV[2]
+            L3_2 = L3_2(L4_2)
+            if L3_2 ~= "string" then
+              L3_2 = upvalue2.ms
+              L4_2 = "CmpColorEx4"
+              L3_2(L4_2)
+              L3_2 = upvalue2.CJ
+              L4_2 = _ENV
+              L3_2(L4_2)
+              L3_2 = _ENV[1]
+              upvalue1 = L3_2
+              L3_2 = upvalue2.LuaAuxLib
+              L3_2 = L3_2.CmpColorEx
+              L4_2 = upvalue1
+              L5_2 = upvalue4
+              L3_2 = L3_2(L4_2, L5_2)
+              if L3_2 == 1 then
+                L3_2 = upvalue2.string
+                L3_2 = L3_2.match
+                L4_2 = upvalue1
+                L5_2 = "(%d+)|(%d+)"
+                L3_2, L4_2 = L3_2(L4_2, L5_2)
+                upvalue2.y = L4_2
+                upvalue2.x = L3_2
+                L3_2 = _ENV[3]
+                if L3_2 ~= true then
+                  L3_2 = _ENV
+                  L3_2 = #L3_2
+                  if L3_2 ~= 1 then
+                    goto lbl_938
+                  end
+                end
+                L3_2 = upvalue2.TapClick
+                L4_2 = upvalue2.x
+                L5_2 = upvalue2.y
+                L3_2(L4_2, L5_2)
+                ::lbl_938::
+                L3_2 = {}
+                L4_2 = true
+                L5_2 = upvalue2.x
+                L6_2 = upvalue2.y
+                L3_2[1] = L4_2
+                L3_2[2] = L5_2
+                L3_2[3] = L6_2
+                upvalue14 = L3_2
+                L3_2 = upvalue14
+                upvalue11 = L3_2
+              else
+                L3_2 = {}
+                L4_2 = false
+                L5_2 = -1
+                L6_2 = -1
+                L3_2[1] = L4_2
+                L3_2[2] = L5_2
+                L3_2[3] = L6_2
+                upvalue14 = L3_2
+                L3_2 = upvalue14
+                upvalue11 = L3_2
+              end
+              L3_2 = upvalue11
+              return L3_2
+            end
+          end
+        end
+      end
+      L0_2 = upvalue2.type
+      L1_2 = _ENV[6]
+      L0_2 = L0_2(L1_2)
+      if L0_2 ~= "string" then
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[1]
+        L0_2 = L0_2(L1_2)
+        if L0_2 ~= "string" then
+          goto lbl_1044
+        end
+        L0_2 = upvalue2.type
+        L1_2 = _ENV[2]
+        L0_2 = L0_2(L1_2)
+        if L0_2 ~= "string" then
+          goto lbl_1044
+        end
+      end
+      L0_2 = upvalue2.ms
+      L1_2 = "FindMultiColor2"
+      L0_2(L1_2)
+      L0_2 = upvalue2.CJ2
+      L1_2 = _ENV
+      L0_2(L1_2)
+      L0_2 = upvalue12
+      L1_2 = upvalue2["nil"]
+      if L0_2 ~= L1_2 then
+        L0_2 = upvalue12
+        if L0_2 ~= 0 then
+          L0_2 = upvalue2.type
+          L1_2 = _ENV[1]
+          L0_2 = L0_2(L1_2)
+          if L0_2 == "number" then
+            L0_2 = _ENV[1]
+            upvalue7 = L0_2
+            L0_2 = _ENV[2]
+            upvalue8 = L0_2
+            L0_2 = _ENV[3]
+            upvalue9 = L0_2
+            L0_2 = _ENV[4]
+            upvalue10 = L0_2
+            L0_2 = _ENV[6]
+            upvalue3 = L0_2
+          else
+            L0_2 = _ENV[2]
+            upvalue3 = L0_2
+          end
+        end
+      end
+      L0_2 = upvalue2.LuaAuxLib
+      L0_2 = L0_2.FindMultiColor
+      L1_2 = upvalue7
+      L2_2 = upvalue8
+      L3_2 = upvalue9
+      L4_2 = upvalue10
+      L5_2 = upvalue1
+      L6_2 = upvalue3
+      L7_2 = upvalue5
+      L8_2 = upvalue4
+      L0_2, L1_2 = L0_2(L1_2, L2_2, L3_2, L4_2, L5_2, L6_2, L7_2, L8_2)
+      upvalue2.y = L1_2
+      upvalue2.x = L0_2
+      L0_2 = upvalue2.x
+      if -1 < L0_2 then
+        L0_2 = {}
+        L1_2 = true
+        L2_2 = upvalue2.x
+        L3_2 = upvalue2.y
+        L0_2[1] = L1_2
+        L0_2[2] = L2_2
+        L0_2[3] = L3_2
+        upvalue14 = L0_2
+        L0_2 = upvalue6
+        if L0_2 then
+          L0_2 = upvalue2.TapClick
+          L1_2 = upvalue2.x
+          L2_2 = upvalue2.y
+          L0_2(L1_2, L2_2)
+        end
+      else
+        L0_2 = {}
+        L1_2 = false
+        L2_2 = upvalue2.x
+        L3_2 = upvalue2.y
+        L0_2[1] = L1_2
+        L0_2[2] = L2_2
+        L0_2[3] = L3_2
+        upvalue14 = L0_2
+      end
+      L0_2 = upvalue14
+      upvalue11 = L0_2
+      L0_2 = upvalue11
+      do return L0_2 end
+      goto lbl_1109
+      ::lbl_1044::
+      L0_2 = upvalue10
+      L1_2 = upvalue5
+      if L0_2 == L1_2 then
+        L0_2 = 0
+        upvalue5 = L0_2
+      end
+      L0_2 = upvalue2.ms
+      L1_2 = "FindColor6"
+      L0_2(L1_2)
+      L0_2 = upvalue2.CJ3
+      L1_2 = _ENV
+      L0_2(L1_2)
+      L0_2 = upvalue12
+      L1_2 = upvalue2["nil"]
+      if L0_2 ~= L1_2 then
+        L0_2 = upvalue12
+        if L0_2 ~= 0 then
+          L0_2 = upvalue2.type
+          L1_2 = _ENV[1]
+          L0_2 = L0_2(L1_2)
+          if L0_2 == "number" then
+            L0_2 = _ENV[1]
+            upvalue7 = L0_2
+            L0_2 = _ENV[2]
+            upvalue8 = L0_2
+            L0_2 = _ENV[3]
+            upvalue9 = L0_2
+            L0_2 = _ENV[4]
+            upvalue10 = L0_2
+          end
+        end
+      end
+      L0_2 = upvalue2.LuaAuxLib
+      L0_2 = L0_2.FindColor
+      L1_2 = upvalue7
+      L2_2 = upvalue8
+      L3_2 = upvalue9
+      L4_2 = upvalue10
+      L5_2 = upvalue1
+      L6_2 = upvalue5
+      L7_2 = upvalue4
+      L0_2, L1_2, L2_2 = L0_2(L1_2, L2_2, L3_2, L4_2, L5_2, L6_2, L7_2)
+      upvalue2.z = L2_2
+      upvalue2.y = L1_2
+      upvalue2.x = L0_2
+      L0_2 = {}
+      L1_2 = upvalue2.z
+      L2_2 = upvalue2.x
+      L3_2 = upvalue2.y
+      L0_2[1] = L1_2
+      L0_2[2] = L2_2
+      L0_2[3] = L3_2
+      upvalue14 = L0_2
+      L0_2 = upvalue14
+      upvalue11 = L0_2
+      L0_2 = upvalue2.x
+      if -1 < L0_2 then
+        L0_2 = upvalue6
+        if L0_2 then
+          L0_2 = upvalue2.TapClick
+          L1_2 = upvalue2.x
+          L2_2 = upvalue2.y
+          L0_2(L1_2, L2_2)
+        end
+      end
+      L0_2 = upvalue11
+      return L0_2
+    end
+  end
+  ::lbl_1109::
+end
+
+L12_1(L13_1)
+L12_1 = {}
+L13_1 = L6_1
+L14_1 = L7_1
+L15_1 = L8_1
+L16_1 = L9_1
+L17_1 = L10_1
+L18_1 = L11_1
+L19_1 = L2_1
+L20_1 = L3_1
+L12_1[1] = L13_1
+L12_1[2] = L14_1
+L12_1[3] = L15_1
+L12_1[4] = L16_1
+L12_1[5] = L17_1
+L12_1[6] = L18_1
+L12_1[7] = L19_1
+L12_1[8] = L20_1
+L13_1 = x
+L12_1[9] = L13_1
+L13_1 = y
+L12_1[10] = L13_1
+L12_1[11] = L0_1
+L12_1[12] = L1_1
+return L1_1

@@ -1,0 +1,14 @@
+{
+  "common/前台监控.mq": [
+    "If package = gamePackage Or package = qqPackage Then",
+    "If package = gamePackage Or package = qqPackage Or package = \"com.tencent.mobileqq:openSdk\" Then"
+  ],
+  "common/游戏控制.mq": [
+    "If Sys.AppIsFront(QQ_PACKAGE) Then",
+    "If Sys.AppIsFront(QQ_PACKAGE) Or Sys.GetFront() = \"com.tencent.mobileqq:openSdk\" Then"
+  ],
+  "common/点击操作.mq": [
+    "If Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) Then",
+    "If Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) And Sys.GetFront() <> \"com.tencent.mobileqq:openSdk\" Then"
+  ]
+}

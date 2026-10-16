@@ -1,0 +1,65 @@
+﻿Function EnsureGameHall()
+    Dim agreementTouched, acted, clearanceChecked
+    EnsureGameHall = RESULT_TIMEOUT
+    agreementTouched = False
+    loginStarted = TickCount()
+    Call SetStage("启动及QQ登录")
+    Call ResetHallCheck()
+    Call ResetHallClearing()
+    Call StartGame()
+    Do
+        If LoginExpired() Then
+            Exit Function
+        End If
+        If ConfirmHall() Then
+            EnsureGameHall = RESULT_OK
+            Exit Function
+        End If
+        clearanceChecked = False
+        acted = HandleQQ()
+        If Sys.AppIsFront(GAME_PACKAGE) And Not acted Then
+            // root.793: known notice handlers; no task-specific claim here.
+            // Screenshot-specific game agreement; keep the shared login deadline.
+            If MatchPattern("游戏协议弹窗") Then
+                Call Note("游戏协议弹窗：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 58, foundY + 16, 1000)
+                acted = True
+            End If
+            If Not acted Then
+                acted = TouchPattern("我知道了", 1000)
+            End If
+            If Not acted Then
+                acted = TouchPattern("回归公告", 1000)
+            End If
+            If Not acted Then
+                acted = TouchPattern("开始游戏", 1500)
+            End If
+            // The original pattern named QQ登录页 is a login-options anchor.
+            // root.793 L831-849 uses this template with automatic anchor click.
+            If Not acted Then
+                If MatchPattern("QQ登录页") Then
+                    If MatchPattern("协议已选") Then
+                        If MatchPattern("QQ登录页") Then
+                            Call TouchPoint(foundX, foundY, 1500)
+                            acted = True
+                        End If
+                    ElseIf Not agreementTouched Then
+                        Call TouchPoint(45, 1150, 1500)
+                        agreementTouched = True
+                        acted = True
+                    End If
+                End If
+            End If
+            If Not acted Then
+                clearanceChecked = True
+                acted = ClearHallObstacle()
+            End If
+        End If
+        // QQ or unknown foreground keeps the same login deadline.
+        If clearanceChecked Then
+            Delay 100
+        Else
+            Delay 20
+        End If
+    Loop
+End Function

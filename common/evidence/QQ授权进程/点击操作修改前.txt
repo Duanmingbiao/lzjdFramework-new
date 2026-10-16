@@ -1,0 +1,31 @@
+﻿Sub TouchPoint(x, y, waitMs)
+    Dim remaining, sliceMs
+    If ForegroundInterrupted() Then
+        Exit Sub
+    End If
+    // Do not tap another app during the five-second grace period.
+    If Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) Then
+        Exit Sub
+    End If
+    ReleaseCapture
+    Tap x, y
+    remaining = waitMs
+    Do While remaining > 0
+        If ForegroundInterrupted() Then
+            Exit Sub
+        End If
+        sliceMs = remaining
+        If sliceMs > 100 Then
+            sliceMs = 100
+        End If
+        Delay sliceMs
+        remaining = remaining - sliceMs
+    Loop
+End Sub
+Function TouchPattern(name, waitMs)
+    TouchPattern = False
+    If MatchPattern(name) Then
+        Call TouchPoint(foundX, foundY, waitMs)
+        TouchPattern = True
+    End If
+End Function

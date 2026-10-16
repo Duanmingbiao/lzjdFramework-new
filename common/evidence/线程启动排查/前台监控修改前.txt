@@ -1,0 +1,95 @@
+﻿// User-defined foreground policy. This thread only samples and reports.
+Sub InitForegroundMonitor()
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.since", 0)
+    Call Thread.SetShareVar("fg.last", "<未采样>")
+    Call Thread.SetShareVar("fg.reason", "")
+    foregroundLoginPending = False
+End Sub
+Sub ForegroundLog(message)
+    Call WriteForegroundLog("[龙珠激斗脚本][前台监控] " & message)
+End Sub
+Sub SampleForeground(gamePackage, qqPackage)
+    Dim package, nowAt, recovering, outside
+    // Lock only this short sample; never hold across waits or game lifecycle calls.
+    Call Thread.Lock()
+    package = Sys.GetFront()
+    nowAt = TickCount()
+    If package <> Thread.GetShareVar("fg.last") Then
+        Call Thread.SetShareVar("fg.last", package)
+        Call ForegroundLog("前台包名=" & package)
+    End If
+    recovering = Thread.GetShareVar("fg.recovering")
+    outside = Thread.GetShareVar("fg.outside")
+    If recovering Then
+        Call Thread.SetShareVar("fg.outside", False)
+    ElseIf Not Thread.GetShareVar("fg.request") Then
+        If package = gamePackage Or package = qqPackage Then
+            If outside Then
+                Call ForegroundLog("回到允许前台，取消5秒倒计时")
+            End If
+            Call Thread.SetShareVar("fg.outside", False)
+        ElseIf Not outside Then
+            Call Thread.SetShareVar("fg.outside", True)
+            Call Thread.SetShareVar("fg.since", nowAt)
+            Call ForegroundLog("离开允许前台，开始5秒倒计时")
+        ElseIf nowAt - Thread.GetShareVar("fg.since") >= 5000 Then
+            Call Thread.SetShareVar("fg.reason", package)
+            Call Thread.SetShareVar("fg.request", True)
+            Call ForegroundLog("连续离开5秒，上报前台离开")
+        End If
+    End If
+    Call Thread.Release()
+End Sub
+Sub ForegroundMonitor(gamePackage, qqPackage)
+    Do
+        Call SampleForeground(gamePackage, qqPackage)
+        Delay 200
+    Loop
+End Sub
+Function ForegroundInterrupted()
+    Call Thread.Lock()
+    ForegroundInterrupted = Thread.GetShareVar("fg.request")
+    Call Thread.Release()
+End Function
+Sub BeginForegroundRecovery()
+    Call Thread.Lock()
+    Call Thread.SetShareVar("fg.recovering", True)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.Release()
+End Sub
+Sub EndForegroundRecovery()
+    Call Thread.Lock()
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call Thread.Release()
+End Sub
+Function BeginForegroundCommit()
+    Dim accepted
+    // Serialize the report/commit boundary; no completion can consume a pending report.
+    Call Thread.Lock()
+    accepted = Not Thread.GetShareVar("fg.request")
+    BeginForegroundCommit = accepted
+    If Not accepted Then
+        Call Thread.Release()
+    End If
+End Function
+Sub EndForegroundCommit()
+    Call Thread.Release()
+End Sub
+Function HandleForegroundRecovery()
+    HandleForegroundRecovery = False
+    If Not ForegroundInterrupted() Then
+        Exit Function
+    End If
+    Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
+    If currentTask = 168 Or currentTask = 169 Then
+        Call SaveRecovery()
+    End If
+    terminalConfirmed = False
+    Call RestartGame()
+    HandleForegroundRecovery = True
+End Function

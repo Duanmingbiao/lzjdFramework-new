@@ -9,6 +9,13 @@
     End If
 End Function
 Sub LoadSettings()
+    monthEnabled = ReadUIConfig("月卡龙石启用", False)
+    monthInterval = PositiveSetting("月卡间隔秒", 3600)
+    monthKeepDownload = ReadUIConfig("保留下载提示", False)
+    signEnabled = ReadUIConfig("日常签到启用", False)
+    signInterval = PositiveSetting("签到间隔秒", 3600)
+    rewardEnabled = ReadUIConfig("任务奖励启用", True)
+    rewardInterval = PositiveSetting("任务奖励间隔秒", 21600)
     mailEnabled = ReadUIConfig("邮件启用", True)
     mailInterval = PositiveSetting("邮件间隔秒", 21600)
     loginLimit = PositiveSetting("登录总超时秒", 600) * 1000

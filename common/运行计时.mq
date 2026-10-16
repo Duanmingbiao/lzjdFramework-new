@@ -1,8 +1,8 @@
 ﻿Function LoginExpired()
-    LoginExpired = TickCount() - loginStarted >= loginLimit
+    LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
-    BusinessExpired = TickCount() - businessStarted >= businessLimit
+    BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted >= businessLimit
 End Function
 Sub Progress()
     progressAt = TickCount()

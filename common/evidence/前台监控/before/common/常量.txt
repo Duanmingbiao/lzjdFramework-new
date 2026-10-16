@@ -1,0 +1,8 @@
+﻿Sub InitConstants()
+    RESULT_OK = 1
+    RESULT_WAIT = 2
+    RESULT_FAIL = 3
+    RESULT_TIMEOUT = 4
+    GAME_PACKAGE = "com.tencent.tmgp.dragonball"
+    QQ_PACKAGE = "com.tencent.mobileqq"
+End Sub

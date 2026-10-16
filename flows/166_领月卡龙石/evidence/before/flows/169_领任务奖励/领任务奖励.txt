@@ -1,0 +1,259 @@
+﻿// Independent MQ implementation of professional root.729 behavior.
+Sub RewardStage(value)
+    rewardPhase = value
+    Call SetStage(value)
+End Sub
+Function RewardTouch(name, dx, dy, waitMs)
+    RewardTouch = False
+    If MatchPattern(name) Then
+        Call Note("任务169：" & name & "，点击=" & (foundX + dx) & "," & (foundY + dy))
+        Call TouchPoint(foundX + dx, foundY + dy, waitMs)
+        RewardTouch = True
+    End If
+End Function
+Function RewardGrowthClaimable()
+    RewardGrowthClaimable = True
+    If MatchPattern("169_成长有奖一") Then
+        Exit Function
+    End If
+    RewardGrowthClaimable = MatchPattern("169_成长有奖二")
+End Function
+Function RewardGrowthEmpty()
+    RewardGrowthEmpty = True
+    If MatchPattern("169_成长无奖一") Then
+        Exit Function
+    End If
+    RewardGrowthEmpty = MatchPattern("169_成长无奖二")
+End Function
+Function RewardDailyClaimable()
+    RewardDailyClaimable = True
+    If MatchPattern("169_日常有奖一") Then
+        Exit Function
+    End If
+    RewardDailyClaimable = MatchPattern("169_日常有奖二")
+End Function
+Function RewardDailyEmpty()
+    RewardDailyEmpty = True
+    If MatchPattern("169_日常无奖一") Then
+        Exit Function
+    End If
+    RewardDailyEmpty = MatchPattern("169_日常无奖二")
+End Function
+Function RewardPageKnown()
+    RewardPageKnown = True
+    If RewardGrowthClaimable() Then
+        Exit Function
+    End If
+    If RewardGrowthEmpty() Then
+        Exit Function
+    End If
+    If RewardDailyClaimable() Then
+        Exit Function
+    End If
+    If RewardDailyEmpty() Then
+        Exit Function
+    End If
+    If MatchPattern("169_通行证") Then
+        Exit Function
+    End If
+    If MatchPattern("169_特殊有奖") Then
+        Exit Function
+    End If
+    RewardPageKnown = MatchPattern("169_特殊无奖")
+End Function
+Function EnterTaskRewards()
+    Dim acted
+    Call Note("[流程] 入口 EnterTaskRewards")
+    EnterTaskRewards = RESULT_TIMEOUT
+    Call RewardStage("169进入任务页面")
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 EnterTaskRewards 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        acted = RewardTouch("169_入口", 327, 0, 200)
+        If RewardPageKnown() Then
+            EnterTaskRewards = RESULT_OK
+            Call Note("[流程] 结果 EnterTaskRewards RESULT_OK")
+            Call Note("[流程] 出口 EnterTaskRewards 分支2 路径条件 RewardPageKnown()")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 EnterTaskRewards 到达函数末尾（不代表任务已提交）")
+End Function
+Function RewardFirstPass()
+    Dim phaseProgress
+    Call Note("[流程] 入口 RewardFirstPass")
+    RewardFirstPass = RESULT_TIMEOUT
+    Call RewardStage("169第一段：成长、日常、特殊")
+    phaseProgress = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 RewardFirstPass 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        // Independent checks in professional order; no universal popup priority.
+        If RewardGrowthClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardGrowthEmpty() Then
+            Call TouchPoint(foundX - 90, foundY - 977, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+        End If
+        If RewardDailyEmpty() Then
+            Delay 50
+            RewardFirstPass = RESULT_OK
+            Call Note("[流程] 结果 RewardFirstPass RESULT_OK")
+            Call Note("[流程] 出口 RewardFirstPass 分支2 路径条件 RewardDailyEmpty()")
+            Exit Function
+        End If
+        If RewardTouch("169_通行证", 179, -1045, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_特殊有奖", 0, 0, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_特殊无奖", -90, -977, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If TickCount() - phaseProgress > 10000 Then
+            Call Note("任务169第一段无进展超时，交公共恢复")
+            Call Note("[流程] 出口 RewardFirstPass 分支3 路径条件 TickCount() - phaseProgress > 10000")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 RewardFirstPass 到达函数末尾（不代表任务已提交）")
+End Function
+Function RewardFourPositions()
+    Dim phaseProgress, positionIndex, dx
+    Call Note("[流程] 入口 RewardFourPositions")
+    RewardFourPositions = RESULT_TIMEOUT
+    Call RewardStage("169第二段：四位置奖励")
+    phaseProgress = TickCount()
+    positionIndex = 0
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 RewardFourPositions 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 200) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗二", 0, 0, 1000) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyEmpty() Then
+            dx = -159
+            If positionIndex = 1 Then
+                dx = -27
+            ElseIf positionIndex = 2 Then
+                dx = 106
+            ElseIf positionIndex = 3 Then
+                dx = 234
+            End If
+            Call Note("任务169四位置，序号=" & (positionIndex + 1))
+            Call TouchPoint(foundX + dx, foundY - 875, 1000)
+            positionIndex = positionIndex + 1
+        End If
+        // Original exit precedes the phase timeout check. Four clicks only.
+        If positionIndex > 3 Then
+            RewardFourPositions = RESULT_OK
+            Call Note("[流程] 结果 RewardFourPositions RESULT_OK")
+            Call Note("[流程] 出口 RewardFourPositions 分支2 路径条件 positionIndex > 3")
+            Exit Function
+        End If
+        If TickCount() - phaseProgress > 10000 Then
+            Call Note("任务169第二段无进展超时，交公共恢复")
+            Call Note("[流程] 出口 RewardFourPositions 分支3 路径条件 TickCount() - phaseProgress > 10000")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 RewardFourPositions 到达函数末尾（不代表任务已提交）")
+End Function
+Function RewardFinalPass()
+    Dim phaseProgress, acted
+    Call Note("[流程] 入口 RewardFinalPass")
+    RewardFinalPass = RESULT_TIMEOUT
+    Call RewardStage("169第三段：确认成长或特殊终态")
+    phaseProgress = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 RewardFinalPass 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        If RewardTouch("169_奖励弹窗二", 0, 0, 1000) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 200) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyEmpty() Then
+            Call TouchPoint(foundX + 87, foundY - 977, 50)
+        End If
+        If RewardGrowthClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardGrowthEmpty() Then
+            If Not BusinessExpired() Then
+                terminalConfirmed = True
+                RewardFinalPass = RESULT_OK
+                Call Note("[流程] 结果 RewardFinalPass RESULT_OK")
+                Call RewardStage("169成长无奖终态已确认")
+            End If
+            Call Note("[流程] 出口 RewardFinalPass 分支2 路径条件 Not BusinessExpired()")
+            Exit Function
+        End If
+        acted = RewardTouch("169_特殊有奖", 0, 0, 50)
+        If MatchPattern("169_特殊无奖") Then
+            If Not BusinessExpired() Then
+                terminalConfirmed = True
+                RewardFinalPass = RESULT_OK
+                Call Note("[流程] 结果 RewardFinalPass RESULT_OK")
+                Call RewardStage("169特殊无奖终态已确认")
+            End If
+            Call Note("[流程] 出口 RewardFinalPass 分支3 路径条件 Not BusinessExpired()")
+            Exit Function
+        End If
+        If TickCount() - phaseProgress > 4000 Then
+            Call Note("任务169末段无进展超时，未确认终态，交公共恢复")
+            Call Note("[流程] 出口 RewardFinalPass 分支4 路径条件 TickCount() - phaseProgress > 4000")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 RewardFinalPass 到达函数末尾（不代表任务已提交）")
+End Function
+Function ExecuteTaskRewards()
+    Dim result
+    Call Note("[流程] 入口 ExecuteTaskRewards")
+    ExecuteTaskRewards = RESULT_TIMEOUT
+    terminalConfirmed = False
+    result = EnterTaskRewards()
+    If result <> RESULT_OK Then
+        Call Note("[流程] 出口 ExecuteTaskRewards 分支1 路径条件 result <> RESULT_OK")
+        Exit Function
+    End If
+    result = RewardFirstPass()
+    If result <> RESULT_OK Then
+        Call Note("[流程] 出口 ExecuteTaskRewards 分支2 路径条件 result <> RESULT_OK")
+        Exit Function
+    End If
+    result = RewardFourPositions()
+    If result <> RESULT_OK Then
+        Call Note("[流程] 出口 ExecuteTaskRewards 分支3 路径条件 result <> RESULT_OK")
+        Exit Function
+    End If
+    ExecuteTaskRewards = RewardFinalPass()
+    Call Note("[流程] 出口 ExecuteTaskRewards 到达函数末尾（不代表任务已提交）")
+End Function

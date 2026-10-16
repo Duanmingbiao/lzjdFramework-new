@@ -18,51 +18,67 @@ Sub MailStage(value)
 End Sub
 Function ReadMessages()
     Dim localStarted, elapsed
+    Call Note("[流程] 入口 ReadMessages")
     ReadMessages = RESULT_TIMEOUT
     localStarted = TickCount()
     Call MailStage("消息邮件自动阅读")
     Do
         If BusinessExpired() Then
+            Call Note("[流程] 出口 ReadMessages 分支1 路径条件 BusinessExpired()")
             Exit Function
         End If
         If MatchPattern("邮件关闭弹窗") Then
+            Call Note("[流程] 邮件图色命中 邮件关闭弹窗")
             Call TouchPoint(foundX, foundY, 200)
             localStarted = TickCount()
         End If
         If MatchPattern("邮件消息打开") Then
+            Call Note("[流程] 邮件图色命中 邮件消息打开")
             Call TouchPoint(foundX, foundY, 200)
         End If
         elapsed = TickCount() - localStarted
         If elapsed > 2000 And elapsed <= 5000 Then
             If MatchPattern("邮件消息终态") Then
+                Call Note("[流程] 邮件图色命中 邮件消息终态")
                 ReadMessages = RESULT_OK
+                Call Note("[流程] 结果 ReadMessages RESULT_OK")
+                Call Note("[流程] 出口 ReadMessages 分支2 路径条件 MatchPattern('邮件消息终态')")
                 Exit Function
             End If
         End If
         If elapsed > 5000 Then
+            Call Note("[流程] 出口 ReadMessages 分支3 路径条件 elapsed > 5000")
             Exit Function
         End If
         Delay 20
     Loop
+    Call Note("[流程] 出口 ReadMessages 到达函数末尾（不代表任务已提交）")
 End Function
 Function ExecuteMail()
     Dim claimStarted, messageResult
+    Call Note("[流程] 入口 ExecuteMail")
     ExecuteMail = RESULT_TIMEOUT
     Call MailStage("进入邮件")
     Do
         If BusinessExpired() Then
+            Call Note("[流程] 出口 ExecuteMail 分支1 路径条件 BusinessExpired()")
             Exit Function
         End If
         If MatchPattern("邮件专业入口") Then
+            Call Note("[流程] 邮件图色命中 邮件专业入口")
             Call TouchPoint(25, 830, 200)
         End If
         If MatchPattern("低客户端提示") Then
+            Call Note("[流程] 邮件图色命中 低客户端提示")
             Call TouchPoint(foundX, foundY, 1500)
         End If
         If MailEmpty() Then
+            Call Note("[流程] 邮件识别 无奖励状态命中")
             terminalConfirmed = True
             Call MailStage("入口确认无奖励")
             ExecuteMail = RESULT_OK
+            Call Note("[流程] 结果 ExecuteMail RESULT_OK")
+            Call Note("[流程] 出口 ExecuteMail 分支2 路径条件 MailEmpty()")
             Exit Function
         End If
         If MailClaimable() Then
@@ -76,6 +92,7 @@ Function ExecuteMail()
     Call MailStage("领取邮件奖励")
     Do
         If BusinessExpired() Then
+            Call Note("[流程] 出口 ExecuteMail 分支3 路径条件 BusinessExpired()")
             Exit Function
         End If
         If MailClaimable() Then
@@ -83,29 +100,38 @@ Function ExecuteMail()
             Call Progress()
         End If
         If MatchPattern("获得奖励") Then
+            Call Note("[流程] 邮件图色命中 获得奖励")
             Call TouchPoint(foundX, foundY, 200)
             Call Progress()
         End If
         If MatchPattern("邮件关闭弹窗") Then
+            Call Note("[流程] 邮件图色命中 邮件关闭弹窗")
             Call TouchPoint(foundX, foundY, 200)
             Call Progress()
         End If
         If MailEmpty() Then
+            Call Note("[流程] 邮件识别 无奖励状态命中")
             Call Progress()
             Exit Do
         End If
         If TickCount() - claimStarted > 5000 Then
+            Call Note("[流程] 出口 ExecuteMail 分支4 路径条件 TickCount() - claimStarted > 5000")
             Exit Function
         End If
         Delay 20
     Loop
+    Call Note("[流程] 消息邮件模式 0手动跳过 1自动 当前=" & messageMode)
     If messageMode = 1 Then
+        Call Note("[流程] 消息邮件 自动模式入口")
         messageResult = ReadMessages()
         If messageResult <> RESULT_OK Then
+            Call Note("[流程] 出口 ExecuteMail 分支5 路径条件 messageResult <> RESULT_OK")
             Exit Function
         End If
     End If
     terminalConfirmed = True
     Call MailStage("邮件业务终态确认")
     ExecuteMail = RESULT_OK
+    Call Note("[流程] 结果 ExecuteMail RESULT_OK")
+    Call Note("[流程] 出口 ExecuteMail 到达函数末尾（不代表任务已提交）")
 End Function

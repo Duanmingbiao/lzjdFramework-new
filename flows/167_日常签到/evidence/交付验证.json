@@ -1,0 +1,15 @@
+{
+  ".mq": {
+    "sha256": "9a0a1343fc054eaa157a09defa39415c0bf4556530bf428575d1dbe10d8e6168",
+    "same": true
+  },
+  ".uip": {
+    "sha256": "f3791a151cfd15a061cb37b52ab4de6f8d04d0ae87b0844961720ad362e1896d",
+    "same": true
+  },
+  "static": "21 modules, no issues",
+  "simulation": "175 tests passed; 22 new sign-in tests",
+  "officialCompilation": "not performed",
+  "device": "not performed",
+  "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq"
+}

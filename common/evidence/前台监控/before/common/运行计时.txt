@@ -1,0 +1,9 @@
+﻿Function LoginExpired()
+    LoginExpired = TickCount() - loginStarted >= loginLimit
+End Function
+Function BusinessExpired()
+    BusinessExpired = TickCount() - businessStarted >= businessLimit
+End Function
+Sub Progress()
+    progressAt = TickCount()
+End Sub

@@ -1,0 +1,5 @@
+        If MonthActivityFrame() Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：专业版当前位置活动框复核成功，进入月卡分页")
+            Exit Function
+        End If

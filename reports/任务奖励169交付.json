@@ -1,0 +1,32 @@
+{
+  "task": 169,
+  "professionalSource": "root.729",
+  "staticCheck": true,
+  "mockTestsPassed": 98,
+  "officialCompile": "待用户验证",
+  "deviceRun": "待用户验证",
+  "changedExistingMq": [
+    "app\\入口.mq",
+    "common\\任务分派.mq",
+    "common\\任务注册.mq",
+    "common\\任务状态.mq",
+    "common\\图色参数.mq",
+    "common\\配置读取.mq"
+  ],
+  "newMq": "flows/169_领任务奖励/领任务奖励.mq",
+  "mailSourceUnchanged": true,
+  "publicLoginHallTimersAndSchedulerBodyUnchanged": true,
+  "uiTabs": [
+    "模块总览",
+    "公共设置",
+    "邮件奖励",
+    "任务奖励"
+  ],
+  "defaultEnabled": true,
+  "defaultIntervalSeconds": 21600,
+  "assistantFiles": {
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "1270524bfb20be95872bfcf4d8b84ea402fb7cd820691b5d160bcc54f3dd0265",
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "9b20d361577bcb47b5b9b3e1d70dc45ce871625ff825e0fe720254739aabb891"
+  },
+  "note": "文件同步，不是助手编译；用户使用现有打包工具重新编译打包；本轮不修改APK模板。"
+}

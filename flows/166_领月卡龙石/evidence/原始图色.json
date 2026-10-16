@@ -1,0 +1,428 @@
+{
+  "sources": [
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-533.readable.lua",
+      "sha256": "8658a6ccb7ed5c0b569d1a776a75ed6617e9a48b86b8e2fb6dfbefbe492e62e9"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-726.readable.lua",
+      "sha256": "af11bd703314c75aa4c597064351d9f32b0ef324e0e44a9a73d65ffb1a5ae79f"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-783.readable.lua",
+      "sha256": "8c64f36c62acee6186d75ced1979fa9bae51d691bb056fab4acb5b8d925fd4b7"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-785.readable.lua",
+      "sha256": "63f0229caff601b046e4a44b1fd0fc3836efc8a148fd2427367e0d494ebdb4b2"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-786.readable.lua",
+      "sha256": "c74057a8e661ae53c824fa588dec2ad537f7424f95e8e43b50ec9eb8aaa4ea54"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-787.readable.lua",
+      "sha256": "cba84a6a68bd46dc07cf4c3eda9d0a1c4d4f44831490762b4787b5b23ed9c633"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\function-788.readable.lua",
+      "sha256": "79b97554a2461433de38a5dc680cb15adc92df2b06f954e4ef4392fea6edf9af"
+    },
+    {
+      "file": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\月卡专业版证据\\ss-function-501.readable.lua",
+      "sha256": "d35d7c5910a0b2a6f9fc8d2219d39da72cfb06a2d4115d4b29bebbb27939bd1b"
+    }
+  ],
+  "patterns": [
+    {
+      "name": "166_类型左卡",
+      "source": "function-726.readable.lua",
+      "line": 47,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-49|-10|FFFFFF,-80|13|0A8E54,-48|-4|095D3C,535|-965|B67C45,126|-937|2ED8FA,88|-847|100C0C,67|-500|F3D2D2,-42|-400|26A1FF,55|-541|743E19,182|-499|0A54F1,168|-555|FFFFFF,147|-529|0D4FF4,189|-499|0D4FF4,498|-527|1244A7,519|-520|1547AA,525|-545|0A6DD0,371|-432|225CF3,304|-267|0E48A3,549|-275|055FD3",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_类型右卡",
+      "source": "function-726.readable.lua",
+      "line": 82,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,147|-527|75441A,170|-489|76451C,188|-504|714016,191|-521|703E1D,523|-499|0A54F1,488|-533|0A4CF1,509|-556|FFFFFF",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_类型双卡",
+      "source": "function-726.readable.lua",
+      "line": 117,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,179|-499|0A54F1,146|-533|0A4CF1,158|-540|FBFBFB,184|-524|FFFFFF,523|-499|0A54F1,488|-533|0A4CF1,509|-556|FFFFFF",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_类型未购买",
+      "source": "function-726.readable.lua",
+      "line": 152,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,147|-527|75441A,170|-489|76451C,188|-504|714016,191|-521|703E1D,500|-531|1244A7,525|-501|1244A7,538|-521|1244A7",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_奖励弹窗",
+      "source": "function-726.readable.lua",
+      "line": 192,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2BF9FF-101010",
+      "offsets": "86|4|2BF9FF-101010,296|6|2BF9FF-101010,215|7|2BF9FF-101010,220|42|00003A-101010,-26|33|00003A-101010,102|-12|00003A-101010,160|17|00003A-101010,289|-2|00003A-101010,96|-23|ECEBEB-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_左卡可领",
+      "source": "function-726.readable.lua",
+      "line": 223,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|0A7DFF,-2|-191|3BE0FF",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_左卡灰色",
+      "source": "function-726.readable.lua",
+      "line": 267,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|979797,-2|-191|D6D6D6",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_左卡可领",
+      "source": "function-726.readable.lua",
+      "line": 281,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|0A7DFF,-2|-191|3BE0FF",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_右卡可领",
+      "source": "function-726.readable.lua",
+      "line": 325,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,359|-163|0275FF,394|-199|71F5FD",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_双卡灰色",
+      "source": "function-726.readable.lua",
+      "line": 369,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|979797,-2|-191|D6D6D6,359|-163|919191,394|-199|E8E8E8",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_右卡可领",
+      "source": "function-726.readable.lua",
+      "line": 383,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,359|-163|0275FF,394|-199|71F5FD",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_右卡灰色",
+      "source": "function-726.readable.lua",
+      "line": 427,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,359|-163|919191,394|-199|E8E8E8",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_活动框一",
+      "source": "function-783.readable.lua",
+      "line": 367,
+      "region": [
+        1,
+        3,
+        717,
+        222
+      ],
+      "main": "F7FDFF-101010",
+      "offsets": "54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,-20|148|8A5724-101010,-11|148|533416-101010,-16|146|3B1C12-101010,-27|146|5E2B1A-101010,-29|150|644825-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_活动框二",
+      "source": "function-783.readable.lua",
+      "line": 380,
+      "region": [
+        1,
+        3,
+        717,
+        222
+      ],
+      "main": "F7FDFF-101010",
+      "offsets": "54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,630|148|865320-101010,631|147|6D3A1C-101010,610|147|452613-101010,631|150|644825-101010,630|145|5D2B1A-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_大厅活动入口一",
+      "source": "function-787.readable.lua",
+      "line": 5666,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "FFFFFF-101010",
+      "offsets": "1|12|231E2B-101010,-18|9|5555AA-101010,23|9|5555AA-101010,11|29|42ECFD-101010,-6|33|38E6FD-101010,5|14|E8E5EA-101010,10|12|292529-101010,-4|1|FFFFFF-101010,1|1|FFFFFF-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_大厅活动入口二",
+      "source": "function-787.readable.lua",
+      "line": 5679,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "42ECFD",
+      "offsets": "15|0|42ECFD,3|-29|FFFFFF,4|-35|FFFFFF,-8|-9|CBEEFE,37|8|D1C1B0,-21|8|CEBDAD,34|-9|4B822A,9|-43|454589,7|-43|454589",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_大厅识别一",
+      "source": "function-787.readable.lua",
+      "line": 5692,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "D1E0FF-101010",
+      "offsets": "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_大厅识别二",
+      "source": "function-787.readable.lua",
+      "line": 5705,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "8391AB-101010",
+      "offsets": "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_大厅识别三",
+      "source": "function-787.readable.lua",
+      "line": 5718,
+      "region": [
+        6,
+        1133,
+        153,
+        1279
+      ],
+      "main": "FFFFFF-101010",
+      "offsets": "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",
+      "direction": "monthlySearchDirection",
+      "similarity": 0.9
+    },
+    {
+      "name": "166_未使用活动页一",
+      "source": "function-787.readable.lua",
+      "line": 5729,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "F7FDFF-101010",
+      "offsets": "60|-6|583727-101010,318|-30|262E4D-101010,487|-30|262E4D-101010,49|1144|C6EDE4-101010,30|-25|EEF4F6-101010,49|-47|EEF4F6-101010,67|-23|EEF4F6-101010,-19|148|8A5724-101010,-27|145|5D2B1A-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_未使用活动页二",
+      "source": "function-787.readable.lua",
+      "line": 5742,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "F7FDFF-101010",
+      "offsets": "49|1144|C6EDE4-101010,42|1145|FFFFFF-101010,-11|1174|0A8E54-101010,140|-39|7D4C3B-101010,-2|1|FCFCFE-101010,-30|-17|1B36B2-101010,247|-47|5B342A-101010,407|-47|5B342A-101010,580|-47|5B342A-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_活动框一",
+      "source": "function-788.readable.lua",
+      "line": 81,
+      "region": [
+        1,
+        3,
+        717,
+        222
+      ],
+      "main": "F7FDFF-101010",
+      "offsets": "54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,-20|148|8A5724-101010,-11|148|533416-101010,-16|146|3B1C12-101010,-27|146|5E2B1A-101010,-29|150|644825-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_活动框二",
+      "source": "function-788.readable.lua",
+      "line": 94,
+      "region": [
+        1,
+        3,
+        717,
+        222
+      ],
+      "main": "F7FDFF-101010",
+      "offsets": "54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,630|148|865320-101010,631|147|6D3A1C-101010,610|147|452613-101010,631|150|644825-101010,630|145|5D2B1A-101010",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_月卡图标",
+      "source": "function-788.readable.lua",
+      "line": 149,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "12C8FF-202020",
+      "offsets": "-12|-36|12C8FF-202020,17|-33|12C8FF-202020,-19|2|028EF1-202020,-5|20|0059CD-202020,-37|39|000000-202020,34|28|033BB6-202020,-44|62|FFFFFF-202020,-35|58|FFFFFF-202020,-25|62|FFFFFF-202020,-25|77|FFFFFF-202020,-18|79|FFFFFF-202020,0|61|FFFFFF-202020,-8|74|FFFFFF-202020,8|58|FFFFFF-202020,25|79|FFFFFF,9|79|FFFFFF,48|79|FFFFFF,49|59|FFFFFF,31|60|F8F8F8",
+      "direction": 1,
+      "similarity": 0.9
+    },
+    {
+      "name": "166_月卡页面",
+      "source": "function-788.readable.lua",
+      "line": 162,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "2DBF85",
+      "offsets": "-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A",
+      "direction": "monthlySearchDirection",
+      "similarity": 0.9
+    },
+    {
+      "name": "166_资源下载提示",
+      "source": "function-786.readable.lua",
+      "line": 17,
+      "region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "main": "0A7DFF-202020",
+      "offsets": "-51|-37|75F1FF-202020,-299|8|069250-202020,-428|-39|37DC9A-202020,-365|54|894F2E-202020,-540|23|C06C39-202020,-171|-69|221510-202020,-173|-309|20110C-202020,104|-377|D8A75C-202020,-243|-205|5B3328-202020,-13|-18|25BFFF-202020,-103|-14|1BB0FE-202020,-313|-16|42C69D-202020,-396|-13|3ABE95-202020",
+      "direction": 1,
+      "similarity": 0.9
+    }
+  ]
+}

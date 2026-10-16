@@ -1,5 +1,30 @@
-﻿Sub Note(message)
-    TracePrint "[龙珠激斗脚本][" & stageName & "] " & message
+﻿// Separate files have one writer each; never acquire a nested thread lock here.
+Sub WritePublicLog(path, message)
+    Dim line, beforeBytes, afterBytes, created
+    line = "[tick=" & TickCount() & "] " & message
+    TracePrint line
+    If Not Dir.Exist("/sdcard/Pictures") Then
+        created = Dir.Create("/sdcard/Pictures")
+    End If
+    beforeBytes = 0
+    If Dir.Exist(path) Then
+        beforeBytes = File.Bytes(path)
+    End If
+    line = line & Chr(13) & Chr(10)
+    Call File.Append(path, line)
+    afterBytes = File.Bytes(path)
+    If afterBytes <= beforeBytes Then
+        TracePrint "[文件日志] 写入失败，请检查脚本应用存储权限和剩余空间"
+    End If
+End Sub
+Sub WriteMainLog(message)
+    Call WritePublicLog("/sdcard/Pictures/dragonball-main.log", message)
+End Sub
+Sub WriteForegroundLog(message)
+    Call WritePublicLog("/sdcard/Pictures/dragonball-foreground.log", message)
+End Sub
+Sub Note(message)
+    Call WriteMainLog("[龙珠激斗脚本][" & stageName & "] " & message)
 End Sub
 Sub SetStage(value)
     If stageName <> value Then

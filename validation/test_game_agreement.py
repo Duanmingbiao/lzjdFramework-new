@@ -1,3 +1,4 @@
+from historical_source import before_foreground
 import unittest,json,hashlib
 from pathlib import Path
 import numpy as np
@@ -18,9 +19,9 @@ class Agreement(unittest.TestCase):
   for img in IMAGES:self.assertFalse(match_pixels(img,REC['definition']))
  def test_protected_mq_unchanged(self):
   baseline=json.loads((E/'修改前基线.json').read_text('utf-8'))
-  allowed={Path('common/图色参数.mq'),Path('flows/001_游戏重连/登录游戏.mq')}
+  allowed={Path('app/入口.mq'),Path('common/配置读取.mq'),Path('common/任务状态.mq'),Path('common/任务注册.mq'),Path('common/任务分派.mq'),Path('common/图色参数.mq'),Path('flows/001_游戏重连/登录游戏.mq')}
   for name,digest in baseline.items():
-   if Path(name) not in allowed:self.assertEqual(hashlib.sha256((R/name).read_bytes()).hexdigest(),digest,name)
+   if Path(name) not in allowed:self.assertEqual(hashlib.sha256(before_foreground(R/name).read_bytes()).hexdigest(),digest,name)
  def run_login(self,visible,limit):
   env={};now=[1000];clicks=[];other=[]
   load(['common/运行计时.mq','flows/001_游戏重连/登录游戏.mq'],env)

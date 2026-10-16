@@ -1,13 +1,37 @@
 ﻿Sub TouchPoint(x, y, waitMs)
+    Dim remaining, sliceMs
+    Call Note("[流程] 入口 TouchPoint")
+    If ForegroundInterrupted() Then
+        Call Note("[流程] 出口 TouchPoint 分支1 路径条件 ForegroundInterrupted()")
+        Exit Sub
+    End If
+    // Do not tap another app during the five-second grace period.
+    If Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) And Sys.GetFront() <> "com.tencent.mobileqq:openSdk" Then
+        Call Note("[流程] 出口 TouchPoint 分支2 路径条件 Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) And Sys.GetFront() <> 'com.tencent.mobileqq:openSdk'")
+        Exit Sub
+    End If
     ReleaseCapture
     Tap x, y
-    If waitMs > 0 Then
-        Delay waitMs
-    End If
+    Call Note("[流程] 已发送点击 x=" & x & " y=" & y & " 等待毫秒=" & waitMs)
+    remaining = waitMs
+    Do While remaining > 0
+        If ForegroundInterrupted() Then
+            Call Note("[流程] 出口 TouchPoint 分支3 路径条件 ForegroundInterrupted()")
+            Exit Sub
+        End If
+        sliceMs = remaining
+        If sliceMs > 100 Then
+            sliceMs = 100
+        End If
+        Delay sliceMs
+        remaining = remaining - sliceMs
+    Loop
+    Call Note("[流程] 出口 TouchPoint 到达函数末尾（不代表任务已提交）")
 End Sub
 Function TouchPattern(name, waitMs)
     TouchPattern = False
     If MatchPattern(name) Then
+        Call Note("[流程] 图色命中 " & name)
         Call TouchPoint(foundX, foundY, waitMs)
         TouchPattern = True
     End If

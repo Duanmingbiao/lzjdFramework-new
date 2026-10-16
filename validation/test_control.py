@@ -1,11 +1,11 @@
-﻿import unittest
+import unittest
 from mq_subset import load
 class ControlFlow(unittest.TestCase):
  def setUp(self):
   self.now=1000;self.events=[]
   self.e={'TickCount':lambda:self.now,'Delay':self.delay,'SetStage':lambda x:None,'Note':lambda x:None,'Progress':lambda:None}
   load(['common/任务状态.mq','common/任务注册.mq','common/运行计时.mq','flows/168_领邮件奖励/领邮件奖励.mq'],self.e)
-  self.e.update(RESULT_OK=1,RESULT_WAIT=2,RESULT_FAIL=3,RESULT_TIMEOUT=4,mailEnabled=True,mailInterval=21600,loginLimit=600000,businessLimit=120000,messageMode=0,registeredTask=168)
+  self.e.update(RESULT_OK=1,RESULT_WAIT=2,RESULT_FAIL=3,RESULT_TIMEOUT=4,mailEnabled=True,mailInterval=21600,loginLimit=600000,businessLimit=120000,messageMode=0,registeredTask=168,rewardRegisteredTask=169,rewardEnabled=False,rewardInterval=21600)
   self.e['NewSession']();self.e['businessStarted']=self.now
   self.e['TouchPoint']=self.touch;self.e['MatchPattern']=self.match
   self.patterns=set();self.e['foundX']=100;self.e['foundY']=1100

@@ -1,18 +1,24 @@
 ﻿Function EnsureGameHall()
     Dim agreementTouched, acted, clearanceChecked
+    Call Note("[流程] 入口 EnsureGameHall")
     EnsureGameHall = RESULT_TIMEOUT
     agreementTouched = False
-    loginStarted = TickCount()
+    If Not foregroundLoginPending Then
+        loginStarted = TickCount()
+    End If
     Call SetStage("启动及QQ登录")
     Call ResetHallCheck()
     Call ResetHallClearing()
     Call StartGame()
     Do
         If LoginExpired() Then
+            Call Note("[流程] 出口 EnsureGameHall 分支1 路径条件 LoginExpired()")
             Exit Function
         End If
         If ConfirmHall() Then
             EnsureGameHall = RESULT_OK
+            Call Note("[流程] 结果 EnsureGameHall RESULT_OK")
+            Call Note("[流程] 出口 EnsureGameHall 分支2 路径条件 ConfirmHall()")
             Exit Function
         End If
         clearanceChecked = False
@@ -20,7 +26,11 @@
         If Sys.AppIsFront(GAME_PACKAGE) And Not acted Then
             // root.793: known notice handlers; no task-specific claim here.
             // Screenshot-specific game agreement; keep the shared login deadline.
-            If MatchPattern("游戏协议弹窗") Then
+            If MatchPattern("首次启动协议") Then
+                Call Note("首次启动协议：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 120, foundY + 1, 1000)
+                acted = True
+            ElseIf MatchPattern("游戏协议弹窗") Then
                 Call Note("游戏协议弹窗：点击同意，登录总计时继续")
                 Call TouchPoint(foundX + 58, foundY + 16, 1000)
                 acted = True
@@ -62,4 +72,5 @@
             Delay 20
         End If
     Loop
+    Call Note("[流程] 出口 EnsureGameHall 到达函数末尾（不代表任务已提交）")
 End Function

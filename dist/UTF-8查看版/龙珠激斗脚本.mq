@@ -1,5 +1,5 @@
 ﻿// app/入口.mq
-// 龙珠激斗脚本: independent MQ implementation. Only mail168 is registered.
+// 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
 Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
 Dim GAME_PACKAGE, QQ_PACKAGE, stageName, foundX, foundY
 Dim mailEnabled, mailInterval, loginLimit, businessLimit, messageMode
@@ -9,15 +9,37 @@ Dim loginStarted, businessStarted, progressAt, loginFailures
 Dim hallFrames, hallSampleAt, terminalConfirmed
 Dim qqLastForeground, qqLastDiagnosticAt
 Dim hallMisses, hallExtended, hallActionIndex, hallReturnDelaySeconds
+Dim rewardEnabled, rewardInterval, rewardRegisteredTask
+Dim rewardDone, rewardFailed, rewardCount, rewardFailures
+Dim rewardDue, rewardFirst, rewardPhase
+Dim foregroundThread, foregroundLoginPending, foregroundStartupAt
+Dim signEnabled, signInterval, signRegisteredTask
+Dim signDone, signFailed, signCount, signFailures, signDue, signFirst, signPhase
+Dim monthEnabled, monthInterval, monthRegisteredTask, monthKeepDownload
+Dim monthDone, monthFailed, monthCount, monthFailures, monthDue, monthFirst, monthPhase
+Dim monthCardType, monthlySearchDirection, activityOcrLast, activityOcrLogAt
 Call InitConstants()
 Call LoadSettings()
 Call NewSession()
+Call InitForegroundMonitor()
 Call RegisterTasks()
 If GetScreenX() <> 720 Or GetScreenY() <> 1280 Then
     TracePrint "需要720x1280；请同时在MuMu确认320 DPI"
     EndScript
 End If
 Call Note("新会话启动；已勾选普通任务先执行一次")
+Call Note("线程启动R2：准备调用Thread.Start")
+foregroundThread = Thread.Start(ForegroundMonitor)
+Call Note("线程启动R2：Thread.Start已返回")
+foregroundStartupAt = TickCount()
+Do While Not Thread.GetShareVar("fg.ready")
+    If TickCount() - foregroundStartupAt >= 3000 Then
+        Call Note("线程启动R2：3秒未完成首次采样，停止；检查前台日志最后一步")
+        ExitScript
+    End If
+    Delay 20
+Loop
+Call Note("线程启动R2：首次采样已确认，进入公共调度")
 Do
     Call SchedulerStep()
     Delay 200
@@ -35,9 +57,176 @@ Sub InitConstants()
 End Sub
 
 
+// common/前台监控.mq
+// User-defined foreground policy. This thread only samples and reports.
+// Peterson two-party gate: exactly one main thread and one monitor thread.
+// Shared reads/writes use the engine store; never call the iOS-only lock APIs.
+Sub EnterMainForegroundGate()
+    Call Thread.SetShareVar("fg.gate.main", True)
+    Call Thread.SetShareVar("fg.gate.turn", "monitor")
+    Do While Thread.GetShareVar("fg.gate.monitor") And Thread.GetShareVar("fg.gate.turn") = "monitor"
+        Delay 1
+    Loop
+End Sub
+Sub LeaveMainForegroundGate()
+    Call Thread.SetShareVar("fg.gate.main", False)
+End Sub
+Sub EnterMonitorForegroundGate()
+    Call Thread.SetShareVar("fg.gate.monitor", True)
+    Call Thread.SetShareVar("fg.gate.turn", "main")
+    Do While Thread.GetShareVar("fg.gate.main") And Thread.GetShareVar("fg.gate.turn") = "main"
+        Delay 1
+    Loop
+End Sub
+Sub LeaveMonitorForegroundGate()
+    Call Thread.SetShareVar("fg.gate.monitor", False)
+End Sub
+Sub InitForegroundMonitor()
+    Call Thread.SetShareVar("fg.gate.main", False)
+    Call Thread.SetShareVar("fg.gate.monitor", False)
+    Call Thread.SetShareVar("fg.gate.turn", "main")
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.since", 0)
+    Call Thread.SetShareVar("fg.last", "<未采样>")
+    Call Thread.SetShareVar("fg.reason", "")
+    Call Thread.SetShareVar("fg.ready", False)
+    foregroundLoginPending = False
+End Sub
+Sub ForegroundLog(message)
+    Call WriteForegroundLog("[龙珠激斗脚本][前台监控] " & message)
+End Sub
+Sub SampleForeground(gamePackage, qqPackage)
+    Dim package, nowAt, recovering, outside, startupProbe
+    startupProbe = Not Thread.GetShareVar("fg.ready")
+    // Lock only this short sample; never hold across waits or game lifecycle calls.
+    If startupProbe Then
+        Call ForegroundLog("线程互斥R3：首次采样进入共享互斥前")
+    End If
+    Call EnterMonitorForegroundGate()
+    If startupProbe Then
+        Call ForegroundLog("线程互斥R3：已进入共享互斥，读取前台前")
+    End If
+    package = Sys.GetFront()
+    If startupProbe Then
+        Call ForegroundLog("线程启动R2：首次前台读取完成")
+    End If
+    nowAt = TickCount()
+    If package <> Thread.GetShareVar("fg.last") Then
+        Call Thread.SetShareVar("fg.last", package)
+        Call ForegroundLog("前台包名=" & package)
+    End If
+    recovering = Thread.GetShareVar("fg.recovering")
+    outside = Thread.GetShareVar("fg.outside")
+    If recovering Then
+        Call Thread.SetShareVar("fg.outside", False)
+    ElseIf Not Thread.GetShareVar("fg.request") Then
+        If package = gamePackage Or package = qqPackage Or package = "com.tencent.mobileqq:openSdk" Then
+            If outside Then
+                Call ForegroundLog("回到允许前台，取消5秒倒计时")
+            End If
+            Call Thread.SetShareVar("fg.outside", False)
+        ElseIf Not outside Then
+            Call Thread.SetShareVar("fg.outside", True)
+            Call Thread.SetShareVar("fg.since", nowAt)
+            Call ForegroundLog("离开允许前台，开始5秒倒计时")
+        ElseIf nowAt - Thread.GetShareVar("fg.since") >= 5000 Then
+            Call Thread.SetShareVar("fg.reason", package)
+            Call Thread.SetShareVar("fg.request", True)
+            Call ForegroundLog("连续离开5秒，上报前台离开")
+        End If
+    End If
+    Call LeaveMonitorForegroundGate()
+End Sub
+Sub ForegroundMonitor()
+    // No cross-thread argument capture; initialize immutable package names locally.
+    Dim monitorGame, monitorQQ
+    Call ForegroundLog("线程启动R2：已进入监控线程")
+    monitorGame = "com.tencent.tmgp.dragonball"
+    monitorQQ = "com.tencent.mobileqq"
+    Call SampleForeground(monitorGame, monitorQQ)
+    Call ForegroundLog("线程启动R2：首次采样完成")
+    Call Thread.SetShareVar("fg.ready", True)
+    Do
+        Call SampleForeground(monitorGame, monitorQQ)
+        Delay 200
+    Loop
+End Sub
+Function ForegroundInterrupted()
+    Call EnterMainForegroundGate()
+    ForegroundInterrupted = Thread.GetShareVar("fg.request")
+    Call LeaveMainForegroundGate()
+End Function
+Sub BeginForegroundRecovery()
+    Call EnterMainForegroundGate()
+    Call Thread.SetShareVar("fg.recovering", True)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call LeaveMainForegroundGate()
+End Sub
+Sub EndForegroundRecovery()
+    Call EnterMainForegroundGate()
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call LeaveMainForegroundGate()
+End Sub
+Function BeginForegroundCommit()
+    Dim accepted
+    // Serialize the report/commit boundary; no completion can consume a pending report.
+    Call EnterMainForegroundGate()
+    accepted = Not Thread.GetShareVar("fg.request")
+    BeginForegroundCommit = accepted
+    If Not accepted Then
+        Call LeaveMainForegroundGate()
+    End If
+End Function
+Sub EndForegroundCommit()
+    Call LeaveMainForegroundGate()
+End Sub
+Function HandleForegroundRecovery()
+    HandleForegroundRecovery = False
+    If Not ForegroundInterrupted() Then
+        Exit Function
+    End If
+    Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
+    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Then
+        Call SaveRecovery()
+    End If
+    terminalConfirmed = False
+    Call RestartGame()
+    HandleForegroundRecovery = True
+End Function
+
+
 // common/日志.mq
+// Separate files have one writer each; never acquire a nested thread lock here.
+Sub WritePublicLog(path, message)
+    Dim line, beforeBytes, afterBytes, created
+    line = "[tick=" & TickCount() & "] " & message
+    TracePrint line
+    If Not Dir.Exist("/sdcard/Pictures") Then
+        created = Dir.Create("/sdcard/Pictures")
+    End If
+    beforeBytes = 0
+    If Dir.Exist(path) Then
+        beforeBytes = File.Bytes(path)
+    End If
+    line = line & Chr(13) & Chr(10)
+    Call File.Append(path, line)
+    afterBytes = File.Bytes(path)
+    If afterBytes <= beforeBytes Then
+        TracePrint "[文件日志] 写入失败，请检查脚本应用存储权限和剩余空间"
+    End If
+End Sub
+Sub WriteMainLog(message)
+    Call WritePublicLog("/sdcard/Pictures/dragonball-main.log", message)
+End Sub
+Sub WriteForegroundLog(message)
+    Call WritePublicLog("/sdcard/Pictures/dragonball-foreground.log", message)
+End Sub
 Sub Note(message)
-    TracePrint "[龙珠激斗脚本][" & stageName & "] " & message
+    Call WriteMainLog("[龙珠激斗脚本][" & stageName & "] " & message)
 End Sub
 Sub SetStage(value)
     If stageName <> value Then
@@ -59,6 +248,13 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    monthEnabled = ReadUIConfig("月卡龙石启用", False)
+    monthInterval = PositiveSetting("月卡间隔秒", 3600)
+    monthKeepDownload = ReadUIConfig("保留下载提示", False)
+    signEnabled = ReadUIConfig("日常签到启用", False)
+    signInterval = PositiveSetting("签到间隔秒", 3600)
+    rewardEnabled = ReadUIConfig("任务奖励启用", True)
+    rewardInterval = PositiveSetting("任务奖励间隔秒", 21600)
     mailEnabled = ReadUIConfig("邮件启用", True)
     mailInterval = PositiveSetting("邮件间隔秒", 21600)
     loginLimit = PositiveSetting("登录总超时秒", 600) * 1000
@@ -71,6 +267,24 @@ End Sub
 
 // common/任务状态.mq
 Sub NewSession()
+    monthDone = False
+    monthFailed = False
+    monthCount = 0
+    monthFailures = 0
+    monthDue = 0
+    monthFirst = True
+    monthPhase = "未开始"
+    monthCardType = -1
+    monthlySearchDirection = 0
+    activityOcrLast = "<未识别>"
+    activityOcrLogAt = TickCount() - 5000
+    signDone = False
+    signFailed = False
+    signCount = 0
+    signFailures = 0
+    signDue = 0
+    signFirst = True
+    signPhase = "未开始"
     currentTask = 0
     resumeTask = 0
     mailDone = False
@@ -80,6 +294,13 @@ Sub NewSession()
     mailDue = 0
     mailFirst = True
     mailPhase = "未开始"
+    rewardDone = False
+    rewardFailed = False
+    rewardCount = 0
+    rewardFailures = 0
+    rewardDue = 0
+    rewardFirst = True
+    rewardPhase = "未开始"
     businessStarted = 0
     loginStarted = 0
     progressAt = 0
@@ -95,49 +316,115 @@ Sub NewSession()
     terminalConfirmed = False
 End Sub
 Sub SaveCurrentTask(taskId)
+    Call Note("[流程] 入口 SaveCurrentTask")
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
-    mailDone = False
-    mailFailed = False
+    If taskId = 166 Then
+        monthDone = False
+        monthFailed = False
+    ElseIf taskId = 167 Then
+        signDone = False
+        signFailed = False
+    ElseIf taskId = 168 Then
+        mailDone = False
+        mailFailed = False
+    ElseIf taskId = 169 Then
+        rewardDone = False
+        rewardFailed = False
+    End If
+    Call Note("[流程] 出口 SaveCurrentTask 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub SaveRecovery()
+    Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
-    mailFailed = True
-    mailFailures = mailFailures + 1
-    Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & mailFailures)
+    If currentTask = 166 Then
+        monthFailed = True
+        monthFailures = monthFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，月卡失败次数=" & monthFailures)
+    ElseIf currentTask = 167 Then
+        signFailed = True
+        signFailures = signFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，签到失败次数=" & signFailures)
+    ElseIf currentTask = 168 Then
+        mailFailed = True
+        mailFailures = mailFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & mailFailures)
+    ElseIf currentTask = 169 Then
+        rewardFailed = True
+        rewardFailures = rewardFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & rewardFailures)
+    End If
+    Call Note("[流程] 出口 SaveRecovery 到达函数末尾（不代表任务已提交）")
 End Sub
 Function CommitTask(hallConfirmed)
+    Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 Then
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 Then
+        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166")
         Exit Function
     End If
     If Not terminalConfirmed Then
+        Call Note("[流程] 出口 CommitTask 分支2 路径条件 Not terminalConfirmed")
         Exit Function
     End If
     If Not hallConfirmed Then
+        Call Note("[流程] 出口 CommitTask 分支3 路径条件 Not hallConfirmed")
         Exit Function
     End If
-    mailDone = True
-    mailFailed = False
-    mailCount = mailCount + 1
-    mailDue = TickCount() + mailInterval * 1000
-    mailFirst = False
-    mailPhase = "完成"
+    If Not BeginForegroundCommit() Then
+        Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
+        Exit Function
+    End If
+    If currentTask = 166 Then
+        monthDone = True
+        monthFailed = False
+        monthCount = monthCount + 1
+        monthDue = TickCount() + monthInterval * 1000
+        monthFirst = False
+        monthPhase = "完成"
+        Call Note("月卡龙石166提交完成，次数=" & monthCount & "，间隔秒=" & monthInterval)
+    ElseIf currentTask = 167 Then
+        signDone = True
+        signFailed = False
+        signCount = signCount + 1
+        signDue = TickCount() + signInterval * 1000
+        signFirst = False
+        signPhase = "完成"
+        Call Note("日常签到167提交完成，次数=" & signCount & "，间隔秒=" & signInterval)
+    ElseIf currentTask = 168 Then
+        mailDone = True
+        mailFailed = False
+        mailCount = mailCount + 1
+        mailDue = TickCount() + mailInterval * 1000
+        mailFirst = False
+        mailPhase = "完成"
+        Call Note("邮件提交完成，次数=" & mailCount & "，间隔秒=" & mailInterval)
+    ElseIf currentTask = 169 Then
+        rewardDone = True
+        rewardFailed = False
+        rewardCount = rewardCount + 1
+        rewardDue = TickCount() + rewardInterval * 1000
+        rewardFirst = False
+        rewardPhase = "完成"
+        Call Note("任务奖励169提交完成，次数=" & rewardCount & "，间隔秒=" & rewardInterval)
+    End If
     currentTask = 0
     resumeTask = 0
     terminalConfirmed = False
-    Call Note("邮件提交完成，次数=" & mailCount & "，间隔秒=" & mailInterval)
     CommitTask = True
+    Call Note("[流程] 结果 CommitTask True")
+    Call EndForegroundCommit()
+    Call Note("[流程] 出口 CommitTask 到达函数末尾（不代表任务已提交）")
 End Function
 
 
 // common/运行计时.mq
 Function LoginExpired()
-    LoginExpired = TickCount() - loginStarted >= loginLimit
+    LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
-    BusinessExpired = TickCount() - businessStarted >= businessLimit
+    BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted >= businessLimit
 End Function
 Sub Progress()
     progressAt = TickCount()
@@ -146,19 +433,92 @@ End Sub
 
 // common/点击操作.mq
 Sub TouchPoint(x, y, waitMs)
+    Dim remaining, sliceMs
+    Call Note("[流程] 入口 TouchPoint")
+    If ForegroundInterrupted() Then
+        Call Note("[流程] 出口 TouchPoint 分支1 路径条件 ForegroundInterrupted()")
+        Exit Sub
+    End If
+    // Do not tap another app during the five-second grace period.
+    If Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) And Sys.GetFront() <> "com.tencent.mobileqq:openSdk" Then
+        Call Note("[流程] 出口 TouchPoint 分支2 路径条件 Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) And Sys.GetFront() <> 'com.tencent.mobileqq:openSdk'")
+        Exit Sub
+    End If
     ReleaseCapture
     Tap x, y
-    If waitMs > 0 Then
-        Delay waitMs
-    End If
+    Call Note("[流程] 已发送点击 x=" & x & " y=" & y & " 等待毫秒=" & waitMs)
+    remaining = waitMs
+    Do While remaining > 0
+        If ForegroundInterrupted() Then
+            Call Note("[流程] 出口 TouchPoint 分支3 路径条件 ForegroundInterrupted()")
+            Exit Sub
+        End If
+        sliceMs = remaining
+        If sliceMs > 100 Then
+            sliceMs = 100
+        End If
+        Delay sliceMs
+        remaining = remaining - sliceMs
+    Loop
+    Call Note("[流程] 出口 TouchPoint 到达函数末尾（不代表任务已提交）")
 End Sub
 Function TouchPattern(name, waitMs)
     TouchPattern = False
     If MatchPattern(name) Then
+        Call Note("[流程] 图色命中 " & name)
         Call TouchPoint(foundX, foundY, waitMs)
         TouchPattern = True
     End If
 End Function
+
+
+// common/活动入口.mq
+Function ReadActivityText(x1, y1, x2, y2)
+    Dim text
+    ReadActivityText = ""
+    If ForegroundInterrupted() Then
+        Exit Function
+    End If
+    ReleaseCapture
+    text = Image.OcrText(x1, y1, x2, y2, 0, 0)
+    If IsNull(text) Then
+        text = ""
+    End If
+    If text <> activityOcrLast Or TickCount() - activityOcrLogAt >= 5000 Then
+        Call Note("[活动OCR] 区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 文本=" & text)
+        activityOcrLast = text
+        activityOcrLogAt = TickCount()
+    End If
+    ReadActivityText = text
+End Function
+Sub SwipeActivityPage(reverse)
+    If ForegroundInterrupted() Then
+        Call Note("[活动滑动] 出口：前台中断，未执行")
+        Exit Sub
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call Note("[活动滑动] 出口：游戏不在前台，未执行")
+        Exit Sub
+    End If
+    ReleaseCapture
+    If reverse Then
+        Call Note("[活动滑动] 159,137到609,137，300毫秒")
+        Swipe 159, 137, 609, 137, 300
+    Else
+        Call Note("[活动滑动] 609,137到159,137，300毫秒")
+        Swipe 609, 137, 159, 137, 300
+    End If
+    If ForegroundInterrupted() Then
+        Call Note("[活动滑动] 出口：后续短滑前中断")
+        Exit Sub
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call Note("[活动滑动] 出口：后续短滑前离开游戏")
+        Exit Sub
+    End If
+    Swipe 100, 100, 100, 50, 100
+    Call Note("[活动滑动] 出口：已完成及100,100到100,50短滑")
+End Sub
 
 
 // common/图色参数.mq
@@ -321,9 +681,144 @@ Function MatchPattern(name)
     Case "QQ现版游戏信息同意"
         // user-qq-screenshot-3; user screenshot adaptation, not original professional data
         FindMultiColor 228,984,252,1008,"FF9900-080808","-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,28|-681|1E1C1A-080808,254|-665|1E1C1A-080808,-180|-683|1E1C1A-080808,142|-693|1E1C1A-080808,-76|-662|1E1C1A-080808,88|-662|1E1C1A-080808,194|-661|1E1C1A-080808,-125|-695|1E1C1A-080808,-27|-689|1E1C1A-080808,116|0|FFFFFF-080808,147|13|FFFFFF-080808,92|15|FFFFFF-080808,92|-11|FFFFFF-080808,139|-10|FFFFFF-080808,130|10|FFFFFF-080808,111|15|FFFFFE-080808,-20|66|E6E6E6-080808,260|134|E6E6E6-080808",0,1,foundX,foundY
+    Case "首次启动协议"
+        // User first-launch screenshot adaptation; not professional evidence.
+        FindMultiColor 228,818,252,842,"F78811-101010","20|-25|F88C17-101010,240|-25|FEB459-101010,20|25|F88C17-101010,240|25|FEB459-101010,0|110|D0CAC9-101010,240|110|E5DFDE-101010,-140|-80|FFFFFF-101010,380|-80|FFFFFF-101010,-140|-620|FFFFFF-101010,-48|-561|000000-101010,280|-563|000000-101010,282|-408|E5B533-101010,-53|-325|E5B533-101010,103|0|FFFFFF-101010,136|1|FFFFFF-101010",0,1,foundX,foundY
     Case "游戏协议弹窗"
         // User screenshot adaptation, not professional evidence.
         FindMultiColor 458,868,482,892,"43DFFF-101010","-20|-5|23AFF9-101010,130|-5|36E4FE-101010,-20|35|026DF9-101010,130|35|0682FD-101010,-415|-500|5B3328-101010,-415|-80|5B3328-101010,190|-80|5B3328-101010,-261|-456|FFFF00-101010,-277|-409|FFFF00-101010,-260|-364|F1F100-101010,-266|-318|DFDF00-101010,38|17|FFFFFF-101010,74|16|FFFFFF-101010",0,1,foundX,foundY
+    Case "169_入口"
+        // root-729_L106; professional task169
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",1,0.9,foundX,foundY
+    Case "169_成长有奖一"
+        // root-729_L200; professional task169
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","41|44|0071FD-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-324|98|247935-101010,-182|-20|543B23-101010,289|-975|0D4FD3-101010,166|-981|3D87E2-101010,133|-973|754423-101010,8|-997|B27036-101010",1,0.85,foundX,foundY
+    Case "169_成长有奖二"
+        // root-729_L228; professional task169
+        FindMultiColor 0,0,719,1279,"73F1FF-101010","-71|38|0A8EFF-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|79481F-101010,-242|-976|906544-101010,-17|-971|16304D-101010,241|-974|0D4FD3-101010,120|-1000|5FC2FC-101010,-157|-999|B27036-101010",1,0.85,foundX,foundY
+    Case "169_成长无奖一"
+        // root-729_L286; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","41|44|8E8E8E-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-324|98|247935-101010,-182|-20|543B23-101010,289|-975|0D4FD3-101010,166|-981|3D87E2-101010,133|-973|754423-101010,8|-997|B27036-101010",1,0.85,foundX,foundY
+    Case "169_成长无奖二"
+        // root-729_L314; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-71|38|A1A1A1-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|79481F-101010,-242|-976|906544-101010,-17|-971|16304D-101010,241|-974|0D4FD3-101010,120|-1000|5FC2FC-101010,-157|-999|B27036-101010",1,0.85,foundX,foundY
+    Case "169_日常有奖一"
+        // root-729_L372; professional task169
+        FindMultiColor 0,0,719,1279,"0A8EFF-101010","-206|34|C6EDE4-101010,-220|46|93BBAE-101010,-258|60|149753-101010,30|-1011|0D4FD3-101010,35|-1020|3680E3-101010,-167|-1033|B37139-101010,67|-57|543B23-101010,74|-57|543B23-101010,121|0|078BFE-101010",1,0.85,foundX,foundY
+    Case "169_日常有奖二"
+        // root-729_L400; professional task169
+        FindMultiColor 0,0,719,1279,"73F1FF-101010","-71|38|0A8EFF-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|00ABFD-101010,-242|-976|0D4FD3-101010,-17|-971|8D5A27-101010,241|-974|754423-101010,120|-1000|B87036-101010,-157|-999|5DC0FA-101010",1,0.85,foundX,foundY
+    Case "169_日常无奖一"
+        // root-729_L458; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-278|72|C6EDE4-101010,-292|84|93BBAE-101010,-330|98|149753-101010,-42|-973|0D4FD3-101010,-37|-982|3680E3-101010,-239|-995|B37139-101010,-5|-19|543B23-101010,2|-19|543B23-101010,49|38|9E9E9E-101010",1,0.85,foundX,foundY
+    Case "169_日常无奖二"
+        // root-729_L486; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-71|38|A1A1A1-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|00ABFD-101010,-242|-976|0D4FD3-101010,-17|-971|8D5A27-101010,241|-974|754423-101010,120|-1000|B87036-101010,-157|-999|5DC0FA-101010",1,0.85,foundX,foundY
+    Case "169_通行证"
+        // root-729_L544; professional task169
+        FindMultiColor 0,0,719,1279,"C4EDE4-101010","-14|12|96BCB0-101010,-60|27|247935-101010,169|-14|3E2E26-101010,243|-85|261D15-101010,357|-92|503727-101010,29|-1025|91EFFE-101010,110|-1044|754423-101010,342|-1028|A14F26-101010,84|-1045|0A54D0-101010",1,0.85,foundX,foundY
+    Case "169_特殊有奖"
+        // root-729_L590; professional task169
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","-82|0|33BFF9-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-321|98|277C38-101010,133|-974|0D4FD3-101010,14|-998|3FAAF4-101010,162|-973|754423-101010,162|-992|AC7241-101010,-221|-957|A14F26-101010",1,0.85,foundX,foundY
+    Case "169_特殊无奖"
+        // root-729_L636; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-82|0|C0C0C0-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-321|98|277C38-101010,133|-974|0D4FD3-101010,14|-998|3FAAF4-101010,162|-973|754423-101010,162|-992|AC7241-101010,-221|-957|A14F26-101010",1,0.85,foundX,foundY
+    Case "169_奖励弹窗一"
+        // root-729_L1398; professional task169
+        FindMultiColor 0,0,719,1279,"00003A-101010","-39|-30|27F5FD-101010,258|-32|2BF9FF-101010,255|0|099DFE-101010,191|-34|00003A-101010,81|-24|00003A-101010,71|-20|20DBFE-101010,44|12|00003A-101010,8|-16|00003A-101010,65|-54|00003A-101010",1,0.9,foundX,foundY
+    Case "169_奖励弹窗二"
+        // root-729_L1664; professional task169
+        FindMultiColor 0,0,719,1279,"0A7DFF","-108|9|0061F5,-46|-37|78F4FD,-59|49|55311E,-50|53|894F2E,-111|-235|080505,-100|-318|96543B,250|-362|FAD99F,262|-378|FFF9E9,-374|-153|96543B,-382|-150|BF6D3B,-362|-162|563629",1,0.9,foundX,foundY
+    Case "167_入口"
+        // root-727_L102
+        FindMultiColor 607,92,719,248,"2CBAFE-202020","-6|-33|DCD4C4-202020,43|-39|AFA796-202020,41|-24|AFA796-202020,13|-43|193BE5-202020,11|-33|153EE3-202020,7|-52|DCD4C4-202020,15|-26|FFFFFF-202020,9|0|27BBFD-202020,26|-17|56E7F8-202020",1,0.9,foundX,foundY
+    Case "167_中心页面"
+        // root-727_L182
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","-53|24|3BCC8A-101010,-60|26|247935-101010,502|-43|261D15-101010,593|-118|161616-101010,-74|-98|543B23-101010,58|-1189|7D4C3B-101010,-73|-1160|1536B2-101010,45|-84|B88228-101010,38|-84|B78127-101010",1,0.9,foundX,foundY
+    Case "167_领取一"
+        // root-727_L278
+        FindMultiColor 39,424,680,945,"3BBFFF-101010","-1|0|F1FFFF-101010,-5|0|0495DE-101010,38|48|BD85FF-101010,38|47|B682FF-101010,98|-21|2213A0-101010,77|-44|FFDAFF-101010,92|23|42FFFF-101010,93|21|59C5FF-101010,67|48|DFFFFF-101010",1,0.9,foundX,foundY
+    Case "167_领取二"
+        // root-727_L358
+        FindMultiColor 39,424,680,945,"3BFFFF-101010","-3|1|14C8FF-101010,100|-13|001292-101010,47|-66|11D7FF-101010,48|25|019FFF-101010,50|-66|11D7FF-101010,45|24|009FFF-101010",1,0.9,foundX,foundY
+    Case "167_领取三"
+        // root-727_L440
+        FindMultiColor 39,424,680,945,"D4FFFF-101010","2|-20|E4FFFF-101010,95|-24|41FFFF-101010,94|-23|58FFFF-101010,-1|-1|3AB8FF-101010,54|-67|E874FF-101010,0|-1|D4FFFF-101010",1,0.9,foundX,foundY
+    Case "167_领取四"
+        // root-727_L522
+        FindMultiColor 39,424,680,945,"41ABFF-101010","-3|-2|E9FFFF-101010,-4|4|D8FFFF-101010,-5|11|36B6FF-101010,79|-51|FFFFFF-101010,77|-51|FFFFFF-101010,80|-52|FFFFFF-101010,80|-53|FFFFFF-101010,82|-51|FFFFFF-101010",1,0.9,foundX,foundY
+    Case "167_奖励弹窗"
+        // root-727_L604
+        FindMultiColor 0,0,719,1279,"2BF9FF-101010","86|4|2BF9FF-101010,296|6|2BF9FF-101010,215|7|2BF9FF-101010,220|42|00003A-101010,-26|33|00003A-101010,102|-12|00003A-101010,160|17|00003A-101010,289|-2|00003A-101010,96|-23|ECEBEB-101010",1,0.9,foundX,foundY
+    Case "167_充值提示"
+        // root-727_L662
+        FindMultiColor 0,0,719,1279,"FCDDA4-101010","-61|53|20110C-101010,-113|69|5B3328-101010,-94|-158|484848-101010,-194|-216|000000-101010,-374|370|026DF9-101010,-510|310|96543B-101010,19|68|96543B-101010",1,0.9,foundX,foundY
+    Case "167_累计可领"
+        // root-727_L732
+        FindMultiColor 0,0,719,1279,"0682FD","-1|-26|48EDFD,-74|4|0072FE,-30|-26|6DF1FF,-33|11|C7F8FC,-29|-59|BE8826,-29|-63|C29340,-133|85|503727,-131|77|3B2B23,-566|-17|865331,-564|-22|30211F,-292|58|C69649,-282|69|2D211B,90|5|573626,87|4|30211F",1,0.9,foundX,foundY
+    Case "167_累计灰色"
+        // root-727_L790
+        FindMultiColor 0,0,719,1279,"999999","-1|-26|DFDFDF,-74|4|8F8F8F,-30|-26|E6E6E6,-33|11|F3F3F3,-29|-59|BE8826,-29|-63|C29340,-133|85|503727,-131|77|3B2B23,-566|-17|865331,-564|-22|30211F,-292|58|C69649,-282|69|2D211B,90|5|573626,87|4|30211F",1,0.9,foundX,foundY
+    Case "166_类型左卡"
+        // function-726.readable_L47
+        FindMultiColor 0,0,719,1279,"2DBF85","-49|-10|FFFFFF,-80|13|0A8E54,-48|-4|095D3C,535|-965|B67C45,126|-937|2ED8FA,88|-847|100C0C,67|-500|F3D2D2,-42|-400|26A1FF,55|-541|743E19,182|-499|0A54F1,168|-555|FFFFFF,147|-529|0D4FF4,189|-499|0D4FF4,498|-527|1244A7,519|-520|1547AA,525|-545|0A6DD0,371|-432|225CF3,304|-267|0E48A3,549|-275|055FD3",1,0.9,foundX,foundY
+    Case "166_类型右卡"
+        // function-726.readable_L82
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,147|-527|75441A,170|-489|76451C,188|-504|714016,191|-521|703E1D,523|-499|0A54F1,488|-533|0A4CF1,509|-556|FFFFFF",1,0.9,foundX,foundY
+    Case "166_类型双卡"
+        // function-726.readable_L117
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,179|-499|0A54F1,146|-533|0A4CF1,158|-540|FBFBFB,184|-524|FFFFFF,523|-499|0A54F1,488|-533|0A4CF1,509|-556|FFFFFF",1,0.9,foundX,foundY
+    Case "166_类型未购买"
+        // function-726.readable_L152
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,147|-527|75441A,170|-489|76451C,188|-504|714016,191|-521|703E1D,500|-531|1244A7,525|-501|1244A7,538|-521|1244A7",1,0.9,foundX,foundY
+    Case "166_奖励弹窗"
+        // function-726.readable_L192
+        FindMultiColor 0,0,719,1279,"2BF9FF-101010","86|4|2BF9FF-101010,296|6|2BF9FF-101010,215|7|2BF9FF-101010,220|42|00003A-101010,-26|33|00003A-101010,102|-12|00003A-101010,160|17|00003A-101010,289|-2|00003A-101010,96|-23|ECEBEB-101010",1,0.9,foundX,foundY
+    Case "166_左卡可领"
+        // function-726.readable_L223
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|0A7DFF,-2|-191|3BE0FF",1,0.9,foundX,foundY
+    Case "166_左卡灰色"
+        // function-726.readable_L267
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|979797,-2|-191|D6D6D6",1,0.9,foundX,foundY
+    Case "166_右卡可领"
+        // function-726.readable_L325
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,359|-163|0275FF,394|-199|71F5FD",1,0.9,foundX,foundY
+    Case "166_双卡灰色"
+        // function-726.readable_L369
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,108|-169|979797,-2|-191|D6D6D6,359|-163|919191,394|-199|E8E8E8",1,0.9,foundX,foundY
+    Case "166_右卡灰色"
+        // function-726.readable_L427
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A,359|-163|919191,394|-199|E8E8E8",1,0.9,foundX,foundY
+    Case "166_活动框一"
+        // function-783.readable_L367
+        FindMultiColor 1,3,717,222,"F7FDFF-101010","54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,-20|148|8A5724-101010,-11|148|533416-101010,-16|146|3B1C12-101010,-27|146|5E2B1A-101010,-29|150|644825-101010",1,0.9,foundX,foundY
+    Case "166_活动框二"
+        // function-783.readable_L380
+        FindMultiColor 1,3,717,222,"F7FDFF-101010","54|-3|5A3838-101010,336|-31|272F48-101010,482|-35|92C3E4-101010,494|-33|2B334C-101010,630|148|865320-101010,631|147|6D3A1C-101010,610|147|452613-101010,631|150|644825-101010,630|145|5D2B1A-101010",1,0.9,foundX,foundY
+    Case "166_大厅活动入口一"
+        // function-787.readable_L5666
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","1|12|231E2B-101010,-18|9|5555AA-101010,23|9|5555AA-101010,11|29|42ECFD-101010,-6|33|38E6FD-101010,5|14|E8E5EA-101010,10|12|292529-101010,-4|1|FFFFFF-101010,1|1|FFFFFF-101010",1,0.9,foundX,foundY
+    Case "166_大厅活动入口二"
+        // function-787.readable_L5679
+        FindMultiColor 0,0,719,1279,"42ECFD","15|0|42ECFD,3|-29|FFFFFF,4|-35|FFFFFF,-8|-9|CBEEFE,37|8|D1C1B0,-21|8|CEBDAD,34|-9|4B822A,9|-43|454589,7|-43|454589",1,0.9,foundX,foundY
+    Case "166_大厅识别一"
+        // function-787.readable_L5692
+        FindMultiColor 0,0,719,1279,"D1E0FF-101010","1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010",1,0.9,foundX,foundY
+    Case "166_大厅识别二"
+        // function-787.readable_L5705
+        FindMultiColor 0,0,719,1279,"8391AB-101010","20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010",1,0.9,foundX,foundY
+    Case "166_大厅识别三"
+        // function-787.readable_L5718
+        FindMultiColor 6,1133,153,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",0,0.9,foundX,foundY
+    Case "166_月卡图标"
+        // function-788.readable_L149
+        FindMultiColor 0,0,719,1279,"12C8FF-202020","-12|-36|12C8FF-202020,17|-33|12C8FF-202020,-19|2|028EF1-202020,-5|20|0059CD-202020,-37|39|000000-202020,34|28|033BB6-202020,-44|62|FFFFFF-202020,-35|58|FFFFFF-202020,-25|62|FFFFFF-202020,-25|77|FFFFFF-202020,-18|79|FFFFFF-202020,0|61|FFFFFF-202020,-8|74|FFFFFF-202020,8|58|FFFFFF-202020,25|79|FFFFFF,9|79|FFFFFF,48|79|FFFFFF,49|59|FFFFFF,31|60|F8F8F8",1,0.9,foundX,foundY
+    Case "166_月卡页面"
+        // function-788.readable_L162
+        FindMultiColor 0,0,719,1279,"2DBF85","-29|-16|FFFFFF,-82|8|3BCC8A,-45|-13|FFFFFF,72|-498|F6D0CB,49|-492|CA7564,-20|-413|26A1FF,409|-469|235CF1,421|-471|58D4FD,321|-422|25A0FE,407|-538|1254BF,382|-345|16409A,61|-531|8A501F,42|-345|65331A",monthlySearchDirection,0.9,foundX,foundY
+    Case "166_资源下载提示"
+        // function-786.readable_L17
+        FindMultiColor 0,0,719,1279,"0A7DFF-202020","-51|-37|75F1FF-202020,-299|8|069250-202020,-428|-39|37DC9A-202020,-365|54|894F2E-202020,-540|23|C06C39-202020,-171|-69|221510-202020,-173|-309|20110C-202020,104|-377|D8A75C-202020,-243|-205|5B3328-202020,-13|-18|25BFFF-202020,-103|-14|1BB0FE-202020,-313|-16|42C69D-202020,-396|-13|3ABE95-202020",1,0.9,foundX,foundY
     End Select
     MatchPattern = foundX >= 0 And foundY >= 0
 End Function
@@ -550,111 +1045,219 @@ End Function
 
 // common/游戏控制.mq
 Sub StartGame()
-    If Sys.AppIsFront(QQ_PACKAGE) Then
+    Call Note("[流程] 入口 StartGame")
+    If Sys.AppIsFront(QQ_PACKAGE) Or Sys.GetFront() = "com.tencent.mobileqq:openSdk" Then
         If Sys.IsRunning(GAME_PACKAGE) Then
+            Call Note("[流程] 出口 StartGame 分支1 路径条件 Sys.IsRunning(GAME_PACKAGE)")
             Exit Sub
         End If
     End If
     If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call BeginForegroundRecovery()
         RunApp GAME_PACKAGE
+        Call EndForegroundRecovery()
     End If
+    Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    Call Note("[流程] 入口 RestartGame")
+    Call BeginForegroundRecovery()
+    foregroundLoginPending = True
     Call Note("重启游戏；保持同一会话及待恢复业务=" & resumeTask)
     KillApp GAME_PACKAGE
     // New-engine process shutdown settling delay, not a recovered task delay.
     Delay 1000
+    loginStarted = TickCount()
+    RunApp GAME_PACKAGE
+    Call EndForegroundRecovery()
+    Call Note("[流程] 出口 RestartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 
 
 // common/返回大厅.mq
 Function ReturnToHall()
     Dim returnStarted, acted
+    Call Note("[流程] 入口 ReturnToHall")
     ReturnToHall = RESULT_TIMEOUT
     returnStarted = TickCount()
     Call SetStage("大厅清障与绿色箭头返回")
     Call ResetHallCheck()
     Call ResetHallClearing()
     Do
-        If TickCount() - returnStarted >= businessLimit Then
+        If ForegroundInterrupted() Or TickCount() - returnStarted >= businessLimit Then
+            Call Note("[流程] 出口 ReturnToHall 分支1 路径条件 ForegroundInterrupted() Or TickCount() - returnStarted >= businessLimit")
             Exit Function
         End If
         If ConfirmHall() Then
             ReturnToHall = RESULT_OK
+            Call Note("[流程] 结果 ReturnToHall RESULT_OK")
+            Call Note("[流程] 出口 ReturnToHall 分支2 路径条件 ConfirmHall()")
             Exit Function
         End If
         acted = ClearHallObstacle()
         Delay 100
     Loop
+    Call Note("[流程] 出口 ReturnToHall 到达函数末尾（不代表任务已提交）")
 End Function
 
 
 // common/任务注册.mq
 Sub RegisterTasks()
     registeredTask = 168
-    Call Note("仅注册邮件168；登录重连是公共流程")
+    rewardRegisteredTask = 169
+    signRegisteredTask = 167
+    monthRegisteredTask = 166
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166；使用唯一串行调度器")
 End Sub
 Function SelectDueTask()
+    Dim selected, selectedDue
     SelectDueTask = 0
-    If resumeTask = registeredTask Then
-        SelectDueTask = resumeTask
-        Exit Function
-    End If
-    If mailEnabled Then
-        If mailFirst Then
-            SelectDueTask = registeredTask
-        ElseIf TickCount() >= mailDue Then
-            SelectDueTask = registeredTask
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Then
+        If resumeTask <> 0 Then
+            SelectDueTask = resumeTask
+            Exit Function
         End If
     End If
+    If mailEnabled And mailFirst Then
+        SelectDueTask = registeredTask
+        Exit Function
+    End If
+    If rewardEnabled And rewardFirst Then
+        SelectDueTask = rewardRegisteredTask
+        Exit Function
+    End If
+    If signEnabled And signFirst Then
+        SelectDueTask = signRegisteredTask
+        Exit Function
+    End If
+    If monthEnabled And monthFirst Then
+        SelectDueTask = monthRegisteredTask
+        Exit Function
+    End If
+    selected = 0
+    selectedDue = 0
+    If mailEnabled Then
+        If TickCount() >= mailDue Then
+            selected = registeredTask
+            selectedDue = mailDue
+        End If
+    End If
+    If rewardEnabled Then
+        If TickCount() >= rewardDue Then
+            If selected = 0 Or rewardDue < selectedDue Then
+                selected = rewardRegisteredTask
+                selectedDue = rewardDue
+            End If
+        End If
+    End If
+    If signEnabled Then
+        If TickCount() >= signDue Then
+            If selected = 0 Or signDue < selectedDue Then
+                selected = signRegisteredTask
+                selectedDue = signDue
+            End If
+        End If
+    End If
+    If monthEnabled Then
+        If TickCount() >= monthDue Then
+            If selected = 0 Or monthDue < selectedDue Then
+                selected = monthRegisteredTask
+            End If
+        End If
+    End If
+    SelectDueTask = selected
 End Function
 
 
 // common/任务分派.mq
 Function DispatchTask(taskId)
+    Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 168 Then
+    If taskId = 166 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMonthlyStones()
+    ElseIf taskId = 167 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteDailySign()
+    ElseIf taskId = 168 Then
         terminalConfirmed = False
         DispatchTask = ExecuteMail()
+    ElseIf taskId = 169 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteTaskRewards()
     End If
+    Call Note("[流程] 出口 DispatchTask 到达函数末尾（不代表任务已提交）")
 End Function
 
 
 // common/任务调度.mq
 Sub SchedulerStep()
     Dim selected, result, hallResult, committed
+    committed = HandleForegroundRecovery()
     selected = SelectDueTask()
     If selected = 0 Then
+        If foregroundLoginPending Then
+            result = EnsureGameHall()
+            Call Note("[流程] EnsureGameHall() 返回=" & result)
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If result = RESULT_OK Then
+                foregroundLoginPending = False
+            Else
+                Call RestartGame()
+            End If
+        End If
         Exit Sub
     End If
     Call SaveCurrentTask(selected)
+    Call Note("[流程] 调度入口 任务=" & selected)
     result = EnsureGameHall()
+    Call Note("[流程] EnsureGameHall() 返回=" & result)
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
     If result <> RESULT_OK Then
         loginFailures = loginFailures + 1
         Call Note("登录总超时，次数=" & loginFailures)
         Call RestartGame()
         Exit Sub
     End If
+    foregroundLoginPending = False
     businessStarted = TickCount()
     result = DispatchTask(selected)
+    Call Note("[流程] DispatchTask(selected) 返回=" & result)
     Do While result = RESULT_WAIT
         If BusinessExpired() Then
             result = RESULT_TIMEOUT
         Else
             Delay 20
             result = DispatchTask(selected)
+            Call Note("[流程] DispatchTask(selected) 返回=" & result)
         End If
     Loop
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
     If result = RESULT_OK And terminalConfirmed Then
         hallResult = ReturnToHall()
+        Call Note("[流程] ReturnToHall() 返回=" & hallResult)
+        If HandleForegroundRecovery() Then
+            Exit Sub
+        End If
         If hallResult = RESULT_OK Then
             committed = CommitTask(True)
+            Call Note("[流程] CommitTask(True) 返回=" & committed)
             If committed Then
                 Exit Sub
             End If
         End If
     End If
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
     Call SaveRecovery()
+    Call Note("[流程] 调度出口 业务未提交成功，进入恢复")
     Call RestartGame()
 End Sub
 
@@ -745,19 +1348,25 @@ End Function
 // flows/001_游戏重连/登录游戏.mq
 Function EnsureGameHall()
     Dim agreementTouched, acted, clearanceChecked
+    Call Note("[流程] 入口 EnsureGameHall")
     EnsureGameHall = RESULT_TIMEOUT
     agreementTouched = False
-    loginStarted = TickCount()
+    If Not foregroundLoginPending Then
+        loginStarted = TickCount()
+    End If
     Call SetStage("启动及QQ登录")
     Call ResetHallCheck()
     Call ResetHallClearing()
     Call StartGame()
     Do
         If LoginExpired() Then
+            Call Note("[流程] 出口 EnsureGameHall 分支1 路径条件 LoginExpired()")
             Exit Function
         End If
         If ConfirmHall() Then
             EnsureGameHall = RESULT_OK
+            Call Note("[流程] 结果 EnsureGameHall RESULT_OK")
+            Call Note("[流程] 出口 EnsureGameHall 分支2 路径条件 ConfirmHall()")
             Exit Function
         End If
         clearanceChecked = False
@@ -765,7 +1374,11 @@ Function EnsureGameHall()
         If Sys.AppIsFront(GAME_PACKAGE) And Not acted Then
             // root.793: known notice handlers; no task-specific claim here.
             // Screenshot-specific game agreement; keep the shared login deadline.
-            If MatchPattern("游戏协议弹窗") Then
+            If MatchPattern("首次启动协议") Then
+                Call Note("首次启动协议：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 120, foundY + 1, 1000)
+                acted = True
+            ElseIf MatchPattern("游戏协议弹窗") Then
                 Call Note("游戏协议弹窗：点击同意，登录总计时继续")
                 Call TouchPoint(foundX + 58, foundY + 16, 1000)
                 acted = True
@@ -807,6 +1420,7 @@ Function EnsureGameHall()
             Delay 20
         End If
     Loop
+    Call Note("[流程] 出口 EnsureGameHall 到达函数末尾（不代表任务已提交）")
 End Function
 
 
@@ -831,51 +1445,67 @@ Sub MailStage(value)
 End Sub
 Function ReadMessages()
     Dim localStarted, elapsed
+    Call Note("[流程] 入口 ReadMessages")
     ReadMessages = RESULT_TIMEOUT
     localStarted = TickCount()
     Call MailStage("消息邮件自动阅读")
     Do
         If BusinessExpired() Then
+            Call Note("[流程] 出口 ReadMessages 分支1 路径条件 BusinessExpired()")
             Exit Function
         End If
         If MatchPattern("邮件关闭弹窗") Then
+            Call Note("[流程] 邮件图色命中 邮件关闭弹窗")
             Call TouchPoint(foundX, foundY, 200)
             localStarted = TickCount()
         End If
         If MatchPattern("邮件消息打开") Then
+            Call Note("[流程] 邮件图色命中 邮件消息打开")
             Call TouchPoint(foundX, foundY, 200)
         End If
         elapsed = TickCount() - localStarted
         If elapsed > 2000 And elapsed <= 5000 Then
             If MatchPattern("邮件消息终态") Then
+                Call Note("[流程] 邮件图色命中 邮件消息终态")
                 ReadMessages = RESULT_OK
+                Call Note("[流程] 结果 ReadMessages RESULT_OK")
+                Call Note("[流程] 出口 ReadMessages 分支2 路径条件 MatchPattern('邮件消息终态')")
                 Exit Function
             End If
         End If
         If elapsed > 5000 Then
+            Call Note("[流程] 出口 ReadMessages 分支3 路径条件 elapsed > 5000")
             Exit Function
         End If
         Delay 20
     Loop
+    Call Note("[流程] 出口 ReadMessages 到达函数末尾（不代表任务已提交）")
 End Function
 Function ExecuteMail()
     Dim claimStarted, messageResult
+    Call Note("[流程] 入口 ExecuteMail")
     ExecuteMail = RESULT_TIMEOUT
     Call MailStage("进入邮件")
     Do
         If BusinessExpired() Then
+            Call Note("[流程] 出口 ExecuteMail 分支1 路径条件 BusinessExpired()")
             Exit Function
         End If
         If MatchPattern("邮件专业入口") Then
+            Call Note("[流程] 邮件图色命中 邮件专业入口")
             Call TouchPoint(25, 830, 200)
         End If
         If MatchPattern("低客户端提示") Then
+            Call Note("[流程] 邮件图色命中 低客户端提示")
             Call TouchPoint(foundX, foundY, 1500)
         End If
         If MailEmpty() Then
+            Call Note("[流程] 邮件识别 无奖励状态命中")
             terminalConfirmed = True
             Call MailStage("入口确认无奖励")
             ExecuteMail = RESULT_OK
+            Call Note("[流程] 结果 ExecuteMail RESULT_OK")
+            Call Note("[流程] 出口 ExecuteMail 分支2 路径条件 MailEmpty()")
             Exit Function
         End If
         If MailClaimable() Then
@@ -889,6 +1519,7 @@ Function ExecuteMail()
     Call MailStage("领取邮件奖励")
     Do
         If BusinessExpired() Then
+            Call Note("[流程] 出口 ExecuteMail 分支3 路径条件 BusinessExpired()")
             Exit Function
         End If
         If MailClaimable() Then
@@ -896,29 +1527,746 @@ Function ExecuteMail()
             Call Progress()
         End If
         If MatchPattern("获得奖励") Then
+            Call Note("[流程] 邮件图色命中 获得奖励")
             Call TouchPoint(foundX, foundY, 200)
             Call Progress()
         End If
         If MatchPattern("邮件关闭弹窗") Then
+            Call Note("[流程] 邮件图色命中 邮件关闭弹窗")
             Call TouchPoint(foundX, foundY, 200)
             Call Progress()
         End If
         If MailEmpty() Then
+            Call Note("[流程] 邮件识别 无奖励状态命中")
             Call Progress()
             Exit Do
         End If
         If TickCount() - claimStarted > 5000 Then
+            Call Note("[流程] 出口 ExecuteMail 分支4 路径条件 TickCount() - claimStarted > 5000")
             Exit Function
         End If
         Delay 20
     Loop
+    Call Note("[流程] 消息邮件模式 0手动跳过 1自动 当前=" & messageMode)
     If messageMode = 1 Then
+        Call Note("[流程] 消息邮件 自动模式入口")
         messageResult = ReadMessages()
         If messageResult <> RESULT_OK Then
+            Call Note("[流程] 出口 ExecuteMail 分支5 路径条件 messageResult <> RESULT_OK")
             Exit Function
         End If
     End If
     terminalConfirmed = True
     Call MailStage("邮件业务终态确认")
     ExecuteMail = RESULT_OK
+    Call Note("[流程] 结果 ExecuteMail RESULT_OK")
+    Call Note("[流程] 出口 ExecuteMail 到达函数末尾（不代表任务已提交）")
+End Function
+
+
+// flows/169_领任务奖励/领任务奖励.mq
+// Independent MQ implementation of professional root.729 behavior.
+Sub RewardStage(value)
+    rewardPhase = value
+    Call SetStage(value)
+End Sub
+Function RewardTouch(name, dx, dy, waitMs)
+    RewardTouch = False
+    If MatchPattern(name) Then
+        Call Note("任务169：" & name & "，点击=" & (foundX + dx) & "," & (foundY + dy))
+        Call TouchPoint(foundX + dx, foundY + dy, waitMs)
+        RewardTouch = True
+    End If
+End Function
+Function RewardGrowthClaimable()
+    RewardGrowthClaimable = True
+    If MatchPattern("169_成长有奖一") Then
+        Exit Function
+    End If
+    RewardGrowthClaimable = MatchPattern("169_成长有奖二")
+End Function
+Function RewardGrowthEmpty()
+    RewardGrowthEmpty = True
+    If MatchPattern("169_成长无奖一") Then
+        Exit Function
+    End If
+    RewardGrowthEmpty = MatchPattern("169_成长无奖二")
+End Function
+Function RewardDailyClaimable()
+    RewardDailyClaimable = True
+    If MatchPattern("169_日常有奖一") Then
+        Exit Function
+    End If
+    RewardDailyClaimable = MatchPattern("169_日常有奖二")
+End Function
+Function RewardDailyEmpty()
+    RewardDailyEmpty = True
+    If MatchPattern("169_日常无奖一") Then
+        Exit Function
+    End If
+    RewardDailyEmpty = MatchPattern("169_日常无奖二")
+End Function
+Function RewardPageKnown()
+    RewardPageKnown = True
+    If RewardGrowthClaimable() Then
+        Exit Function
+    End If
+    If RewardGrowthEmpty() Then
+        Exit Function
+    End If
+    If RewardDailyClaimable() Then
+        Exit Function
+    End If
+    If RewardDailyEmpty() Then
+        Exit Function
+    End If
+    If MatchPattern("169_通行证") Then
+        Exit Function
+    End If
+    If MatchPattern("169_特殊有奖") Then
+        Exit Function
+    End If
+    RewardPageKnown = MatchPattern("169_特殊无奖")
+End Function
+Function EnterTaskRewards()
+    Dim acted
+    Call Note("[流程] 入口 EnterTaskRewards")
+    EnterTaskRewards = RESULT_TIMEOUT
+    Call RewardStage("169进入任务页面")
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 EnterTaskRewards 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        acted = RewardTouch("169_入口", 327, 0, 200)
+        If RewardPageKnown() Then
+            EnterTaskRewards = RESULT_OK
+            Call Note("[流程] 结果 EnterTaskRewards RESULT_OK")
+            Call Note("[流程] 出口 EnterTaskRewards 分支2 路径条件 RewardPageKnown()")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 EnterTaskRewards 到达函数末尾（不代表任务已提交）")
+End Function
+Function RewardFirstPass()
+    Dim phaseProgress
+    Call Note("[流程] 入口 RewardFirstPass")
+    RewardFirstPass = RESULT_TIMEOUT
+    Call RewardStage("169第一段：成长、日常、特殊")
+    phaseProgress = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 RewardFirstPass 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        // Independent checks in professional order; no universal popup priority.
+        If RewardGrowthClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardGrowthEmpty() Then
+            Call TouchPoint(foundX - 90, foundY - 977, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+        End If
+        If RewardDailyEmpty() Then
+            Delay 50
+            RewardFirstPass = RESULT_OK
+            Call Note("[流程] 结果 RewardFirstPass RESULT_OK")
+            Call Note("[流程] 出口 RewardFirstPass 分支2 路径条件 RewardDailyEmpty()")
+            Exit Function
+        End If
+        If RewardTouch("169_通行证", 179, -1045, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_特殊有奖", 0, 0, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_特殊无奖", -90, -977, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If TickCount() - phaseProgress > 10000 Then
+            Call Note("任务169第一段无进展超时，交公共恢复")
+            Call Note("[流程] 出口 RewardFirstPass 分支3 路径条件 TickCount() - phaseProgress > 10000")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 RewardFirstPass 到达函数末尾（不代表任务已提交）")
+End Function
+Function RewardFourPositions()
+    Dim phaseProgress, positionIndex, dx
+    Call Note("[流程] 入口 RewardFourPositions")
+    RewardFourPositions = RESULT_TIMEOUT
+    Call RewardStage("169第二段：四位置奖励")
+    phaseProgress = TickCount()
+    positionIndex = 0
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 RewardFourPositions 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 200) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗二", 0, 0, 1000) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyEmpty() Then
+            dx = -159
+            If positionIndex = 1 Then
+                dx = -27
+            ElseIf positionIndex = 2 Then
+                dx = 106
+            ElseIf positionIndex = 3 Then
+                dx = 234
+            End If
+            Call Note("任务169四位置，序号=" & (positionIndex + 1))
+            Call TouchPoint(foundX + dx, foundY - 875, 1000)
+            positionIndex = positionIndex + 1
+        End If
+        // Original exit precedes the phase timeout check. Four clicks only.
+        If positionIndex > 3 Then
+            RewardFourPositions = RESULT_OK
+            Call Note("[流程] 结果 RewardFourPositions RESULT_OK")
+            Call Note("[流程] 出口 RewardFourPositions 分支2 路径条件 positionIndex > 3")
+            Exit Function
+        End If
+        If TickCount() - phaseProgress > 10000 Then
+            Call Note("任务169第二段无进展超时，交公共恢复")
+            Call Note("[流程] 出口 RewardFourPositions 分支3 路径条件 TickCount() - phaseProgress > 10000")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 RewardFourPositions 到达函数末尾（不代表任务已提交）")
+End Function
+Function RewardFinalPass()
+    Dim phaseProgress, acted
+    Call Note("[流程] 入口 RewardFinalPass")
+    RewardFinalPass = RESULT_TIMEOUT
+    Call RewardStage("169第三段：确认成长或特殊终态")
+    phaseProgress = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[流程] 出口 RewardFinalPass 分支1 路径条件 BusinessExpired()")
+            Exit Function
+        End If
+        If RewardTouch("169_奖励弹窗二", 0, 0, 1000) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 200) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyEmpty() Then
+            Call TouchPoint(foundX + 87, foundY - 977, 50)
+        End If
+        If RewardGrowthClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardGrowthEmpty() Then
+            If Not BusinessExpired() Then
+                terminalConfirmed = True
+                RewardFinalPass = RESULT_OK
+                Call Note("[流程] 结果 RewardFinalPass RESULT_OK")
+                Call RewardStage("169成长无奖终态已确认")
+            End If
+            Call Note("[流程] 出口 RewardFinalPass 分支2 路径条件 Not BusinessExpired()")
+            Exit Function
+        End If
+        acted = RewardTouch("169_特殊有奖", 0, 0, 50)
+        If MatchPattern("169_特殊无奖") Then
+            If Not BusinessExpired() Then
+                terminalConfirmed = True
+                RewardFinalPass = RESULT_OK
+                Call Note("[流程] 结果 RewardFinalPass RESULT_OK")
+                Call RewardStage("169特殊无奖终态已确认")
+            End If
+            Call Note("[流程] 出口 RewardFinalPass 分支3 路径条件 Not BusinessExpired()")
+            Exit Function
+        End If
+        If TickCount() - phaseProgress > 4000 Then
+            Call Note("任务169末段无进展超时，未确认终态，交公共恢复")
+            Call Note("[流程] 出口 RewardFinalPass 分支4 路径条件 TickCount() - phaseProgress > 4000")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call Note("[流程] 出口 RewardFinalPass 到达函数末尾（不代表任务已提交）")
+End Function
+Function ExecuteTaskRewards()
+    Dim result
+    Call Note("[流程] 入口 ExecuteTaskRewards")
+    ExecuteTaskRewards = RESULT_TIMEOUT
+    terminalConfirmed = False
+    result = EnterTaskRewards()
+    If result <> RESULT_OK Then
+        Call Note("[流程] 出口 ExecuteTaskRewards 分支1 路径条件 result <> RESULT_OK")
+        Exit Function
+    End If
+    result = RewardFirstPass()
+    If result <> RESULT_OK Then
+        Call Note("[流程] 出口 ExecuteTaskRewards 分支2 路径条件 result <> RESULT_OK")
+        Exit Function
+    End If
+    result = RewardFourPositions()
+    If result <> RESULT_OK Then
+        Call Note("[流程] 出口 ExecuteTaskRewards 分支3 路径条件 result <> RESULT_OK")
+        Exit Function
+    End If
+    ExecuteTaskRewards = RewardFinalPass()
+    Call Note("[流程] 出口 ExecuteTaskRewards 到达函数末尾（不代表任务已提交）")
+End Function
+
+
+// flows/167_日常签到/日常签到.mq
+Sub SignStage(value)
+    signPhase = value
+    Call SetStage(value)
+End Sub
+Sub SignTouch(name, x, y, waitMs)
+    Call Note("[签到167] 命中=" & name & " 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+End Sub
+Function EnterDailySign()
+    EnterDailySign = RESULT_TIMEOUT
+    Call SignStage("167进入签到中心")
+    Call Note("[签到167] 入口 EnterDailySign")
+    Do
+        If BusinessExpired() Then
+            Call Note("[签到167] 出口 EnterDailySign：业务总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("167_入口") Then
+            Call SignTouch("167_入口", foundX, foundY, 100)
+        End If
+        If MatchPattern("167_中心页面") Then
+            Call SignTouch("167_中心页面", 150, 50, 200)
+            If BusinessExpired() Then
+                Call Note("[签到167] 出口 EnterDailySign：点击后超时或中断")
+                Exit Function
+            End If
+            EnterDailySign = RESULT_OK
+            Call Note("[签到167] 出口 EnterDailySign：中心已识别，进入领取")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ClaimDailySign()
+    Dim claimStarted, cumulativeLogged
+    ClaimDailySign = RESULT_TIMEOUT
+    claimStarted = TickCount()
+    cumulativeLogged = False
+    Call SignStage("167领取签到奖励")
+    Call Note("[签到167] 入口 ClaimDailySign；累计检查门槛大于5000毫秒")
+    Do
+        If BusinessExpired() Then
+            Call Note("[签到167] 出口 ClaimDailySign：业务总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("167_领取一") Then
+            Call SignTouch("167_领取一", foundX + 5, foundY, 500)
+        End If
+        If MatchPattern("167_领取二") Then
+            Call SignTouch("167_领取二", foundX + 50, foundY - 20, 500)
+        End If
+        If MatchPattern("167_领取三") Then
+            Call SignTouch("167_领取三", foundX + 50, foundY - 20, 500)
+        End If
+        If MatchPattern("167_领取四") Then
+            Call SignTouch("167_领取四", foundX + 50, foundY - 20, 500)
+        End If
+        If MatchPattern("167_奖励弹窗") Then
+            Call SignTouch("167_奖励弹窗", 5, 5, 0)
+        End If
+        If MatchPattern("167_充值提示") Then
+            Call SignTouch("167_充值提示", foundX, foundY, 0)
+        End If
+        If TickCount() - claimStarted > 5000 Then
+            If Not cumulativeLogged Then
+                Call Note("[签到167] 累计检查启用；领取起点未刷新")
+                cumulativeLogged = True
+            End If
+            If MatchPattern("167_累计可领") Then
+                Call SignTouch("167_累计可领", foundX, foundY, 0)
+            End If
+            If MatchPattern("167_累计灰色") Then
+                If BusinessExpired() Then
+                    Call Note("[签到167] 出口 ClaimDailySign：灰色命中时已超时或中断")
+                    Exit Function
+                End If
+                ClaimDailySign = RESULT_OK
+                Call Note("[签到167] 出口 ClaimDailySign：累计灰色已确认，等待收尾终态")
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+End Function
+Function FinishDailySign()
+    FinishDailySign = RESULT_TIMEOUT
+    Call SignStage("167签到收尾确认")
+    Call Progress()
+    Call Note("[签到167] 入口 FinishDailySign")
+    Do
+        If BusinessExpired() Then
+            Call Note("[签到167] 出口 FinishDailySign：业务总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("167_奖励弹窗") Then
+            Call SignTouch("167_奖励弹窗收尾", foundX, foundY, 0)
+            If BusinessExpired() Then
+                Call Note("[签到167] 出口 FinishDailySign：收尾点击后超时或中断")
+                Exit Function
+            End If
+            FinishDailySign = RESULT_OK
+            Call Note("[签到167] 出口 FinishDailySign：奖励弹窗终态已处理")
+            Exit Function
+        End If
+        If MatchPattern("167_中心页面") Then
+            If BusinessExpired() Then
+                Call Note("[签到167] 出口 FinishDailySign：中心命中时超时或中断")
+                Exit Function
+            End If
+            FinishDailySign = RESULT_OK
+            Call Note("[签到167] 出口 FinishDailySign：中心页面终态已确认")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteDailySign()
+    Dim result
+    ExecuteDailySign = RESULT_TIMEOUT
+    terminalConfirmed = False
+    Call Note("[签到167] 业务入口 ExecuteDailySign")
+    result = EnterDailySign()
+    If result <> RESULT_OK Then
+        Call Note("[签到167] 业务出口：进入失败，返回超时")
+        Exit Function
+    End If
+    result = ClaimDailySign()
+    If result <> RESULT_OK Then
+        Call Note("[签到167] 业务出口：领取未完成，返回超时")
+        Exit Function
+    End If
+    result = FinishDailySign()
+    If result <> RESULT_OK Then
+        Call Note("[签到167] 业务出口：收尾未完成，返回超时")
+        Exit Function
+    End If
+    If BusinessExpired() Then
+        Call Note("[签到167] 业务出口：终态提交前超时或中断")
+        Exit Function
+    End If
+    terminalConfirmed = True
+    ExecuteDailySign = RESULT_OK
+    Call SignStage("167签到业务终态确认")
+    Call Note("[签到167] 业务出口：成功；等待公共返回大厅后提交")
+End Function
+
+
+// flows/166_领月卡龙石/领月卡龙石.mq
+Sub MonthStage(value)
+    monthPhase = value
+    Call SetStage(value)
+End Sub
+Sub MonthTouch(name, x, y, waitMs)
+    Call Note("[月卡166] 命中=" & name & " 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+End Sub
+Function MonthActivityFrame()
+    MonthActivityFrame = True
+    If MatchPattern("166_活动框一") Then
+        Exit Function
+    End If
+    MonthActivityFrame = MatchPattern("166_活动框二")
+End Function
+Function MonthHallKnown()
+    MonthHallKnown = True
+    If MatchPattern("166_大厅识别一") Then
+        Exit Function
+    End If
+    If MatchPattern("166_大厅识别二") Then
+        Exit Function
+    End If
+    MonthHallKnown = MatchPattern("166_大厅识别三")
+End Function
+Function MonthActivityIcon()
+    MonthActivityIcon = True
+    If MatchPattern("166_大厅活动入口一") Then
+        Exit Function
+    End If
+    MonthActivityIcon = MatchPattern("166_大厅活动入口二")
+End Function
+Sub MonthResourcePrompt()
+    Dim x, y, text
+    If Not monthKeepDownload Then
+        If MatchPattern("166_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = ReadActivityText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                Call MonthTouch("166_资源下载提示标题", x, y, 0)
+            End If
+            text = ReadActivityText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                Call MonthTouch("166_资源下载提示网络", x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function EnterMonthlyActivities()
+    Dim initialStarted, enterStarted, text, hallResult
+    EnterMonthlyActivities = RESULT_TIMEOUT
+    Call MonthStage("166进入活动界面")
+    Call Note("[月卡166] 入口 EnterMonthlyActivities")
+    initialStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：活动位置检查超时或前台中断")
+            Exit Function
+        End If
+        If MonthActivityFrame() Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：原活动框已确认")
+            Exit Function
+        End If
+        If TickCount() - initialStarted > 2000 Then
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    hallResult = ReturnToHall()
+    If hallResult <> RESULT_OK Then
+        Call Note("[月卡166] 出口：进入活动前返回大厅失败")
+        Exit Function
+    End If
+    enterStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：进入活动业务总超时或前台中断")
+            Exit Function
+        End If
+        Call MonthResourcePrompt()
+        If MonthActivityFrame() Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：专业版当前位置活动框复核成功，进入月卡分页")
+            Exit Function
+        End If
+        text = ReadActivityText(65, 7, 247, 59)
+        If text = "活动" Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：OCR活动标题已确认")
+            Exit Function
+        Else
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Call Note("[月卡166] 出口：活动标题未成立且公共返回失败")
+                Exit Function
+            End If
+        End If
+        If MonthHallKnown() Then
+            If MonthActivityIcon() Then
+                Call MonthTouch("166_大厅活动入口", foundX, foundY, 1500)
+            Else
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Call Note("[月卡166] 出口：无活动图标且公共返回失败")
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 300
+        If TickCount() - enterStarted > 60000 Then
+            Call Note("[月卡166] 出口：专业版活动入口60秒超时；不提交完成")
+            Delay 2000
+            Exit Function
+        End If
+    Loop
+End Function
+Function FindMonthlyPage()
+    Dim searchStarted, lastAction, swipeCount
+    FindMonthlyPage = RESULT_TIMEOUT
+    searchStarted = TickCount()
+    lastAction = TickCount() + 1500
+    swipeCount = 0
+    monthlySearchDirection = 0
+    Call MonthStage("166查找月卡分页")
+    Call Note("[月卡166] 入口 FindMonthlyPage，入口限时35秒")
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：分页业务总超时或前台中断")
+            Exit Function
+        End If
+        If monthlySearchDirection < 4 Then
+            monthlySearchDirection = monthlySearchDirection + 1
+        Else
+            monthlySearchDirection = 0
+        End If
+        If MatchPattern("166_月卡页面") Then
+            FindMonthlyPage = RESULT_OK
+            Call Note("[月卡166] 出口：月卡页面已确认，搜索方向=" & monthlySearchDirection)
+            Exit Function
+        End If
+        If MonthActivityFrame() Then
+            If MatchPattern("166_月卡图标") Then
+                Call MonthTouch("166_月卡图标", foundX, foundY, 1500)
+                lastAction = TickCount()
+            End If
+            If TickCount() - lastAction > 1500 Then
+                swipeCount = swipeCount + 1
+                Call Note("[月卡166] 活动分页滑动序号=" & swipeCount)
+                If swipeCount <= 7 Then
+                    Call SwipeActivityPage(False)
+                Else
+                    Call SwipeActivityPage(True)
+                    If swipeCount = 14 Then
+                        swipeCount = 0
+                    End If
+                End If
+                lastAction = TickCount()
+            End If
+        End If
+        If TickCount() - searchStarted > 35000 Then
+            Call Note("[月卡166] 出口：专业版分页35秒超时；不提交完成")
+            Delay 2000
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function DetectMonthlyCard()
+    Dim detected
+    DetectMonthlyCard = RESULT_TIMEOUT
+    monthCardType = -1
+    Call MonthStage("166识别月卡类型")
+    Call Progress()
+    Call Note("[月卡166] 入口 DetectMonthlyCard；顺序左卡、右卡、双卡、未购买")
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：卡型未知至总超时或前台中断")
+            Exit Function
+        End If
+        detected = False
+        If MatchPattern("166_类型左卡") Then
+            monthCardType = 1
+            detected = True
+        ElseIf MatchPattern("166_类型右卡") Then
+            monthCardType = 3
+            detected = True
+        ElseIf MatchPattern("166_类型双卡") Then
+            monthCardType = 2
+            detected = True
+        ElseIf MatchPattern("166_类型未购买") Then
+            monthCardType = 0
+            detected = True
+        End If
+        If detected Then
+            Call Note("[月卡166] 卡型=" & monthCardType & "；0未购买 1左卡 2双卡 3右卡；等待1000毫秒")
+            Delay 1000
+            If BusinessExpired() Then
+                Call Note("[月卡166] 出口：卡型等待后总超时或中断")
+                Exit Function
+            End If
+            DetectMonthlyCard = RESULT_OK
+            Call Note("[月卡166] 出口：卡型已确认")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Sub MonthClaimPair(name, dx)
+    Dim x, y
+    If MatchPattern(name) Then
+        x = foundX + dx
+        y = foundY - 184
+        Call MonthTouch(name, x, y, 500)
+        Call MonthTouch(name, x, y, 500)
+    End If
+End Sub
+Function ClaimMonthlyStones()
+    Dim finished
+    ClaimMonthlyStones = RESULT_TIMEOUT
+    Call MonthStage("166领取月卡龙石")
+    Call Progress()
+    Call Note("[月卡166] 入口 ClaimMonthlyStones，卡型=" & monthCardType)
+    If monthCardType = 0 Then
+        ClaimMonthlyStones = RESULT_OK
+        Call Note("[月卡166] 出口：明确未购买，无奖励终态")
+        Exit Function
+    End If
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：领取总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("166_奖励弹窗") Then
+            Call MonthTouch("166_奖励弹窗", foundX, foundY, 0)
+        End If
+        finished = False
+        If monthCardType = 1 Then
+            Call MonthClaimPair("166_左卡可领", 63)
+            finished = MatchPattern("166_左卡灰色")
+        ElseIf monthCardType = 2 Then
+            Call MonthClaimPair("166_左卡可领", 63)
+            Call MonthClaimPair("166_右卡可领", 410)
+            finished = MatchPattern("166_双卡灰色")
+        ElseIf monthCardType = 3 Then
+            Call MonthClaimPair("166_右卡可领", 410)
+            finished = MatchPattern("166_右卡灰色")
+        End If
+        If finished Then
+            If BusinessExpired() Then
+                Call Note("[月卡166] 出口：灰色终态命中时总超时或中断")
+                Exit Function
+            End If
+            ClaimMonthlyStones = RESULT_OK
+            Call Note("[月卡166] 出口：对应月卡灰色终态确认，卡型=" & monthCardType)
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteMonthlyStones()
+    Dim result
+    ExecuteMonthlyStones = RESULT_TIMEOUT
+    terminalConfirmed = False
+    Call Note("[月卡166] 业务入口 ExecuteMonthlyStones")
+    result = EnterMonthlyActivities()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：活动入口失败，返回超时")
+        Exit Function
+    End If
+    result = FindMonthlyPage()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：月卡分页失败，返回超时")
+        Exit Function
+    End If
+    result = DetectMonthlyCard()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：卡型未确认，返回超时")
+        Exit Function
+    End If
+    result = ClaimMonthlyStones()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：月卡终态未确认，返回超时")
+        Exit Function
+    End If
+    If BusinessExpired() Then
+        Call Note("[月卡166] 业务出口：终态提交前已超时或中断")
+        Exit Function
+    End If
+    terminalConfirmed = True
+    ExecuteMonthlyStones = RESULT_OK
+    Call MonthStage("166月卡业务终态确认")
+    Call Note("[月卡166] 业务出口：成功，等待公共返回大厅后提交")
 End Function

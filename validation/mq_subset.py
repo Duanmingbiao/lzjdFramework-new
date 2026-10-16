@@ -8,6 +8,8 @@ def expression(s):
  return s
 
 def load(paths, env):
+ # Unit fixtures without the monitor model the no-interruption dependency explicitly.
+ for key,value in {'monthEnabled':False,'monthInterval':3600,'monthRegisteredTask':166,'monthKeepDownload':False,'signEnabled':False,'signInterval':3600,'signRegisteredTask':167,'ForegroundInterrupted':lambda:False,'HandleForegroundRecovery':lambda:False,'BeginForegroundCommit':lambda:True,'EndForegroundCommit':lambda:None,'foregroundLoginPending':False,'BeginForegroundRecovery':lambda:None,'EndForegroundRecovery':lambda:None}.items():env.setdefault(key,value)
  env['mqcat']=lambda *args: ''.join(str(x) for x in args)
  allglobals=[]
  for line in (ROOT/'app/入口.mq').read_text('utf-8-sig').splitlines():
@@ -41,6 +43,16 @@ def load(paths, env):
    elif s.startswith('RunApp '):s='RunApp('+s[7:]+')'
    elif s.startswith('KillApp '):s='KillApp('+s[8:]+')'
    elif s.startswith(fn+' ='):s='mq_result'+s[len(fn):]
+   if s.startswith('TracePrint '):s='TracePrint('+s[11:]+')'
+   if s=='ReleaseCapture':s='ReleaseCapture()'
+   if s.startswith('Swipe '):s='Swipe('+s[6:]+')'
+   if s.startswith('Tap '):s='Tap('+s[4:]+')'
+   assignment=re.match(r'^(\w+) = (.*)$',s)
+   if assignment:
+    rhs=assignment[2]
+    if ' & ' in rhs:rhs='mqcat('+rhs.replace(' & ', ', ')+')'
+    else:rhs=expression(rhs)
+    s=assignment[1]+' = '+rhs
    # MQ concatenation is only used in diagnostic messages here.
    if ' & ' in s:
     call=re.fullmatch(r'(\w+)\((.*)\)',s)

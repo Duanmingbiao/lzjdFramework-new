@@ -1,0 +1,8 @@
+{
+  "android": "/sdcard/Pictures",
+  "host": "C:\\Users\\31027\\Documents\\leidian9\\Pictures",
+  "source": "D:\\leidian\\LDPlayer9\\vms\\config\\leidian0.config",
+  "field": "statusSettings.sharedPictures",
+  "change": "only log path constants",
+  "runtimeVerified": false
+}

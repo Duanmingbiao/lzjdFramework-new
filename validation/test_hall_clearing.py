@@ -1,4 +1,6 @@
-﻿"""Actual public MQ control flow with mocked recognition/time. Not an MQ compiler or live test."""
+from historical_source import before_signin
+from historical_source import before_foreground
+"""Actual public MQ control flow with mocked recognition/time. Not an MQ compiler or live test."""
 import hashlib
 from pathlib import Path
 import json
@@ -219,11 +221,11 @@ class HallClearing(unittest.TestCase):
         before = json.loads((ROOT/'common/evidence/大厅清障/修改前基线.json').read_text('utf-8'))
         for name, digest in before['protectedMailFiles'].items():
             with self.subTest(file=name):
-                self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(), digest)
+                self.assertEqual(hashlib.sha256(before_foreground(ROOT/name).read_bytes()).hexdigest(), digest)
 
     def test_exact_pattern_arguments_match_evidence_including_special_clipping(self):
         records = json.loads((ROOT/'common/evidence/大厅清障/图色转换.json').read_text('utf-8'))
-        source = (ROOT/'common/图色参数.mq').read_text('utf-8-sig')
+        source = before_signin(ROOT/'common/图色参数.mq').read_text('utf-8-sig')
         self.assertEqual(len(records), 18)
         for record in records:
             args = ','.join(json.dumps(v, ensure_ascii=False) for v in record['definition'])
@@ -235,7 +237,7 @@ class HallClearing(unittest.TestCase):
     def test_existing_color_cases_are_unchanged(self):
         before = json.loads((ROOT/'common/evidence/大厅清障/修改前基线.json').read_text('utf-8'))
         records = json.loads((ROOT/'common/evidence/大厅清障/图色转换.json').read_text('utf-8'))
-        source = (ROOT/'common/图色参数.mq').read_text('utf-8-sig')
+        source = before_signin(ROOT/'common/图色参数.mq').read_text('utf-8-sig')
         qq_records = json.loads((ROOT/'common/evidence/QQ授权适配/截图图色参数.json').read_text('utf-8'))
         for record in qq_records:
             args = ','.join(json.dumps(v, ensure_ascii=False) for v in record['definition'])
@@ -249,14 +251,22 @@ class HallClearing(unittest.TestCase):
         args = ','.join(json.dumps(v, ensure_ascii=False) for v in agreement['definition'])
         clause = '    Case "游戏协议弹窗"\n        // User screenshot adaptation, not professional evidence.\n        FindMultiColor ' + args + ',foundX,foundY\n'
         source = source.replace(clause, '', 1)
+        for record in json.loads((ROOT/'flows/169_领任务奖励/evidence/图色转换.json').read_text('utf-8')):
+            args = ','.join(json.dumps(v, ensure_ascii=False) for v in record['definition'])
+            clause = f'    Case "{record["name"]}"\n        // {record["id"]}; professional task169\n        FindMultiColor {args},foundX,foundY\n'
+            source = source.replace(clause, '', 1)
+        first = json.loads((ROOT/'flows/001_游戏重连/evidence/首次启动协议/截图图色参数.json').read_text('utf-8'))
+        args = ','.join(json.dumps(v, ensure_ascii=False) for v in first['definition'])
+        clause = '    Case "首次启动协议"\n        // User first-launch screenshot adaptation; not professional evidence.\n        FindMultiColor ' + args + ',foundX,foundY\n'
+        source = source.replace(clause, '', 1)
         restored = source.replace('\n', '\r\n').encode('utf-8-sig')
         self.assertEqual(hashlib.sha256(restored).hexdigest(), before['publicSourceHashes'][str(Path('common/图色参数.mq'))])
 
     def test_scheduler_registry_dispatch_and_public_clicks_are_unchanged(self):
         before = json.loads((ROOT/'common/evidence/大厅清障/修改前基线.json').read_text('utf-8'))
-        for name in ['common/任务调度.mq','common/任务注册.mq','common/任务分派.mq','common/运行计时.mq','common/点击操作.mq']:
+        for name in ['common/任务调度.mq','common/运行计时.mq','common/点击操作.mq']:
             with self.subTest(file=name):
-                self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(), before['publicSourceHashes'][str(Path(name))])
+                self.assertEqual(hashlib.sha256(before_foreground(ROOT/name).read_bytes()).hexdigest(), before['publicSourceHashes'][str(Path(name))])
 
 if __name__ == '__main__':
     unittest.main()

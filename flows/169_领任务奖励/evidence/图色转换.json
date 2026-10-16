@@ -1,0 +1,310 @@
+[
+  {
+    "name": "169_入口",
+    "id": "root-729_L106",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "FFFFFF-101010",
+      "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",
+      1,
+      0.9
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_成长有奖一",
+    "id": "root-729_L200",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "75F1FF-101010",
+      "41|44|0071FD-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-324|98|247935-101010,-182|-20|543B23-101010,289|-975|0D4FD3-101010,166|-981|3D87E2-101010,133|-973|754423-101010,8|-997|B27036-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_成长有奖二",
+    "id": "root-729_L228",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "73F1FF-101010",
+      "-71|38|0A8EFF-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|79481F-101010,-242|-976|906544-101010,-17|-971|16304D-101010,241|-974|0D4FD3-101010,120|-1000|5FC2FC-101010,-157|-999|B27036-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_成长无奖一",
+    "id": "root-729_L286",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "E7E7E7-101010",
+      "41|44|8E8E8E-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-324|98|247935-101010,-182|-20|543B23-101010,289|-975|0D4FD3-101010,166|-981|3D87E2-101010,133|-973|754423-101010,8|-997|B27036-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_成长无奖二",
+    "id": "root-729_L314",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "E7E7E7-101010",
+      "-71|38|A1A1A1-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|79481F-101010,-242|-976|906544-101010,-17|-971|16304D-101010,241|-974|0D4FD3-101010,120|-1000|5FC2FC-101010,-157|-999|B27036-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_日常有奖一",
+    "id": "root-729_L372",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "0A8EFF-101010",
+      "-206|34|C6EDE4-101010,-220|46|93BBAE-101010,-258|60|149753-101010,30|-1011|0D4FD3-101010,35|-1020|3680E3-101010,-167|-1033|B37139-101010,67|-57|543B23-101010,74|-57|543B23-101010,121|0|078BFE-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_日常有奖二",
+    "id": "root-729_L400",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "73F1FF-101010",
+      "-71|38|0A8EFF-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|00ABFD-101010,-242|-976|0D4FD3-101010,-17|-971|8D5A27-101010,241|-974|754423-101010,120|-1000|B87036-101010,-157|-999|5DC0FA-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_日常无奖一",
+    "id": "root-729_L458",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "E7E7E7-101010",
+      "-278|72|C6EDE4-101010,-292|84|93BBAE-101010,-330|98|149753-101010,-42|-973|0D4FD3-101010,-37|-982|3680E3-101010,-239|-995|B37139-101010,-5|-19|543B23-101010,2|-19|543B23-101010,49|38|9E9E9E-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_日常无奖二",
+    "id": "root-729_L486",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "E7E7E7-101010",
+      "-71|38|A1A1A1-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|00ABFD-101010,-242|-976|0D4FD3-101010,-17|-971|8D5A27-101010,241|-974|754423-101010,120|-1000|B87036-101010,-157|-999|5DC0FA-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_通行证",
+    "id": "root-729_L544",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "C4EDE4-101010",
+      "-14|12|96BCB0-101010,-60|27|247935-101010,169|-14|3E2E26-101010,243|-85|261D15-101010,357|-92|503727-101010,29|-1025|91EFFE-101010,110|-1044|754423-101010,342|-1028|A14F26-101010,84|-1045|0A54D0-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_特殊有奖",
+    "id": "root-729_L590",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "75F1FF-101010",
+      "-82|0|33BFF9-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-321|98|277C38-101010,133|-974|0D4FD3-101010,14|-998|3FAAF4-101010,162|-973|754423-101010,162|-992|AC7241-101010,-221|-957|A14F26-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_特殊无奖",
+    "id": "root-729_L636",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "E7E7E7-101010",
+      "-82|0|C0C0C0-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-321|98|277C38-101010,133|-974|0D4FD3-101010,14|-998|3FAAF4-101010,162|-973|754423-101010,162|-992|AC7241-101010,-221|-957|A14F26-101010",
+      1,
+      0.85
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_奖励弹窗一",
+    "id": "root-729_L1398",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "00003A-101010",
+      "-39|-30|27F5FD-101010,258|-32|2BF9FF-101010,255|0|099DFE-101010,191|-34|00003A-101010,81|-24|00003A-101010,71|-20|20DBFE-101010,44|12|00003A-101010,8|-16|00003A-101010,65|-54|00003A-101010",
+      1,
+      0.9
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  },
+  {
+    "name": "169_奖励弹窗二",
+    "id": "root-729_L1664",
+    "definition": [
+      0,
+      0,
+      719,
+      1279,
+      "0A7DFF",
+      "-108|9|0061F5,-46|-37|78F4FD,-59|49|55311E,-50|53|894F2E,-111|-235|080505,-100|-318|96543B,250|-362|FAD99F,262|-378|FFF9E9,-374|-153|96543B,-382|-150|BF6D3B,-362|-162|563629",
+      1,
+      0.9
+    ],
+    "originalRegion": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "reason": "Professional full-screen semantics converted to 720x1280; other values preserved.",
+    "verification": "static reconstruction; device pending"
+  }
+]

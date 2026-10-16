@@ -1,0 +1,1418 @@
+// app/入口.mq
+// 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
+Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
+Dim GAME_PACKAGE, QQ_PACKAGE, stageName, foundX, foundY
+Dim mailEnabled, mailInterval, loginLimit, businessLimit, messageMode
+Dim currentTask, resumeTask, registeredTask, mailDone, mailFailed
+Dim mailCount, mailFailures, mailDue, mailFirst, mailPhase
+Dim loginStarted, businessStarted, progressAt, loginFailures
+Dim hallFrames, hallSampleAt, terminalConfirmed
+Dim qqLastForeground, qqLastDiagnosticAt
+Dim hallMisses, hallExtended, hallActionIndex, hallReturnDelaySeconds
+Dim rewardEnabled, rewardInterval, rewardRegisteredTask
+Dim rewardDone, rewardFailed, rewardCount, rewardFailures
+Dim rewardDue, rewardFirst, rewardPhase
+Dim foregroundThread, foregroundLoginPending
+Call InitConstants()
+Call LoadSettings()
+Call NewSession()
+Call InitForegroundMonitor()
+Call RegisterTasks()
+If GetScreenX() <> 720 Or GetScreenY() <> 1280 Then
+    TracePrint "需要720x1280；请同时在MuMu确认320 DPI"
+    EndScript
+End If
+Call Note("新会话启动；已勾选普通任务先执行一次")
+foregroundThread = Thread.Start(ForegroundMonitor, GAME_PACKAGE, QQ_PACKAGE)
+Do
+    Call SchedulerStep()
+    Delay 200
+Loop
+
+
+// common/常量.mq
+Sub InitConstants()
+    RESULT_OK = 1
+    RESULT_WAIT = 2
+    RESULT_FAIL = 3
+    RESULT_TIMEOUT = 4
+    GAME_PACKAGE = "com.tencent.tmgp.dragonball"
+    QQ_PACKAGE = "com.tencent.mobileqq"
+End Sub
+
+
+// common/前台监控.mq
+// User-defined foreground policy. This thread only samples and reports.
+Sub InitForegroundMonitor()
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.since", 0)
+    Call Thread.SetShareVar("fg.last", "<未采样>")
+    Call Thread.SetShareVar("fg.reason", "")
+    foregroundLoginPending = False
+End Sub
+Sub ForegroundLog(message)
+    TracePrint "[龙珠激斗脚本][前台监控] " & message
+End Sub
+Sub SampleForeground(gamePackage, qqPackage)
+    Dim package, nowAt, recovering, outside
+    // Lock only this short sample; never hold across waits or game lifecycle calls.
+    Call Thread.Lock()
+    package = Sys.GetFront()
+    nowAt = TickCount()
+    If package <> Thread.GetShareVar("fg.last") Then
+        Call Thread.SetShareVar("fg.last", package)
+        Call ForegroundLog("前台包名=" & package)
+    End If
+    recovering = Thread.GetShareVar("fg.recovering")
+    outside = Thread.GetShareVar("fg.outside")
+    If recovering Then
+        Call Thread.SetShareVar("fg.outside", False)
+    ElseIf Not Thread.GetShareVar("fg.request") Then
+        If package = gamePackage Or package = qqPackage Then
+            If outside Then
+                Call ForegroundLog("回到允许前台，取消5秒倒计时")
+            End If
+            Call Thread.SetShareVar("fg.outside", False)
+        ElseIf Not outside Then
+            Call Thread.SetShareVar("fg.outside", True)
+            Call Thread.SetShareVar("fg.since", nowAt)
+            Call ForegroundLog("离开允许前台，开始5秒倒计时")
+        ElseIf nowAt - Thread.GetShareVar("fg.since") >= 5000 Then
+            Call Thread.SetShareVar("fg.reason", package)
+            Call Thread.SetShareVar("fg.request", True)
+            Call ForegroundLog("连续离开5秒，上报前台离开")
+        End If
+    End If
+    Call Thread.Release()
+End Sub
+Sub ForegroundMonitor(gamePackage, qqPackage)
+    Do
+        Call SampleForeground(gamePackage, qqPackage)
+        Delay 200
+    Loop
+End Sub
+Function ForegroundInterrupted()
+    Call Thread.Lock()
+    ForegroundInterrupted = Thread.GetShareVar("fg.request")
+    Call Thread.Release()
+End Function
+Sub BeginForegroundRecovery()
+    Call Thread.Lock()
+    Call Thread.SetShareVar("fg.recovering", True)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.Release()
+End Sub
+Sub EndForegroundRecovery()
+    Call Thread.Lock()
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call Thread.Release()
+End Sub
+Function BeginForegroundCommit()
+    Dim accepted
+    // Serialize the report/commit boundary; no completion can consume a pending report.
+    Call Thread.Lock()
+    accepted = Not Thread.GetShareVar("fg.request")
+    BeginForegroundCommit = accepted
+    If Not accepted Then
+        Call Thread.Release()
+    End If
+End Function
+Sub EndForegroundCommit()
+    Call Thread.Release()
+End Sub
+Function HandleForegroundRecovery()
+    HandleForegroundRecovery = False
+    If Not ForegroundInterrupted() Then
+        Exit Function
+    End If
+    Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
+    If currentTask = 168 Or currentTask = 169 Then
+        Call SaveRecovery()
+    End If
+    terminalConfirmed = False
+    Call RestartGame()
+    HandleForegroundRecovery = True
+End Function
+
+
+// common/日志.mq
+Sub Note(message)
+    TracePrint "[龙珠激斗脚本][" & stageName & "] " & message
+End Sub
+Sub SetStage(value)
+    If stageName <> value Then
+        stageName = value
+        Call Note("进入阶段")
+    End If
+End Sub
+
+
+// common/配置读取.mq
+Function PositiveSetting(key, fallback)
+    Dim raw
+    raw = ReadUIConfig(key, fallback)
+    PositiveSetting = fallback
+    If IsNumeric(raw) Then
+        If CDbl(raw) > 0 Then
+            PositiveSetting = CDbl(raw)
+        End If
+    End If
+End Function
+Sub LoadSettings()
+    rewardEnabled = ReadUIConfig("任务奖励启用", True)
+    rewardInterval = PositiveSetting("任务奖励间隔秒", 21600)
+    mailEnabled = ReadUIConfig("邮件启用", True)
+    mailInterval = PositiveSetting("邮件间隔秒", 21600)
+    loginLimit = PositiveSetting("登录总超时秒", 600) * 1000
+    businessLimit = PositiveSetting("业务总超时秒", 120) * 1000
+    messageMode = ReadUIConfig("消息邮件", 0)
+    // root.784: zero means 1000ms; positive values are seconds.
+    hallReturnDelaySeconds = PositiveSetting("返回延迟秒", 0)
+End Sub
+
+
+// common/任务状态.mq
+Sub NewSession()
+    currentTask = 0
+    resumeTask = 0
+    mailDone = False
+    mailFailed = False
+    mailCount = 0
+    mailFailures = 0
+    mailDue = 0
+    mailFirst = True
+    mailPhase = "未开始"
+    rewardDone = False
+    rewardFailed = False
+    rewardCount = 0
+    rewardFailures = 0
+    rewardDue = 0
+    rewardFirst = True
+    rewardPhase = "未开始"
+    businessStarted = 0
+    loginStarted = 0
+    progressAt = 0
+    hallMisses = 0
+    hallExtended = False
+    hallActionIndex = 0
+    hallFrames = 0
+    hallSampleAt = TickCount() - 500
+    qqLastForeground = ""
+    qqLastDiagnosticAt = TickCount() - 5000
+    loginFailures = 0
+    stageName = "新会话"
+    terminalConfirmed = False
+End Sub
+Sub SaveCurrentTask(taskId)
+    currentTask = taskId
+    resumeTask = taskId
+    terminalConfirmed = False
+    If taskId = 168 Then
+        mailDone = False
+        mailFailed = False
+    ElseIf taskId = 169 Then
+        rewardDone = False
+        rewardFailed = False
+    End If
+End Sub
+Sub SaveRecovery()
+    resumeTask = currentTask
+    If currentTask = 168 Then
+        mailFailed = True
+        mailFailures = mailFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & mailFailures)
+    ElseIf currentTask = 169 Then
+        rewardFailed = True
+        rewardFailures = rewardFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & rewardFailures)
+    End If
+End Sub
+Function CommitTask(hallConfirmed)
+    CommitTask = False
+    If currentTask <> 168 And currentTask <> 169 Then
+        Exit Function
+    End If
+    If Not terminalConfirmed Then
+        Exit Function
+    End If
+    If Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    If currentTask = 168 Then
+        mailDone = True
+        mailFailed = False
+        mailCount = mailCount + 1
+        mailDue = TickCount() + mailInterval * 1000
+        mailFirst = False
+        mailPhase = "完成"
+        Call Note("邮件提交完成，次数=" & mailCount & "，间隔秒=" & mailInterval)
+    ElseIf currentTask = 169 Then
+        rewardDone = True
+        rewardFailed = False
+        rewardCount = rewardCount + 1
+        rewardDue = TickCount() + rewardInterval * 1000
+        rewardFirst = False
+        rewardPhase = "完成"
+        Call Note("任务奖励169提交完成，次数=" & rewardCount & "，间隔秒=" & rewardInterval)
+    End If
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    CommitTask = True
+    Call EndForegroundCommit()
+End Function
+
+
+// common/运行计时.mq
+Function LoginExpired()
+    LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
+End Function
+Function BusinessExpired()
+    BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted >= businessLimit
+End Function
+Sub Progress()
+    progressAt = TickCount()
+End Sub
+
+
+// common/点击操作.mq
+Sub TouchPoint(x, y, waitMs)
+    Dim remaining, sliceMs
+    If ForegroundInterrupted() Then
+        Exit Sub
+    End If
+    // Do not tap another app during the five-second grace period.
+    If Not Sys.AppIsFront(GAME_PACKAGE) And Not Sys.AppIsFront(QQ_PACKAGE) Then
+        Exit Sub
+    End If
+    ReleaseCapture
+    Tap x, y
+    remaining = waitMs
+    Do While remaining > 0
+        If ForegroundInterrupted() Then
+            Exit Sub
+        End If
+        sliceMs = remaining
+        If sliceMs > 100 Then
+            sliceMs = 100
+        End If
+        Delay sliceMs
+        remaining = remaining - sliceMs
+    Loop
+End Sub
+Function TouchPattern(name, waitMs)
+    TouchPattern = False
+    If MatchPattern(name) Then
+        Call TouchPoint(foundX, foundY, waitMs)
+        TouchPattern = True
+    End If
+End Function
+
+
+// common/图色参数.mq
+// Generated from evidence data only. No Lua source is compiled.
+Function MatchPattern(name)
+    foundX = -1
+    foundY = -1
+    ReleaseCapture
+    Select Case name
+    Case "大厅主体"
+        // root-784_L107
+        FindMultiColor 0,0,719,1279,"FFFFFF-333333","6|-52|424542-333333,2|-50|353535-333333,-33|-20|080808-333333,-12|21|F7F3F1-333333,-15|22|673617-333333,41|-2|080808-333333,41|21|BF6627-333333,-31|19|E79653-333333,0|44|E5A93D-333333",0,0.9,foundX,foundY
+    Case "大厅底部"
+        // root-784_L118
+        FindMultiColor 6,1133,153,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",0,0.9,foundX,foundY
+    Case "绿色返回一"
+        // root-784_L172
+        FindMultiColor 0,0,719,1279,"166748-333333","-1|-11|B9CEC3-333333,21|-14|648D7F-333333,-6|11|085942-333333,14|11|ADCAAB-333333,-23|17|13945A-333333,-22|14|008239-333333,-22|-11|8FF6EF-333333,10|21|D6FFFF-333333,10|3|E1E1D3-333333",0,0.9,foundX,foundY
+    Case "绿色返回二"
+        // root-784_L222
+        FindMultiColor 0,0,719,1279,"1D714F-333333","-25|-9|81EFE4-333333,-20|-4|54D7B7-333333,-20|-18|7BF3E7-333333,-10|-20|D9FCFD-333333,-42|15|18B673-333333,-31|16|088E52-333333,8|21|C6FCF7-333333,49|5|30BE84-333333,31|-3|46CDA9-333333",0,0.9,foundX,foundY
+    Case "关闭一"
+        // root-784_L185
+        FindMultiColor 490,110,703,436,"F9E0A7-202020","10|-12|FEF8E8-202020,13|-18|FEFEFC-202020,21|-18|FFFFFB-202020,-15|-18|FFFFFE-202020,10|19|F1BF5C-202020,16|19|F3BF5C-202020,9|12|F9C875-202020,14|19|F9BF5C-202020,-14|13|F5D37E-202020,5|9|F8CF7E-202020,5|7|F9D086-202020",1,0.92,foundX,foundY
+    Case "关闭二"
+        // root-784_L198
+        FindMultiColor 490,110,703,436,"F9E0A7-202020","10|-12|FEF8E8-202020,13|-18|FEFEFC-202020,21|-18|FFFFFB-202020,-15|-18|FFFFFE-202020,10|19|F1BF5C-202020,16|19|F3BF5C-202020,9|12|F9C875-202020,14|19|F9BF5C-202020,-14|13|F5D37E-202020,5|9|F8CF7E-202020,5|7|F9D086-202020",1,0.92,foundX,foundY
+    Case "关闭三"
+        // root-784_L211
+        FindMultiColor 490,110,703,436,"F9E0A7-202020","10|-12|FEF8E8-202020,13|-18|FEFEFC-202020,21|-18|FFFFFB-202020,-15|-18|FFFFFE-202020,10|19|F1BF5C-202020,16|19|F3BF5C-202020,9|12|F9C875-202020,14|19|F9BF5C-202020,-14|13|F5D37E-202020,5|9|F8CF7E-202020,5|7|F9D086-202020",1,0.92,foundX,foundY
+    Case "我知道了"
+        // root-793_L160
+        FindMultiColor 0,0,719,1279,"4AE1FF-101010","-90|-6|18A7FF-101010,-76|-5|1193F9-101010,-59|3|FFFFFF-101010,-46|1|FFFFFF-101010,-25|1|FFFFFF-101010,8|2|FFFFFF-101010,18|1|FFFFFF-101010,60|2|E0E7F0-101010,106|10|14ACFB-101010",0,0.9,foundX,foundY
+    Case "回归公告"
+        // root-793_L200
+        FindMultiColor 0,0,719,1279,"73F1FF-101010","-169|-583|7DD8FF-101010,188|-645|FFFFFF-101010,174|110|4069A3-101010,20|11|FFFFFF-101010,-75|42|026DF9-101010,-290|24|2F4871-101010,-305|17|40699A-101010,-103|-4|96541A-101010,-57|-10|4F2A0E-101010",0,0.9,foundX,foundY
+    Case "开始游戏"
+        // root-793_L240
+        FindMultiColor 0,0,719,1279,"0C40B9-333333","-93|-21|084DB5-333333,-90|-17|F7FFFF-333333,7|-23|0065BD-333333,10|-17|F7FFFF-333333,66|-19|085DCE-333333,65|-14|F1FBFF-333333,-135|-11|29D3FF-333333,-108|-32|168CFE-333333,-2|45|D0F9F9-333333",0,0.9,foundX,foundY
+    Case "QQ登录页"
+        // root-793_L336
+        FindMultiColor 1,1026,717,1126,"FFFFFF-202020","-2|-9|072AFF-202020,-27|4|964402-202020,-19|-39|EA7F1C-202020,-30|-15|DB9136-202020,155|13|99570D-202020,-9|-3|0127FD-202020,-12|-20|271F1F-202020,9|-22|271F1F-202020,-1|-31|271F1F-202020,-1|-8|022BFF-202020",1,0.9,foundX,foundY
+    Case "协议已选"
+        // root-793_L807
+        FindMultiColor 0,1091,101,1236,"3BFF23-202020","18|-23|3BFF23-202020,18|-18|3BFF23-202020,-7|-8|3BFF23-202020,1|14|FFFFFF-202020,-16|-5|000F00-202020,-16|-4|000F00-202020,24|-13|002A00-202020,2|14|FFFFFF-202020,2|9|0B6E03-202020",0,0.9,foundX,foundY
+    Case "QQ授权登录一"
+        // root-793_L3947
+        FindMultiColor 0,0,719,1279,"FF9900-101010","-62|5|FF9900-101010,-55|95|FFFFFF-101010,109|45|FFFFFF-101010,109|40|FF9900-101010,109|261|FFFFFF-101010,105|185|FFFFFF-101010,84|42|FF9900-101010,102|-45|FF9900-101010,278|-2|FFFFFF-101010",0,0.9,foundX,foundY
+    Case "QQ授权登录二"
+        // root-793_L3961
+        FindMultiColor 9,932,718,1272,"FF9900-101010","3|-15|FFFFFF-101010,-142|3|FFFFFF-101010,-140|3|FF9900-101010,-86|5|FF9900-101010,-10|16|FFFFFF-101010,6|81|FFFFFF-101010,15|176|FFFFFF-101010,148|-1|FF9900-101010,148|37|FF9900-101010",0,0.9,foundX,foundY
+    Case "QQ授权确认"
+        // root-793_L4012
+        FindMultiColor 50,283,691,1096,"FFFFFF","18|6|FFFFFF,35|10|FFFFFF,19|49|FF9900,-118|10|FF9900,23|-27|FF9900,176|11|FF9900,28|-36|FFFFFF,-138|6|FFFFFF,29|55|FFFFFF,22|55|FFFFFF,14|-127|FFFFFF,-267|-713|1E1C1A,-78|-722|1E1C1A,43|-690|1E1C1A,7|-691|1E1C1A,-208|-691|1E1C1A,-278|-703|FFFFFF,-300|-926|1A0803,-300|-926|1A0803",0,0.88,foundX,foundY
+    Case "QQ授权同意"
+        // root-793_L4079
+        FindMultiColor 0,0,719,1279,"FF9900-101010","3|72|CCCCCC-101010,0|-41|FFFFFF-101010,-168|94|FFFFFF-101010,-167|94|CCCCCC-101010,-323|-906|1A0803-101010,-317|-906|FFFFFF-101010,158|-3|FF9900-101010,169|-3|FFFFFF-101010,167|115|CCCCCC-101010",0,0.9,foundX,foundY
+    Case "QQ一键登录"
+        // root-793_L1051
+        FindMultiColor 82,596,683,867,"FFFFFF","25|1|FFFFFF,18|0|FFFFFF,95|-11|FFFFFF,113|-10|FFFFFF,94|0|FFFFFF,86|14|FFFFFF,61|13|FFFFFF,102|-6|FFFFFF,92|-5|FF9900,61|21|FF9900,12|-7|FF9900,11|6|FF9900,59|7|FF9900,53|14|FFFFFF,52|54|F7F3F3,49|120|F7F3F3,284|-3|F7F3F3,-189|4|F7F3F3,-151|-3|FF9900,250|-4|FF9900,-151|-4|FF9900",0,0.95,foundX,foundY
+    Case "QQ旧版授权一"
+        // root-793_L896
+        FindMultiColor 9,932,718,1272,"FFFFFF","-76|-48|FF9900,67|-122|FF9900,71|-125|FFFFFF,-217|-117|FF9900,-222|-125|FFFFFF,-96|-126|FF9900,-94|-131|FFFFFF,-112|-88|FF9900,-40|-87|FF9900,-90|-84|FF9900,-89|-103|FF9900,86|-88|FFFFFF,-281|-85|FFFFFF,201|-1031|F4ECEF,207|-1027|FFFFFF,239|-1016|FFFFFF,239|-1026|FFFFFF,247|-1032|F9F6F7",0,0.9,foundX,foundY
+    Case "QQ旧版授权二"
+        // root-793_L967
+        FindMultiColor 9,932,718,1272,"FFFFFF","96|-6|E5772D,79|0|E5772D,-62|-122|FF9900,-83|-51|FFFFFF,-80|-124|FFFFFF,208|-118|FF9900,212|-121|FFFFFF,212|-51|FFFFFF,207|-56|FF9900,49|-97|FFFFFF,80|-72|FFFAF3,339|-1027|FFFFFF,392|-1019|FFFFFF,379|-1019|FFFFFF,386|-1026|FFFFFF,62|-87|FFFFFF,62|-49|FF9900,67|-125|FF9900,67|-131|FFFFFF",0,0.9,foundX,foundY
+    Case "QQ旧版授权三"
+        // root-793_L1111
+        FindMultiColor 9,932,718,1272,"FFFFFF-101010","64|-49|FF9900-101010,-88|-123|FF9900-101010,-93|-114|FFFFFF-101010,212|-80|FFFFFF-101010,208|-80|FF9900-101010,44|-100|FFFFFF-101010,58|-129|FFFFFF-101010,54|-45|FFFFFF-101010,55|-60|FF9900-101010",0,0.9,foundX,foundY
+    Case "邮件专业入口"
+        // root-728_L106
+        FindMultiColor 6,1143,488,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",1,0.9,foundX,foundY
+    Case "低客户端提示"
+        // root-728_L198
+        FindMultiColor 0,0,719,1279,"0698FE-101010","-13|-24|FFFFFF-101010,18|-27|FFFFFF-101010,50|-21|23BFFF-101010,-188|-17|96543B-101010,167|-22|96543B-101010,0|-153|5B3328-101010,-254|426|454848-101010,-311|453|0A220F-101010,-232|-725|19100B-101010",1,0.9,foundX,foundY
+    Case "邮件空一"
+        // root-728_L290
+        FindMultiColor 0,0,719,1279,"D7F0E8-101010","-14|13|739589-101010,0|14|3CC69C-101010,266|-114|EAEAEA-101010,324|-103|D2D2D2-101010,-67|-150|845131-101010,-76|-159|845131-101010,-65|-1069|39498C-101010,200|-1036|424D6B-101010,-32|-1000|2C2213-101010",1,0.9,foundX,foundY
+    Case "邮件空二"
+        // root-728_L316
+        FindMultiColor 0,0,719,1279,"D7F0E8-101010","-14|13|739589-101010,1|15|39BE94-101010,109|-113|8CF7E7-101010,-60|-1069|39498C-101010,-76|-1062|394584-101010,-40|-140|211C10-101010,-60|-150|845131-101010,393|-112|E9E9E9-101010,471|-85|ABABAB-101010",1,0.9,foundX,foundY
+    Case "邮件可领一"
+        // root-728_L450
+        FindMultiColor 0,0,719,1279,"D7F0E8-101010","-14|13|739589-101010,1|15|39BE94-101010,98|-140|211C10-101010,-60|-1069|39498C-101010,-76|-1062|394584-101010,-40|-140|211C10-101010,-60|-150|845131-101010,248|-110|73F3FF-101010,325|-76|088EFF-101010",1,0.9,foundX,foundY
+    Case "邮件可领二"
+        // root-728_L476
+        FindMultiColor 0,0,719,1279,"D7F0E8-101010","-14|13|739589-101010,1|15|39BE94-101010,109|-113|8CF7E7-101010,-60|-1069|39498C-101010,-76|-1062|394584-101010,-40|-140|211C10-101010,-60|-150|845131-101010,393|-112|75F4FF-101010,471|-85|0F9EFF-101010",1,0.9,foundX,foundY
+    Case "获得奖励"
+        // root-728_L714
+        FindMultiColor 0,0,719,1279,"00003A-101010","-39|-30|27F5FD-101010,258|-32|2BF9FF-101010,255|0|099DFE-101010,191|-34|00003A-101010,81|-24|00003A-101010,71|-20|20DBFE-101010,44|12|00003A-101010,8|-16|00003A-101010,65|-54|00003A-101010",1,0.9,foundX,foundY
+    Case "邮件关闭弹窗"
+        // root-728_L786
+        FindMultiColor 0,0,719,1279,"FFE3A5-101010","13|21|CB8239-101010,17|22|9C5519-101010,-581|32|496287-101010,-628|40|814B28-101010,-619|652|8C5129-101010,-15|649|523021-101010,-501|515|96604B-101010,-549|913|3D4442-101010,-563|926|202A27-101010",1,0.9,foundX,foundY
+    Case "邮件消息打开"
+        // root-728_L1160
+        FindMultiColor 40,208,221,1066,"1605E2-101010","5|-10|0DBADB-101010,7|-32|5E453D-101010,28|29|0DBADB-101010,6|39|756453-101010,8|-52|8A7161-101010,8|-41|402F27-101010,-58|-16|925F34-101010,-59|-16|B07642-101010,20|19|0E00E5-101010",1,0.9,foundX,foundY
+    Case "邮件消息终态"
+        // root-728_L1276
+        FindMultiColor 0,0,719,1279,"C6EDE4-101010","-14|12|93BBAE-101010,-55|26|149753-101010,269|-147|543B23-101010,-76|-178|7E5C3A-101010,118|-1059|8080A4-101010,46|-1069|27498D-101010,324|-1021|3D5587-101010,283|-1073|543B2B-101010,-76|-1054|27498D-101010",1,0.9,foundX,foundY
+    Case "大厅清障01"
+        // root-784_L172
+        FindMultiColor 0,0,719,1279,"166748-333333","-1|-11|B9CEC3-333333,21|-14|648D7F-333333,-6|11|085942-333333,14|11|ADCAAB-333333,-23|17|13945A-333333,-22|14|008239-333333,-22|-11|8FF6EF-333333,10|21|D6FFFF-333333,10|3|E1E1D3-333333",0,0.9,foundX,foundY
+    Case "大厅清障02"
+        // root-784_L185
+        FindMultiColor 490,110,703,436,"F9E0A7-202020","10|-12|FEF8E8-202020,13|-18|FEFEFC-202020,21|-18|FFFFFB-202020,-15|-18|FFFFFE-202020,10|19|F1BF5C-202020,16|19|F3BF5C-202020,9|12|F9C875-202020,14|19|F9BF5C-202020,-14|13|F5D37E-202020,5|9|F8CF7E-202020,5|7|F9D086-202020",1,0.92,foundX,foundY
+    Case "大厅清障03"
+        // root-784_L198
+        FindMultiColor 490,110,703,436,"F9E0A7-202020","10|-12|FEF8E8-202020,13|-18|FEFEFC-202020,21|-18|FFFFFB-202020,-15|-18|FFFFFE-202020,10|19|F1BF5C-202020,16|19|F3BF5C-202020,9|12|F9C875-202020,14|19|F9BF5C-202020,-14|13|F5D37E-202020,5|9|F8CF7E-202020,5|7|F9D086-202020",1,0.92,foundX,foundY
+    Case "大厅清障04"
+        // root-784_L211
+        FindMultiColor 490,110,703,436,"F9E0A7-202020","10|-12|FEF8E8-202020,13|-18|FEFEFC-202020,21|-18|FFFFFB-202020,-15|-18|FFFFFE-202020,10|19|F1BF5C-202020,16|19|F3BF5C-202020,9|12|F9C875-202020,14|19|F9BF5C-202020,-14|13|F5D37E-202020,5|9|F8CF7E-202020,5|7|F9D086-202020",1,0.92,foundX,foundY
+    Case "大厅清障05"
+        // root-784_L222
+        FindMultiColor 0,0,719,1279,"1D714F-333333","-25|-9|81EFE4-333333,-20|-4|54D7B7-333333,-20|-18|7BF3E7-333333,-10|-20|D9FCFD-333333,-42|15|18B673-333333,-31|16|088E52-333333,8|21|C6FCF7-333333,49|5|30BE84-333333,31|-3|46CDA9-333333",0,0.9,foundX,foundY
+    Case "大厅清障06"
+        // root-784_L233
+        FindMultiColor 0,0,719,1279,"9EC4C9-333333","-59|5|42DBFF-333333,-66|13|123F56-333333,-83|11|050526-333333,30|25|4AD3F7-333333,48|34|09063A-333333,26|52|291894-333333,11|-5|597588-333333,1|8|49505F-333333,-12|10|A5C7D6-333333",0,0.9,foundX,foundY
+    Case "大厅清障07"
+        // root-784_L246
+        FindMultiColor 56,508,695,767,"F7F3EF-101010","-15|10|9C6D10-101010,40|1|947531-101010,4|-40|EFEFEF-101010,237|12|EFE3DE-101010,210|4|9C6D10-101010,246|-7|7B5921-101010,229|-41|EFEFEF-101010,197|7|BD8E18-101010,41|11|947531-101010",0,0.9,foundX,foundY
+    Case "大厅清障08"
+        // root-784_L257
+        FindMultiColor 0,0,719,1279,"000040-101010","17|0|2BF9FF-101010,81|-2|000040-101010,293|15|2BF9FF-101010,305|9|000040-101010,249|0|2AF8FE-101010,224|2|000040-101010,171|52|0A8EFF-101010",0,0.9,foundX,foundY
+    Case "大厅清障09"
+        // root-784_L268
+        FindMultiColor 0,0,719,1279,"078EFF-101010","0|-25|33D5FF-101010,-309|-12|2BC386-101010,-309|-27|52D8B5-101010,-221|-919|000000-101010,-179|-919|000000-101010,-185|-907|F7F3F7-101010,-145|-986|F7F7F7-101010",0,0.9,foundX,foundY
+    Case "大厅清障10"
+        // root-784_L279
+        FindMultiColor 26,106,693,1195,"71F3FF-101010","51|16|25C8FF-101010,-238|-945|000000-101010,-228|-948|FFFFFF-101010,-221|-912|5A5D00-101010,-113|-975|000000-101010,-104|-982|FFFFFF-101010,43|-968|000000-101010,6|-910|FFFFFF-101010,-177|-916|5A5D00-101010",0,0.9,foundX,foundY
+    Case "大厅清障11"
+        // root-784_L290
+        FindMultiColor 0,0,719,1279,"10A6FF-101010","105|-2|16ADFF-101010,3|-572|0EADFF-101010,13|-558|000042-101010,44|-108|00D8FF-101010,158|-108|009AFF-101010,125|-618|000042-101010,264|-566|000042-101010",0,0.9,foundX,foundY
+    Case "大厅清障12"
+        // root-784_L301
+        FindMultiColor 0,0,719,1279,"40D4FD-101010","-4|17|129EFF-101010,-151|-4|7F5513-101010,-131|-6|8A5816-101010,-107|-523|0275FF-101010,264|-524|0433EC-101010,132|-47|02A7FF-101010,277|-45|0527CA-101010",0,0.9,foundX,foundY
+    Case "大厅清障13"
+        // root-784_L312
+        FindMultiColor 0,0,719,1279,"1FB5FF-101010","-146|-55|0650FF-101010,-148|-501|1AD1FC-101010,-139|-495|000439-101010,253|-555|00003F-101010,252|-545|29FBFF-101010,245|-479|0896FF-101010,83|-508|000437-101010",0,0.9,foundX,foundY
+    Case "大厅清障14"
+        // root-784_L323
+        FindMultiColor 0,0,719,1279,"5CAFA5-101010","22|5|C0E2E2-101010,-67|30|D2F4F4-101010,77|-271|692B1A-101010,-276|-229|692F1F-101010,-193|-521|782E1D-101010,98|-490|4D9F8F-101010,203|-371|63B5AD-101010",0,0.9,foundX,foundY
+    Case "大厅清障15"
+        // root-784_L334
+        FindMultiColor 0,0,719,1279,"FFF9E9-101010","-2|32|F9BF5E-101010,-22|93|B17746-101010,-20|97|9A6137-101010,-33|119|82EDFD-101010,-71|290|3838D1-101010,-596|486|7982CC-101010,-574|218|000000-101010",0,0.9,foundX,foundY
+    Case "大厅清障16"
+        // root-784_L345
+        FindMultiColor 2,803,241,1279,"FFFFFF-101010","11|4|050607-101010,-21|13|491616-101010,120|5|1F1F92-101010,119|-10|0A3BE9-101010,-35|-398|C2F4FF-101010,50|-191|FEBE26-101010,42|-190|FDCA00-101010,-23|-222|FDC510-101010,-22|-231|E8AF0F-101010",0,0.9,foundX,foundY
+    Case "大厅清障17"
+        // root-784_L356
+        FindMultiColor 465,406,715,595,"FFFFFF-101010","21|-7|F6FDFD-101010,15|36|E3FCFF-101010,-18|35|E8FCFD-101010,-1|14|8970F4-101010,-17|-2|44BFF9-101010,0|22|EDFDFD-101010,7|6|8978F4-101010,13|27|A445F2-101010,3|16|9267F3-101010",0,0.9,foundX,foundY
+    Case "大厅清障特殊分支"
+        // root-784_L376
+        FindMultiColor 0,0,719,250,"01BCFE-101010","2|-19|F6F6F6-101010,-17|0|6B1715-101010,1|1|02BFFF-101010,-20|2|D4E5E5-101010,15|-4|96443B-101010,-7|3|96443B-101010,19|2|97443C-101010,0|15|020BF8-101010,-8|5|96443B-101010",1,0.9,foundX,foundY
+    Case "QQ现版头像昵称同意"
+        // user-qq-screenshot-1; user screenshot adaptation, not original professional data
+        FindMultiColor 228,1015,252,1039,"FF9900-080808","-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,92|-395|1E1C1A-080808,-180|-400|1E1C1A-080808,348|-381|1E1C1A-080808,-43|-394|1E1C1A-080808,221|-411|1E1C1A-080808,-112|-379|1E1C1A-080808,23|-410|1E1C1A-080808,280|-379|1E1C1A-080808,158|-385|1E1C1A-080808,116|-1|FFFFFF-080808,147|12|FFFFFF-080808,92|14|FFFFFF-080808,92|-12|FFFFFF-080808,139|-11|FFFFFF-080808,130|9|FFFFFF-080808,111|14|FFFFFE-080808",0,1,foundX,foundY
+    Case "QQ现版VIP会员确认"
+        // user-qq-screenshot-2; user screenshot adaptation, not original professional data
+        FindMultiColor 228,1018,252,1042,"FF9900-080808","-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,-20|-717|1E1C1A-080808,150|-704|1E1C1A-080808,-180|-722|1E1C1A-080808,65|-711|1E1C1A-080808,-99|-712|1E1C1A-080808,109|-729|1E1C1A-080808,24|-733|1E1C1A-080808,-138|-729|1E1C1A-080808,-60|-729|1E1C1A-080808,114|0|FFFFFF-080808,148|13|FFFFFF-080808,140|-14|FFFFFF-080808,91|-12|FFFFFF-080808,93|12|FFFFFF-080808,130|9|FFFFFF-080808,106|-13|FFFFFF-080808,360|-538|FF9900-080808,360|-398|FF9900-080808",0,1,foundX,foundY
+    Case "QQ现版游戏信息同意"
+        // user-qq-screenshot-3; user screenshot adaptation, not original professional data
+        FindMultiColor 228,984,252,1008,"FF9900-080808","-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,28|-681|1E1C1A-080808,254|-665|1E1C1A-080808,-180|-683|1E1C1A-080808,142|-693|1E1C1A-080808,-76|-662|1E1C1A-080808,88|-662|1E1C1A-080808,194|-661|1E1C1A-080808,-125|-695|1E1C1A-080808,-27|-689|1E1C1A-080808,116|0|FFFFFF-080808,147|13|FFFFFF-080808,92|15|FFFFFF-080808,92|-11|FFFFFF-080808,139|-10|FFFFFF-080808,130|10|FFFFFF-080808,111|15|FFFFFE-080808,-20|66|E6E6E6-080808,260|134|E6E6E6-080808",0,1,foundX,foundY
+    Case "首次启动协议"
+        // User first-launch screenshot adaptation; not professional evidence.
+        FindMultiColor 228,818,252,842,"F78811-101010","20|-25|F88C17-101010,240|-25|FEB459-101010,20|25|F88C17-101010,240|25|FEB459-101010,0|110|D0CAC9-101010,240|110|E5DFDE-101010,-140|-80|FFFFFF-101010,380|-80|FFFFFF-101010,-140|-620|FFFFFF-101010,-48|-561|000000-101010,280|-563|000000-101010,282|-408|E5B533-101010,-53|-325|E5B533-101010,103|0|FFFFFF-101010,136|1|FFFFFF-101010",0,1,foundX,foundY
+    Case "游戏协议弹窗"
+        // User screenshot adaptation, not professional evidence.
+        FindMultiColor 458,868,482,892,"43DFFF-101010","-20|-5|23AFF9-101010,130|-5|36E4FE-101010,-20|35|026DF9-101010,130|35|0682FD-101010,-415|-500|5B3328-101010,-415|-80|5B3328-101010,190|-80|5B3328-101010,-261|-456|FFFF00-101010,-277|-409|FFFF00-101010,-260|-364|F1F100-101010,-266|-318|DFDF00-101010,38|17|FFFFFF-101010,74|16|FFFFFF-101010",0,1,foundX,foundY
+    Case "169_入口"
+        // root-729_L106; professional task169
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",1,0.9,foundX,foundY
+    Case "169_成长有奖一"
+        // root-729_L200; professional task169
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","41|44|0071FD-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-324|98|247935-101010,-182|-20|543B23-101010,289|-975|0D4FD3-101010,166|-981|3D87E2-101010,133|-973|754423-101010,8|-997|B27036-101010",1,0.85,foundX,foundY
+    Case "169_成长有奖二"
+        // root-729_L228; professional task169
+        FindMultiColor 0,0,719,1279,"73F1FF-101010","-71|38|0A8EFF-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|79481F-101010,-242|-976|906544-101010,-17|-971|16304D-101010,241|-974|0D4FD3-101010,120|-1000|5FC2FC-101010,-157|-999|B27036-101010",1,0.85,foundX,foundY
+    Case "169_成长无奖一"
+        // root-729_L286; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","41|44|8E8E8E-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-324|98|247935-101010,-182|-20|543B23-101010,289|-975|0D4FD3-101010,166|-981|3D87E2-101010,133|-973|754423-101010,8|-997|B27036-101010",1,0.85,foundX,foundY
+    Case "169_成长无奖二"
+        // root-729_L314; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-71|38|A1A1A1-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|79481F-101010,-242|-976|906544-101010,-17|-971|16304D-101010,241|-974|0D4FD3-101010,120|-1000|5FC2FC-101010,-157|-999|B27036-101010",1,0.85,foundX,foundY
+    Case "169_日常有奖一"
+        // root-729_L372; professional task169
+        FindMultiColor 0,0,719,1279,"0A8EFF-101010","-206|34|C6EDE4-101010,-220|46|93BBAE-101010,-258|60|149753-101010,30|-1011|0D4FD3-101010,35|-1020|3680E3-101010,-167|-1033|B37139-101010,67|-57|543B23-101010,74|-57|543B23-101010,121|0|078BFE-101010",1,0.85,foundX,foundY
+    Case "169_日常有奖二"
+        // root-729_L400; professional task169
+        FindMultiColor 0,0,719,1279,"73F1FF-101010","-71|38|0A8EFF-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|00ABFD-101010,-242|-976|0D4FD3-101010,-17|-971|8D5A27-101010,241|-974|754423-101010,120|-1000|B87036-101010,-157|-999|5DC0FA-101010",1,0.85,foundX,foundY
+    Case "169_日常无奖一"
+        // root-729_L458; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-278|72|C6EDE4-101010,-292|84|93BBAE-101010,-330|98|149753-101010,-42|-973|0D4FD3-101010,-37|-982|3680E3-101010,-239|-995|B37139-101010,-5|-19|543B23-101010,2|-19|543B23-101010,49|38|9E9E9E-101010",1,0.85,foundX,foundY
+    Case "169_日常无奖二"
+        // root-729_L486; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-71|38|A1A1A1-101010,-273|71|C6EDE4-101010,-287|83|93BBAE-101010,-31|-954|00ABFD-101010,-242|-976|0D4FD3-101010,-17|-971|8D5A27-101010,241|-974|754423-101010,120|-1000|B87036-101010,-157|-999|5DC0FA-101010",1,0.85,foundX,foundY
+    Case "169_通行证"
+        // root-729_L544; professional task169
+        FindMultiColor 0,0,719,1279,"C4EDE4-101010","-14|12|96BCB0-101010,-60|27|247935-101010,169|-14|3E2E26-101010,243|-85|261D15-101010,357|-92|503727-101010,29|-1025|91EFFE-101010,110|-1044|754423-101010,342|-1028|A14F26-101010,84|-1045|0A54D0-101010",1,0.85,foundX,foundY
+    Case "169_特殊有奖"
+        // root-729_L590; professional task169
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","-82|0|33BFF9-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-321|98|277C38-101010,133|-974|0D4FD3-101010,14|-998|3FAAF4-101010,162|-973|754423-101010,162|-992|AC7241-101010,-221|-957|A14F26-101010",1,0.85,foundX,foundY
+    Case "169_特殊无奖"
+        // root-729_L636; professional task169
+        FindMultiColor 0,0,719,1279,"E7E7E7-101010","-82|0|C0C0C0-101010,-269|71|C6EDE4-101010,-283|83|93BBAE-101010,-321|98|277C38-101010,133|-974|0D4FD3-101010,14|-998|3FAAF4-101010,162|-973|754423-101010,162|-992|AC7241-101010,-221|-957|A14F26-101010",1,0.85,foundX,foundY
+    Case "169_奖励弹窗一"
+        // root-729_L1398; professional task169
+        FindMultiColor 0,0,719,1279,"00003A-101010","-39|-30|27F5FD-101010,258|-32|2BF9FF-101010,255|0|099DFE-101010,191|-34|00003A-101010,81|-24|00003A-101010,71|-20|20DBFE-101010,44|12|00003A-101010,8|-16|00003A-101010,65|-54|00003A-101010",1,0.9,foundX,foundY
+    Case "169_奖励弹窗二"
+        // root-729_L1664; professional task169
+        FindMultiColor 0,0,719,1279,"0A7DFF","-108|9|0061F5,-46|-37|78F4FD,-59|49|55311E,-50|53|894F2E,-111|-235|080505,-100|-318|96543B,250|-362|FAD99F,262|-378|FFF9E9,-374|-153|96543B,-382|-150|BF6D3B,-362|-162|563629",1,0.9,foundX,foundY
+    End Select
+    MatchPattern = foundX >= 0 And foundY >= 0
+End Function
+
+
+// common/大厅清障.mq
+// root.784: public return/clearance actions only. No business state submission.
+Sub ResetHallClearing()
+    hallMisses = 0
+    hallExtended = False
+    hallActionIndex = 0
+End Sub
+Function HallActionWait()
+    HallActionWait = 1000
+    If hallReturnDelaySeconds > 0 Then
+        HallActionWait = hallReturnDelaySeconds * 1000
+    End If
+End Function
+Function FindHallObstacle(includeExtended)
+    FindHallObstacle = False
+    hallActionIndex = 0
+    If MatchPattern("大厅清障01") Then
+        hallActionIndex = 1
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障02") Then
+        hallActionIndex = 2
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障03") Then
+        hallActionIndex = 3
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障04") Then
+        hallActionIndex = 4
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障05") Then
+        hallActionIndex = 5
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If MatchPattern("大厅清障06") Then
+        hallActionIndex = 6
+        FindHallObstacle = True
+        Exit Function
+    End If
+    If includeExtended Then
+        If MatchPattern("大厅清障07") Then
+            hallActionIndex = 7
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障08") Then
+            hallActionIndex = 8
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障09") Then
+            hallActionIndex = 9
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障10") Then
+            hallActionIndex = 10
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障11") Then
+            hallActionIndex = 11
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障12") Then
+            hallActionIndex = 12
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障13") Then
+            hallActionIndex = 13
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障14") Then
+            hallActionIndex = 14
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障15") Then
+            hallActionIndex = 15
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障16") Then
+            hallActionIndex = 16
+            FindHallObstacle = True
+            Exit Function
+        End If
+        If MatchPattern("大厅清障17") Then
+            hallActionIndex = 17
+            FindHallObstacle = True
+            Exit Function
+        End If
+    End If
+End Function
+Function ClearHallObstacle()
+    Dim selected, selectedIndex, selectedX, selectedY, waitMs
+    ClearHallObstacle = False
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    // The prototype keeps expanded candidate descriptors after the counter resets.
+    If hallMisses > 3 Then
+        hallMisses = 0
+        hallExtended = True
+    End If
+    selected = FindHallObstacle(hallExtended)
+    selectedIndex = hallActionIndex
+    selectedX = foundX
+    selectedY = foundY
+    waitMs = HallActionWait()
+    // Special lookup comes after selection but its action takes precedence.
+    If MatchPattern("大厅清障特殊分支") Then
+        Call Note("大厅清障：特殊分支，点击=" & (foundX - 311) & "," & (foundY + 10) & "，等待毫秒=" & waitMs)
+        Call TouchPoint(foundX - 311, foundY + 10, waitMs)
+        hallMisses = 0
+        Call ResetHallCheck()
+        ClearHallObstacle = True
+    ElseIf selected Then
+        Call Note("大厅清障：候选=" & selectedIndex & "，点击=" & selectedX & "," & selectedY & "，等待毫秒=" & waitMs)
+        Call TouchPoint(selectedX, selectedY, waitMs)
+        hallMisses = 0
+        Call ResetHallCheck()
+        ClearHallObstacle = True
+    Else
+        hallMisses = hallMisses + 1
+    End If
+    // Caller supplies the original 100ms tail once per clearance round.
+End Function
+
+
+// common/页面识别.mq
+Function GreenArrow()
+    GreenArrow = True
+    If MatchPattern("绿色返回一") Then
+        Exit Function
+    End If
+    GreenArrow = MatchPattern("绿色返回二")
+End Function
+Function HallCandidate()
+    Dim candidateFound
+    candidateFound = False
+    HallCandidate = False
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    If MatchPattern("大厅主体") Then
+        candidateFound = True
+    ElseIf MatchPattern("大厅底部") Then
+        candidateFound = True
+    End If
+    If Not candidateFound Then
+        Exit Function
+    End If
+    HallCandidate = True
+    If FindHallObstacle(True) Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("大厅清障特殊分支") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("获得奖励") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("邮件关闭弹窗") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("关闭一") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("关闭二") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("关闭三") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("我知道了") Then
+        HallCandidate = False
+        Exit Function
+    End If
+    If MatchPattern("回归公告") Then
+        HallCandidate = False
+    End If
+End Function
+Sub ResetHallCheck()
+    hallFrames = 0
+    hallSampleAt = TickCount() - 500
+End Sub
+Function ConfirmHall()
+    ConfirmHall = False
+    If TickCount() - hallSampleAt < 500 Then
+        Exit Function
+    End If
+    hallSampleAt = TickCount()
+    If HallCandidate() Then
+        hallFrames = hallFrames + 1
+    Else
+        hallFrames = 0
+    End If
+    ConfirmHall = hallFrames >= 2
+End Function
+
+
+// common/游戏控制.mq
+Sub StartGame()
+    If Sys.AppIsFront(QQ_PACKAGE) Then
+        If Sys.IsRunning(GAME_PACKAGE) Then
+            Exit Sub
+        End If
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call BeginForegroundRecovery()
+        RunApp GAME_PACKAGE
+        Call EndForegroundRecovery()
+    End If
+End Sub
+Sub RestartGame()
+    Call BeginForegroundRecovery()
+    foregroundLoginPending = True
+    Call Note("重启游戏；保持同一会话及待恢复业务=" & resumeTask)
+    KillApp GAME_PACKAGE
+    // New-engine process shutdown settling delay, not a recovered task delay.
+    Delay 1000
+    loginStarted = TickCount()
+    RunApp GAME_PACKAGE
+    Call EndForegroundRecovery()
+End Sub
+
+
+// common/返回大厅.mq
+Function ReturnToHall()
+    Dim returnStarted, acted
+    ReturnToHall = RESULT_TIMEOUT
+    returnStarted = TickCount()
+    Call SetStage("大厅清障与绿色箭头返回")
+    Call ResetHallCheck()
+    Call ResetHallClearing()
+    Do
+        If ForegroundInterrupted() Or TickCount() - returnStarted >= businessLimit Then
+            Exit Function
+        End If
+        If ConfirmHall() Then
+            ReturnToHall = RESULT_OK
+            Exit Function
+        End If
+        acted = ClearHallObstacle()
+        Delay 100
+    Loop
+End Function
+
+
+// common/任务注册.mq
+Sub RegisterTasks()
+    registeredTask = 168
+    rewardRegisteredTask = 169
+    Call Note("注册邮件168和任务奖励169；使用唯一串行调度器")
+End Sub
+Function SelectDueTask()
+    Dim selected, selectedDue
+    SelectDueTask = 0
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Then
+        If resumeTask <> 0 Then
+            SelectDueTask = resumeTask
+            Exit Function
+        End If
+    End If
+    If mailEnabled And mailFirst Then
+        SelectDueTask = registeredTask
+        Exit Function
+    End If
+    If rewardEnabled And rewardFirst Then
+        SelectDueTask = rewardRegisteredTask
+        Exit Function
+    End If
+    selected = 0
+    selectedDue = 0
+    If mailEnabled Then
+        If TickCount() >= mailDue Then
+            selected = registeredTask
+            selectedDue = mailDue
+        End If
+    End If
+    If rewardEnabled Then
+        If TickCount() >= rewardDue Then
+            If selected = 0 Or rewardDue < selectedDue Then
+                selected = rewardRegisteredTask
+            End If
+        End If
+    End If
+    SelectDueTask = selected
+End Function
+
+
+// common/任务分派.mq
+Function DispatchTask(taskId)
+    DispatchTask = RESULT_FAIL
+    If taskId = 168 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMail()
+    ElseIf taskId = 169 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteTaskRewards()
+    End If
+End Function
+
+
+// common/任务调度.mq
+Sub SchedulerStep()
+    Dim selected, result, hallResult, committed
+    committed = HandleForegroundRecovery()
+    selected = SelectDueTask()
+    If selected = 0 Then
+        If foregroundLoginPending Then
+            result = EnsureGameHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If result = RESULT_OK Then
+                foregroundLoginPending = False
+            Else
+                Call RestartGame()
+            End If
+        End If
+        Exit Sub
+    End If
+    Call SaveCurrentTask(selected)
+    result = EnsureGameHall()
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    If result <> RESULT_OK Then
+        loginFailures = loginFailures + 1
+        Call Note("登录总超时，次数=" & loginFailures)
+        Call RestartGame()
+        Exit Sub
+    End If
+    foregroundLoginPending = False
+    businessStarted = TickCount()
+    result = DispatchTask(selected)
+    Do While result = RESULT_WAIT
+        If BusinessExpired() Then
+            result = RESULT_TIMEOUT
+        Else
+            Delay 20
+            result = DispatchTask(selected)
+        End If
+    Loop
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    If result = RESULT_OK And terminalConfirmed Then
+        hallResult = ReturnToHall()
+        If HandleForegroundRecovery() Then
+            Exit Sub
+        End If
+        If hallResult = RESULT_OK Then
+            committed = CommitTask(True)
+            If committed Then
+                Exit Sub
+            End If
+        End If
+    End If
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    Call SaveRecovery()
+    Call RestartGame()
+End Sub
+
+
+// flows/001_游戏重连/QQ登录.mq
+Function ClickQQAuthorization(patternName, label, offsetX, offsetY)
+    ClickQQAuthorization = False
+    If LoginExpired() Then
+        Exit Function
+    End If
+    If MatchPattern(patternName) Then
+        Call Note("QQ授权R3：" & label & "，模板=" & patternName & "，点击=" & (foundX + offsetX) & "," & (foundY + offsetY))
+        Call TouchPoint(foundX + offsetX, foundY + offsetY, 1000)
+        ClickQQAuthorization = True
+    End If
+End Function
+Function HandleQQ()
+    Dim anchorX, anchorY, authorizationHandled, diagnosticRound
+    HandleQQ = False
+    authorizationHandled = False
+    diagnosticRound = False
+    If TickCount() - qqLastDiagnosticAt >= 5000 Then
+        qqLastDiagnosticAt = TickCount()
+        diagnosticRound = True
+        Call Note("QQ授权R3：原版图色巡检，登录已用毫秒=" & (TickCount() - loginStarted))
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    // root.793 L3694-3752: one-click check precedes the three authorization groups.
+    If MatchPattern("QQ一键登录") Then
+        anchorX = foundX
+        anchorY = foundY
+        Call Note("QQ授权R3：一键登录")
+        Call TouchPoint(anchorX - 151, anchorY + 86, 1000)
+        If Not LoginExpired() Then
+            Call TouchPoint(anchorX + 63, anchorY, 1000)
+        End If
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    // Keep the original candidates first. Add screenshot-derived fallback only.
+    If ClickQQAuthorization("QQ授权登录一", "授权登录", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ授权登录二", "授权登录", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ现版头像昵称同意", "头像昵称同意", 120, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    // root.793 L4012/L4026: confirmation has two original candidates.
+    If ClickQQAuthorization("QQ授权确认", "VIP会员确认", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ授权登录二", "VIP会员确认候选二", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ现版VIP会员确认", "VIP会员确认", 120, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If LoginExpired() Then
+        Exit Function
+    End If
+    If ClickQQAuthorization("QQ授权同意", "游戏信息同意", 0, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    ElseIf ClickQQAuthorization("QQ现版游戏信息同意", "游戏信息同意", 120, 0) Then
+        HandleQQ = True
+        authorizationHandled = True
+    End If
+    If Not authorizationHandled And diagnosticRound Then
+        Call Note("QQ授权R3：未命中授权页面，继续登录总计时")
+    End If
+    // root.793 L4113-4117: authorization-section tail, not a new timeout.
+    Delay 50
+End Function
+
+
+// flows/001_游戏重连/登录游戏.mq
+Function EnsureGameHall()
+    Dim agreementTouched, acted, clearanceChecked
+    EnsureGameHall = RESULT_TIMEOUT
+    agreementTouched = False
+    If Not foregroundLoginPending Then
+        loginStarted = TickCount()
+    End If
+    Call SetStage("启动及QQ登录")
+    Call ResetHallCheck()
+    Call ResetHallClearing()
+    Call StartGame()
+    Do
+        If LoginExpired() Then
+            Exit Function
+        End If
+        If ConfirmHall() Then
+            EnsureGameHall = RESULT_OK
+            Exit Function
+        End If
+        clearanceChecked = False
+        acted = HandleQQ()
+        If Sys.AppIsFront(GAME_PACKAGE) And Not acted Then
+            // root.793: known notice handlers; no task-specific claim here.
+            // Screenshot-specific game agreement; keep the shared login deadline.
+            If MatchPattern("首次启动协议") Then
+                Call Note("首次启动协议：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 120, foundY + 1, 1000)
+                acted = True
+            ElseIf MatchPattern("游戏协议弹窗") Then
+                Call Note("游戏协议弹窗：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 58, foundY + 16, 1000)
+                acted = True
+            End If
+            If Not acted Then
+                acted = TouchPattern("我知道了", 1000)
+            End If
+            If Not acted Then
+                acted = TouchPattern("回归公告", 1000)
+            End If
+            If Not acted Then
+                acted = TouchPattern("开始游戏", 1500)
+            End If
+            // The original pattern named QQ登录页 is a login-options anchor.
+            // root.793 L831-849 uses this template with automatic anchor click.
+            If Not acted Then
+                If MatchPattern("QQ登录页") Then
+                    If MatchPattern("协议已选") Then
+                        If MatchPattern("QQ登录页") Then
+                            Call TouchPoint(foundX, foundY, 1500)
+                            acted = True
+                        End If
+                    ElseIf Not agreementTouched Then
+                        Call TouchPoint(45, 1150, 1500)
+                        agreementTouched = True
+                        acted = True
+                    End If
+                End If
+            End If
+            If Not acted Then
+                clearanceChecked = True
+                acted = ClearHallObstacle()
+            End If
+        End If
+        // QQ or unknown foreground keeps the same login deadline.
+        If clearanceChecked Then
+            Delay 100
+        Else
+            Delay 20
+        End If
+    Loop
+End Function
+
+
+// flows/168_领邮件奖励/领邮件奖励.mq
+Function MailEmpty()
+    MailEmpty = True
+    If MatchPattern("邮件空一") Then
+        Exit Function
+    End If
+    MailEmpty = MatchPattern("邮件空二")
+End Function
+Function MailClaimable()
+    MailClaimable = True
+    If MatchPattern("邮件可领一") Then
+        Exit Function
+    End If
+    MailClaimable = MatchPattern("邮件可领二")
+End Function
+Sub MailStage(value)
+    mailPhase = value
+    Call SetStage(value)
+End Sub
+Function ReadMessages()
+    Dim localStarted, elapsed
+    ReadMessages = RESULT_TIMEOUT
+    localStarted = TickCount()
+    Call MailStage("消息邮件自动阅读")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If MatchPattern("邮件关闭弹窗") Then
+            Call TouchPoint(foundX, foundY, 200)
+            localStarted = TickCount()
+        End If
+        If MatchPattern("邮件消息打开") Then
+            Call TouchPoint(foundX, foundY, 200)
+        End If
+        elapsed = TickCount() - localStarted
+        If elapsed > 2000 And elapsed <= 5000 Then
+            If MatchPattern("邮件消息终态") Then
+                ReadMessages = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If elapsed > 5000 Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteMail()
+    Dim claimStarted, messageResult
+    ExecuteMail = RESULT_TIMEOUT
+    Call MailStage("进入邮件")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If MatchPattern("邮件专业入口") Then
+            Call TouchPoint(25, 830, 200)
+        End If
+        If MatchPattern("低客户端提示") Then
+            Call TouchPoint(foundX, foundY, 1500)
+        End If
+        If MailEmpty() Then
+            terminalConfirmed = True
+            Call MailStage("入口确认无奖励")
+            ExecuteMail = RESULT_OK
+            Exit Function
+        End If
+        If MailClaimable() Then
+            Delay 200
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    Call Progress()
+    claimStarted = TickCount()
+    Call MailStage("领取邮件奖励")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If MailClaimable() Then
+            Call TouchPoint(foundX + 319, foundY - 90, 200)
+            Call Progress()
+        End If
+        If MatchPattern("获得奖励") Then
+            Call TouchPoint(foundX, foundY, 200)
+            Call Progress()
+        End If
+        If MatchPattern("邮件关闭弹窗") Then
+            Call TouchPoint(foundX, foundY, 200)
+            Call Progress()
+        End If
+        If MailEmpty() Then
+            Call Progress()
+            Exit Do
+        End If
+        If TickCount() - claimStarted > 5000 Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If messageMode = 1 Then
+        messageResult = ReadMessages()
+        If messageResult <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    terminalConfirmed = True
+    Call MailStage("邮件业务终态确认")
+    ExecuteMail = RESULT_OK
+End Function
+
+
+// flows/169_领任务奖励/领任务奖励.mq
+// Independent MQ implementation of professional root.729 behavior.
+Sub RewardStage(value)
+    rewardPhase = value
+    Call SetStage(value)
+End Sub
+Function RewardTouch(name, dx, dy, waitMs)
+    RewardTouch = False
+    If MatchPattern(name) Then
+        Call Note("任务169：" & name & "，点击=" & (foundX + dx) & "," & (foundY + dy))
+        Call TouchPoint(foundX + dx, foundY + dy, waitMs)
+        RewardTouch = True
+    End If
+End Function
+Function RewardGrowthClaimable()
+    RewardGrowthClaimable = True
+    If MatchPattern("169_成长有奖一") Then
+        Exit Function
+    End If
+    RewardGrowthClaimable = MatchPattern("169_成长有奖二")
+End Function
+Function RewardGrowthEmpty()
+    RewardGrowthEmpty = True
+    If MatchPattern("169_成长无奖一") Then
+        Exit Function
+    End If
+    RewardGrowthEmpty = MatchPattern("169_成长无奖二")
+End Function
+Function RewardDailyClaimable()
+    RewardDailyClaimable = True
+    If MatchPattern("169_日常有奖一") Then
+        Exit Function
+    End If
+    RewardDailyClaimable = MatchPattern("169_日常有奖二")
+End Function
+Function RewardDailyEmpty()
+    RewardDailyEmpty = True
+    If MatchPattern("169_日常无奖一") Then
+        Exit Function
+    End If
+    RewardDailyEmpty = MatchPattern("169_日常无奖二")
+End Function
+Function RewardPageKnown()
+    RewardPageKnown = True
+    If RewardGrowthClaimable() Then
+        Exit Function
+    End If
+    If RewardGrowthEmpty() Then
+        Exit Function
+    End If
+    If RewardDailyClaimable() Then
+        Exit Function
+    End If
+    If RewardDailyEmpty() Then
+        Exit Function
+    End If
+    If MatchPattern("169_通行证") Then
+        Exit Function
+    End If
+    If MatchPattern("169_特殊有奖") Then
+        Exit Function
+    End If
+    RewardPageKnown = MatchPattern("169_特殊无奖")
+End Function
+Function EnterTaskRewards()
+    Dim acted
+    EnterTaskRewards = RESULT_TIMEOUT
+    Call RewardStage("169进入任务页面")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        acted = RewardTouch("169_入口", 327, 0, 200)
+        If RewardPageKnown() Then
+            EnterTaskRewards = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function RewardFirstPass()
+    Dim phaseProgress
+    RewardFirstPass = RESULT_TIMEOUT
+    Call RewardStage("169第一段：成长、日常、特殊")
+    phaseProgress = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        // Independent checks in professional order; no universal popup priority.
+        If RewardGrowthClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardGrowthEmpty() Then
+            Call TouchPoint(foundX - 90, foundY - 977, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+        End If
+        If RewardDailyEmpty() Then
+            Delay 50
+            RewardFirstPass = RESULT_OK
+            Exit Function
+        End If
+        If RewardTouch("169_通行证", 179, -1045, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_特殊有奖", 0, 0, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_特殊无奖", -90, -977, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 50) Then
+            phaseProgress = TickCount()
+        End If
+        If TickCount() - phaseProgress > 10000 Then
+            Call Note("任务169第一段无进展超时，交公共恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function RewardFourPositions()
+    Dim phaseProgress, positionIndex, dx
+    RewardFourPositions = RESULT_TIMEOUT
+    Call RewardStage("169第二段：四位置奖励")
+    phaseProgress = TickCount()
+    positionIndex = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 200) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗二", 0, 0, 1000) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyEmpty() Then
+            dx = -159
+            If positionIndex = 1 Then
+                dx = -27
+            ElseIf positionIndex = 2 Then
+                dx = 106
+            ElseIf positionIndex = 3 Then
+                dx = 234
+            End If
+            Call Note("任务169四位置，序号=" & (positionIndex + 1))
+            Call TouchPoint(foundX + dx, foundY - 875, 1000)
+            positionIndex = positionIndex + 1
+        End If
+        // Original exit precedes the phase timeout check. Four clicks only.
+        If positionIndex > 3 Then
+            RewardFourPositions = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - phaseProgress > 10000 Then
+            Call Note("任务169第二段无进展超时，交公共恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function RewardFinalPass()
+    Dim phaseProgress, acted
+    RewardFinalPass = RESULT_TIMEOUT
+    Call RewardStage("169第三段：确认成长或特殊终态")
+    phaseProgress = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If RewardTouch("169_奖励弹窗二", 0, 0, 1000) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardTouch("169_奖励弹窗一", 0, 0, 200) Then
+            phaseProgress = TickCount()
+        End If
+        If RewardDailyEmpty() Then
+            Call TouchPoint(foundX + 87, foundY - 977, 50)
+        End If
+        If RewardGrowthClaimable() Then
+            Call TouchPoint(foundX, foundY, 50)
+            phaseProgress = TickCount()
+        End If
+        If RewardGrowthEmpty() Then
+            If Not BusinessExpired() Then
+                terminalConfirmed = True
+                RewardFinalPass = RESULT_OK
+                Call RewardStage("169成长无奖终态已确认")
+            End If
+            Exit Function
+        End If
+        acted = RewardTouch("169_特殊有奖", 0, 0, 50)
+        If MatchPattern("169_特殊无奖") Then
+            If Not BusinessExpired() Then
+                terminalConfirmed = True
+                RewardFinalPass = RESULT_OK
+                Call RewardStage("169特殊无奖终态已确认")
+            End If
+            Exit Function
+        End If
+        If TickCount() - phaseProgress > 4000 Then
+            Call Note("任务169末段无进展超时，未确认终态，交公共恢复")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteTaskRewards()
+    Dim result
+    ExecuteTaskRewards = RESULT_TIMEOUT
+    terminalConfirmed = False
+    result = EnterTaskRewards()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = RewardFirstPass()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = RewardFourPositions()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteTaskRewards = RewardFinalPass()
+End Function
