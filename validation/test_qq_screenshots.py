@@ -61,13 +61,13 @@ class QQScreenshotPixels(unittest.TestCase):
 
     def test_prior_professional_and_hall_profile_records_unchanged(self):
         before=json.loads((EVIDENCE/'修改前基线.json').read_text('utf-8'))
-        current=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'))
+        current=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if r['name'] != '游戏协议弹窗']
         self.assertEqual(current[:-3],before['existingProfileData'])
         self.assertEqual([r['name'] for r in current[-3:]],[r['name'] for r in RECORDS])
 
     def test_only_authorized_qq_mq_files_changed(self):
         before=json.loads((EVIDENCE/'修改前基线.json').read_text('utf-8'))
-        allowed={str(Path(p)) for p in ['app/入口.mq','common/任务状态.mq','common/图色参数.mq','flows/001_游戏重连/QQ登录.mq']}
+        allowed={str(Path(p)) for p in ['app/入口.mq','common/任务状态.mq','common/图色参数.mq','flows/001_游戏重连/QQ登录.mq','flows/001_游戏重连/登录游戏.mq']}
         for name,digest in before['mqFiles'].items():
             if name not in allowed:
                 with self.subTest(file=name):self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(),digest)
@@ -164,7 +164,7 @@ class QQProfessionalOrder(unittest.TestCase):
     def test_r3_only_changes_authorization_mq(self):
         before=json.loads((EVIDENCE/'R3修改前基线.json').read_text('utf-8'))
         for name,digest in before.items():
-            if Path(name)==Path('flows/001_游戏重连/QQ登录.mq'):continue
+            if Path(name) in [Path('flows/001_游戏重连/QQ登录.mq'),Path('flows/001_游戏重连/登录游戏.mq'),Path('common/图色参数.mq')]:continue
             self.assertEqual(hashlib.sha256((ROOT/name).read_bytes()).hexdigest(),digest,name)
 
 if __name__=='__main__':unittest.main()

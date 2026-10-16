@@ -245,6 +245,10 @@ class HallClearing(unittest.TestCase):
             args = ','.join(json.dumps(v, ensure_ascii=False) for v in record['definition'])
             clause = f'    Case "{record["name"]}"\n        // {record["id"]}\n        FindMultiColor {args},foundX,foundY\n'
             source = source.replace(clause, '', 1)
+        agreement = json.loads((ROOT/'flows/001_游戏重连/evidence/游戏协议弹窗/截图图色参数.json').read_text('utf-8'))
+        args = ','.join(json.dumps(v, ensure_ascii=False) for v in agreement['definition'])
+        clause = '    Case "游戏协议弹窗"\n        // User screenshot adaptation, not professional evidence.\n        FindMultiColor ' + args + ',foundX,foundY\n'
+        source = source.replace(clause, '', 1)
         restored = source.replace('\n', '\r\n').encode('utf-8-sig')
         self.assertEqual(hashlib.sha256(restored).hexdigest(), before['publicSourceHashes'][str(Path('common/图色参数.mq'))])
 

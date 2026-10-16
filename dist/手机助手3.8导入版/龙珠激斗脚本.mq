@@ -321,6 +321,9 @@ Function MatchPattern(name)
     Case "QQ现版游戏信息同意"
         // user-qq-screenshot-3; user screenshot adaptation, not original professional data
         FindMultiColor 228,984,252,1008,"FF9900-080808","-20|-20|FF9900-080808,260|-20|FF9900-080808,-20|20|FF9900-080808,260|20|FF9900-080808,-40|0|FFFFFF-080808,280|0|FFFFFF-080808,28|-681|1E1C1A-080808,254|-665|1E1C1A-080808,-180|-683|1E1C1A-080808,142|-693|1E1C1A-080808,-76|-662|1E1C1A-080808,88|-662|1E1C1A-080808,194|-661|1E1C1A-080808,-125|-695|1E1C1A-080808,-27|-689|1E1C1A-080808,116|0|FFFFFF-080808,147|13|FFFFFF-080808,92|15|FFFFFF-080808,92|-11|FFFFFF-080808,139|-10|FFFFFF-080808,130|10|FFFFFF-080808,111|15|FFFFFE-080808,-20|66|E6E6E6-080808,260|134|E6E6E6-080808",0,1,foundX,foundY
+    Case "游戏协议弹窗"
+        // User screenshot adaptation, not professional evidence.
+        FindMultiColor 458,868,482,892,"43DFFF-101010","-20|-5|23AFF9-101010,130|-5|36E4FE-101010,-20|35|026DF9-101010,130|35|0682FD-101010,-415|-500|5B3328-101010,-415|-80|5B3328-101010,190|-80|5B3328-101010,-261|-456|FFFF00-101010,-277|-409|FFFF00-101010,-260|-364|F1F100-101010,-266|-318|DFDF00-101010,38|17|FFFFFF-101010,74|16|FFFFFF-101010",0,1,foundX,foundY
     End Select
     MatchPattern = foundX >= 0 And foundY >= 0
 End Function
@@ -761,7 +764,15 @@ Function EnsureGameHall()
         acted = HandleQQ()
         If Sys.AppIsFront(GAME_PACKAGE) And Not acted Then
             // root.793: known notice handlers; no task-specific claim here.
-            acted = TouchPattern("我知道了", 1000)
+            // Screenshot-specific game agreement; keep the shared login deadline.
+            If MatchPattern("游戏协议弹窗") Then
+                Call Note("游戏协议弹窗：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 58, foundY + 16, 1000)
+                acted = True
+            End If
+            If Not acted Then
+                acted = TouchPattern("我知道了", 1000)
+            End If
             If Not acted Then
                 acted = TouchPattern("回归公告", 1000)
             End If

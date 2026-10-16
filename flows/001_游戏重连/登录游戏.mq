@@ -19,7 +19,15 @@
         acted = HandleQQ()
         If Sys.AppIsFront(GAME_PACKAGE) And Not acted Then
             // root.793: known notice handlers; no task-specific claim here.
-            acted = TouchPattern("我知道了", 1000)
+            // Screenshot-specific game agreement; keep the shared login deadline.
+            If MatchPattern("游戏协议弹窗") Then
+                Call Note("游戏协议弹窗：点击同意，登录总计时继续")
+                Call TouchPoint(foundX + 58, foundY + 16, 1000)
+                acted = True
+            End If
+            If Not acted Then
+                acted = TouchPattern("我知道了", 1000)
+            End If
             If Not acted Then
                 acted = TouchPattern("回归公告", 1000)
             End If
