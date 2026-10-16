@@ -1,0 +1,18 @@
+{
+  "implemented": true,
+  "taskId": 55,
+  "professionalSource": "root.707",
+  "terminal": "用户确认两组双点击完成；公共返回大厅连续确认后提交",
+  "staticCheck": "通过，24个MQ文件",
+  "pythonMockTests": 223,
+  "officialMQCompilation": "待用户验证",
+  "emulatorRuntime": "待用户验证",
+  "synced": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "sha256Match": {
+    ".mq": true,
+    ".uip": true
+  },
+  "existingFourBusinessFiles": "与修改前快照逐字节一致",
+  "oneClickOption": "按用户要求不添加",
+  "gitCommitOrPush": false
+}

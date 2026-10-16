@@ -1,4 +1,5 @@
-﻿// 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
+﻿Dim friendEnabled, friendInterval, friendRegisteredTask, friendDone, friendFailed, friendCount, friendFailures, friendDue, friendFirst, friendPhase
+// 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
 Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
 Dim GAME_PACKAGE, QQ_PACKAGE, stageName, foundX, foundY
 Dim mailEnabled, mailInterval, loginLimit, businessLimit, messageMode

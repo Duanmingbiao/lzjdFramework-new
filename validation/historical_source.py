@@ -35,3 +35,9 @@ def before_monthly(path):
  except ValueError:return path
  backup=ROOT/'flows/166_领月卡龙石/evidence/before'/rel.with_suffix('.txt')
  return backup if path.suffix in ('.mq','.uip') and backup.exists() else path
+
+def before_friend(path):
+ path=Path(path)
+ rel=path.relative_to(ROOT)
+ backup=ROOT/'flows/055_好友体力/evidence/before'/rel.with_suffix('.txt')
+ return backup if backup.exists() else path

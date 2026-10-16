@@ -1,7 +1,10 @@
 ﻿Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 166 Then
+    If taskId = 55 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteFriendEnergy()
+    ElseIf taskId = 166 Then
         terminalConfirmed = False
         DispatchTask = ExecuteMonthlyStones()
     ElseIf taskId = 167 Then

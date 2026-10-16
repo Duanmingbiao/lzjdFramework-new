@@ -1,4 +1,5 @@
 ﻿// app/入口.mq
+Dim friendEnabled, friendInterval, friendRegisteredTask, friendDone, friendFailed, friendCount, friendFailures, friendDue, friendFirst, friendPhase
 // 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
 Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
 Dim GAME_PACKAGE, QQ_PACKAGE, stageName, foundX, foundY
@@ -190,7 +191,7 @@ Function HandleForegroundRecovery()
         Exit Function
     End If
     Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
-    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Then
+    If currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Then
         Call SaveRecovery()
     End If
     terminalConfirmed = False
@@ -248,6 +249,8 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    friendEnabled = ReadUIConfig("好友体力启用", False)
+    friendInterval = PositiveSetting("好友体力间隔秒", 14400)
     monthEnabled = ReadUIConfig("月卡龙石启用", False)
     monthInterval = PositiveSetting("月卡间隔秒", 3600)
     monthKeepDownload = ReadUIConfig("保留下载提示", False)
@@ -267,6 +270,13 @@ End Sub
 
 // common/任务状态.mq
 Sub NewSession()
+    friendDone = False
+    friendFailed = False
+    friendCount = 0
+    friendFailures = 0
+    friendDue = 0
+    friendFirst = True
+    friendPhase = "未开始"
     monthDone = False
     monthFailed = False
     monthCount = 0
@@ -320,7 +330,10 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
-    If taskId = 166 Then
+    If taskId = 55 Then
+        friendDone = False
+        friendFailed = False
+    ElseIf taskId = 166 Then
         monthDone = False
         monthFailed = False
     ElseIf taskId = 167 Then
@@ -338,7 +351,12 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
-    If currentTask = 166 Then
+    If currentTask = 55 Then
+        friendFailed = True
+        friendFailures = friendFailures + 1
+        friendPhase = "等待恢复"
+        Call Note("[好友体力55] 保存恢复 原业务=" & resumeTask & " 失败次数=" & friendFailures)
+    ElseIf currentTask = 166 Then
         monthFailed = True
         monthFailures = monthFailures + 1
         Call Note("保留原业务=" & resumeTask & "，月卡失败次数=" & monthFailures)
@@ -360,8 +378,8 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 Then
-        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166")
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 Then
+        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55")
         Exit Function
     End If
     If Not terminalConfirmed Then
@@ -376,7 +394,15 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 166 Then
+    If currentTask = 55 Then
+        friendDone = True
+        friendFailed = False
+        friendCount = friendCount + 1
+        friendDue = TickCount() + friendInterval * 1000
+        friendFirst = False
+        friendPhase = "完成"
+        Call Note("[好友体力55] 返回大厅连续确认后提交 次数=" & friendCount & " 间隔秒=" & friendInterval)
+    ElseIf currentTask = 166 Then
         monthDone = True
         monthFailed = False
         monthCount = monthCount + 1
@@ -528,6 +554,12 @@ Function MatchPattern(name)
     foundY = -1
     ReleaseCapture
     Select Case name
+    Case "055_大厅入口锚点"
+        // root.707; full screen semantics only converted
+        FindMultiColor 0,0,719,1279,"FFFFFF-101010","-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",1,0.9,foundX,foundY
+    Case "055_好友页面"
+        // root.707; full screen semantics only converted
+        FindMultiColor 0,0,719,1279,"2DBF85","-30|-14|FFFFFF,-80|13|0A8E54,419|-21|6DF1FF,365|-24|25B1FB,154|22|0A8E54,156|-23|37DC9A,-37|-1035|443B4C,155|-1062|0D4FD3,48|-1058|0A4CD8,104|-1047|65E0FF,105|-1044|71E5FD",1,0.9,foundX,foundY
     Case "大厅主体"
         // root-784_L107
         FindMultiColor 0,0,719,1279,"FFFFFF-333333","6|-52|424542-333333,2|-50|353535-333333,-33|-20|080808-333333,-12|21|F7F3F1-333333,-15|22|673617-333333,41|-2|080808-333333,41|21|BF6627-333333,-31|19|E79653-333333,0|44|E5A93D-333333",0,0.9,foundX,foundY
@@ -1103,16 +1135,17 @@ End Function
 
 // common/任务注册.mq
 Sub RegisterTasks()
+    friendRegisteredTask = 55
     registeredTask = 168
     rewardRegisteredTask = 169
     signRegisteredTask = 167
     monthRegisteredTask = 166
-    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166；使用唯一串行调度器")
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55；使用唯一串行调度器")
 End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
-    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Then
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Then
         If resumeTask <> 0 Then
             SelectDueTask = resumeTask
             Exit Function
@@ -1132,6 +1165,10 @@ Function SelectDueTask()
     End If
     If monthEnabled And monthFirst Then
         SelectDueTask = monthRegisteredTask
+        Exit Function
+    End If
+    If friendEnabled And friendFirst Then
+        SelectDueTask = friendRegisteredTask
         Exit Function
     End If
     selected = 0
@@ -1162,6 +1199,14 @@ Function SelectDueTask()
         If TickCount() >= monthDue Then
             If selected = 0 Or monthDue < selectedDue Then
                 selected = monthRegisteredTask
+                selectedDue = monthDue
+            End If
+        End If
+    End If
+    If friendEnabled Then
+        If TickCount() >= friendDue Then
+            If selected = 0 Or friendDue < selectedDue Then
+                selected = friendRegisteredTask
             End If
         End If
     End If
@@ -1173,7 +1218,10 @@ End Function
 Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 166 Then
+    If taskId = 55 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteFriendEnergy()
+    ElseIf taskId = 166 Then
         terminalConfirmed = False
         DispatchTask = ExecuteMonthlyStones()
     ElseIf taskId = 167 Then
@@ -2269,4 +2317,99 @@ Function ExecuteMonthlyStones()
     ExecuteMonthlyStones = RESULT_OK
     Call MonthStage("166月卡业务终态确认")
     Call Note("[月卡166] 业务出口：成功，等待公共返回大厅后提交")
+End Function
+
+
+// flows/055_好友体力/好友体力.mq
+Sub FriendStage(value)
+    friendPhase = value
+    Call SetStage(value)
+End Sub
+Function FriendTap(x, y, waitMs)
+    FriendTap = False
+    // Public foreground grace remains five seconds; never count a skipped click.
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call Note("[好友体力55] 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    If Not BusinessExpired() Then
+        FriendTap = True
+    End If
+End Function
+Function ExecuteFriendEnergy()
+    Dim enteredAt, anchorX, anchorY, firstGroup
+    ExecuteFriendEnergy = RESULT_TIMEOUT
+    terminalConfirmed = False
+    enteredAt = TickCount()
+    firstGroup = True
+    Call FriendStage("好友体力55进入")
+    Call Note("[好友体力55] 入口 root.707 全屏多点找色 方向1 相似度0.9；进入限时10000毫秒")
+    Do
+        If BusinessExpired() Then
+            Call Note("[好友体力55] 进入出口：公共超时或前台中断，保留原任务")
+            Exit Function
+        End If
+        If MatchPattern("055_大厅入口锚点") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[好友体力55] 命中大厅锚点=" & anchorX & "," & anchorY & " 区域0,0,719,1279 偏移538,-28")
+            If Not FriendTap(anchorX + 538, anchorY - 28, 1000) Then
+                Exit Function
+            End If
+        End If
+        If MatchPattern("055_好友页面") Then
+            Call Note("[好友体力55] 进入好友页面确认；每组重新找色，同组沿用锚点")
+            Exit Do
+        End If
+        If TickCount() - enteredAt > 10000 Then
+            Call Note("[好友体力55] 进入超时出口：未确认好友页，不提交，交公共恢复原任务")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    Call FriendStage("好友体力55第一组")
+    Do
+        If BusinessExpired() Then
+            Call Note("[好友体力55] 动作出口：公共超时或前台中断，保留原任务")
+            Exit Function
+        End If
+        If MatchPattern("055_好友页面") Then
+            anchorX = foundX
+            anchorY = foundY
+            Call Note("[好友体力55] 命中好友页面=" & anchorX & "," & anchorY & " 区域0,0,719,1279")
+            If firstGroup Then
+                Call Note("[好友体力55] 第一组 偏移250,-110 双点击 等待500/1000毫秒")
+                If Not FriendTap(anchorX + 250, anchorY - 110, 500) Then
+                    Exit Function
+                End If
+                If Not FriendTap(anchorX + 250, anchorY - 110, 1000) Then
+                    Exit Function
+                End If
+                firstGroup = False
+                Call FriendStage("好友体力55第二组")
+            Else
+                Call Note("[好友体力55] 第二组 偏移460,-110 双点击 等待500/0毫秒")
+                If Not FriendTap(anchorX + 460, anchorY - 110, 500) Then
+                    Exit Function
+                End If
+                If Not FriendTap(anchorX + 460, anchorY - 110, 0) Then
+                    Exit Function
+                End If
+                terminalConfirmed = True
+                Call FriendStage("好友体力55待返回大厅")
+                Call Note("[好友体力55] 业务出口成功：两组双点击完成，按用户确认终态；等待公共返回大厅连续确认后提交")
+                ExecuteFriendEnergy = RESULT_OK
+                Exit Function
+            End If
+        Else
+            Delay 20
+        End If
+    Loop
 End Function

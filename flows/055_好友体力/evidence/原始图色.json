@@ -1,0 +1,113 @@
+{
+  "sourceSHA256": "5199e152daaaa70c33d83e6ec64ffbb39c418353c4d57aa3abf6d0cb38ba97d9",
+  "patterns": [
+    {
+      "professionalFunction": "root.707",
+      "source": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\好友体力专业版证据\\function-707.readable.lua",
+      "line": 50,
+      "name": "055_大厅入口锚点",
+      "stage": "进入好友页",
+      "originalRegion": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "mainColor": "FFFFFF-101010",
+      "offsetColors": "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010",
+      "similaritySource": "dzc.相似度；root.816 L67=0.9",
+      "similarity": 0.9,
+      "direction": 1,
+      "lastFlag": false,
+      "clickOffsetsAndWaitMs": [
+        [
+          538,
+          -28,
+          1000
+        ]
+      ]
+    },
+    {
+      "professionalFunction": "root.707",
+      "source": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\好友体力专业版证据\\function-707.readable.lua",
+      "line": 86,
+      "name": "055_好友页面",
+      "stage": "确认好友页",
+      "originalRegion": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "mainColor": "2DBF85",
+      "offsetColors": "-30|-14|FFFFFF,-80|13|0A8E54,419|-21|6DF1FF,365|-24|25B1FB,154|22|0A8E54,156|-23|37DC9A,-37|-1035|443B4C,155|-1062|0D4FD3,48|-1058|0A4CD8,104|-1047|65E0FF,105|-1044|71E5FD",
+      "similaritySource": "dzc.相似度；root.816 L67=0.9",
+      "similarity": 0.9,
+      "direction": 1,
+      "lastFlag": false,
+      "clickOffsetsAndWaitMs": []
+    },
+    {
+      "professionalFunction": "root.707",
+      "source": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\好友体力专业版证据\\function-707.readable.lua",
+      "line": 150,
+      "name": "055_好友页面",
+      "stage": "第一组双点击",
+      "originalRegion": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "mainColor": "2DBF85",
+      "offsetColors": "-30|-14|FFFFFF,-80|13|0A8E54,419|-21|6DF1FF,365|-24|25B1FB,154|22|0A8E54,156|-23|37DC9A,-37|-1035|443B4C,155|-1062|0D4FD3,48|-1058|0A4CD8,104|-1047|65E0FF,105|-1044|71E5FD",
+      "similaritySource": "dzc.相似度；root.816 L67=0.9",
+      "similarity": 0.9,
+      "direction": 1,
+      "lastFlag": false,
+      "clickOffsetsAndWaitMs": [
+        [
+          250,
+          -110,
+          500
+        ],
+        [
+          250,
+          -110,
+          1000
+        ]
+      ]
+    },
+    {
+      "professionalFunction": "root.707",
+      "source": "D:\\codex file\\2026-10-15\\markdown-v5-510-mq-lua-lua\\outputs\\好友体力专业版证据\\function-707.readable.lua",
+      "line": 196,
+      "name": "055_好友页面",
+      "stage": "第二组双点击",
+      "originalRegion": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "mainColor": "2DBF85",
+      "offsetColors": "-30|-14|FFFFFF,-80|13|0A8E54,419|-21|6DF1FF,365|-24|25B1FB,154|22|0A8E54,156|-23|37DC9A,-37|-1035|443B4C,155|-1062|0D4FD3,48|-1058|0A4CD8,104|-1047|65E0FF,105|-1044|71E5FD",
+      "similaritySource": "dzc.相似度；root.816 L67=0.9",
+      "similarity": 0.9,
+      "direction": 1,
+      "lastFlag": false,
+      "clickOffsetsAndWaitMs": [
+        [
+          460,
+          -110,
+          500
+        ],
+        [
+          460,
+          -110,
+          0
+        ]
+      ]
+    }
+  ]
+}

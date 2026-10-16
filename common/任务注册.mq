@@ -1,14 +1,15 @@
 ﻿Sub RegisterTasks()
+    friendRegisteredTask = 55
     registeredTask = 168
     rewardRegisteredTask = 169
     signRegisteredTask = 167
     monthRegisteredTask = 166
-    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166；使用唯一串行调度器")
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55；使用唯一串行调度器")
 End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
-    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Then
+    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Then
         If resumeTask <> 0 Then
             SelectDueTask = resumeTask
             Exit Function
@@ -28,6 +29,10 @@ Function SelectDueTask()
     End If
     If monthEnabled And monthFirst Then
         SelectDueTask = monthRegisteredTask
+        Exit Function
+    End If
+    If friendEnabled And friendFirst Then
+        SelectDueTask = friendRegisteredTask
         Exit Function
     End If
     selected = 0
@@ -58,6 +63,14 @@ Function SelectDueTask()
         If TickCount() >= monthDue Then
             If selected = 0 Or monthDue < selectedDue Then
                 selected = monthRegisteredTask
+                selectedDue = monthDue
+            End If
+        End If
+    End If
+    If friendEnabled Then
+        If TickCount() >= friendDue Then
+            If selected = 0 Or friendDue < selectedDue Then
+                selected = friendRegisteredTask
             End If
         End If
     End If

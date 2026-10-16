@@ -9,6 +9,8 @@
     End If
 End Function
 Sub LoadSettings()
+    friendEnabled = ReadUIConfig("好友体力启用", False)
+    friendInterval = PositiveSetting("好友体力间隔秒", 14400)
     monthEnabled = ReadUIConfig("月卡龙石启用", False)
     monthInterval = PositiveSetting("月卡间隔秒", 3600)
     monthKeepDownload = ReadUIConfig("保留下载提示", False)

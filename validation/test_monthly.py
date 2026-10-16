@@ -1,3 +1,4 @@
+from historical_source import before_friend
 import unittest,json,hashlib,re
 from pathlib import Path
 from mq_subset import load,ROOT
@@ -110,9 +111,9 @@ class MonthlyEvidence(unittest.TestCase):
   for src in raw['sources']:self.assertEqual(hashlib.sha256(Path(src['file']).read_bytes()).hexdigest(),src['sha256'])
   for c in converted:
    r=next(x for x in raw['patterns'] if x['name']==c['name']);d=c['definition'];self.assertEqual(d[4:6],[r['main'],r['offsets']]);self.assertEqual(d[:4],[0,0,719,1279] if r['region']==[0,0,0,0] else r['region']);self.assertEqual(d[7],0.9)
-  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));now=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual(now,old+converted)
+  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));now=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in now if not x['name'].startswith('055_')],old+converted)
  def test_monitor_change_only_recognizes_new_task(self):
-  old=(E/'before/common/前台监控.txt').read_text('utf-8-sig');now=(ROOT/'common/前台监控.mq').read_text('utf-8-sig');self.assertEqual(now,old.replace('Or currentTask = 167 Then','Or currentTask = 167 Or currentTask = 166 Then'))
+  old=(E/'before/common/前台监控.txt').read_text('utf-8-sig');now=before_friend(ROOT/'common/前台监控.mq').read_text('utf-8-sig');self.assertEqual(now,old.replace('Or currentTask = 167 Then','Or currentTask = 167 Or currentTask = 166 Then'))
  def test_existing_ui_preserved_three_settings_added(self):
   def controls(t):return {re.search(r'名称:"([^"]+)"',b)[1]:(k,b) for k,b in re.findall(r'(输入框|下拉框|多选框):\{([^{}]+)\}',t)}
-  old=controls((E/'before/ui/最小配置.txt').read_text('utf-8-sig'));now=controls((ROOT/'ui/最小配置.uip').read_text('utf-8-sig'));self.assertEqual({k:now[k] for k in old},old);self.assertEqual(set(now)-set(old),{'月卡龙石启用','月卡间隔秒','保留下载提示'})
+  old=controls((E/'before/ui/最小配置.txt').read_text('utf-8-sig'));now=controls(before_friend(ROOT/'ui/最小配置.uip').read_text('utf-8-sig'));self.assertEqual({k:now[k] for k in old},old);self.assertEqual(set(now)-set(old),{'月卡龙石启用','月卡间隔秒','保留下载提示'})

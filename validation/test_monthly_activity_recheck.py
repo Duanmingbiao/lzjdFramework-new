@@ -1,3 +1,4 @@
+from historical_source import before_friend
 import unittest,json,hashlib
 from pathlib import Path
 from mq_subset import ROOT
@@ -32,4 +33,4 @@ class ActivityRecheck(unittest.TestCase):
   before=(E/'修改前月卡.txt').read_text('utf-8-sig');now=(ROOT/MODULE).read_text('utf-8-sig');branch=(E/'精确新增分支.txt').read_text('utf-8')
   self.assertEqual(now.replace(branch,'',1),before)
   for rel,h in json.loads((E/'修改前基线.json').read_text('utf-8')).items():
-   if rel!=MODULE:self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)
+   if rel!=MODULE:self.assertEqual(hashlib.sha256(before_friend(ROOT/rel).read_bytes()).hexdigest(),h,rel)

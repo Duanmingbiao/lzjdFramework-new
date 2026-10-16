@@ -1,0 +1,295 @@
+﻿Sub MonthStage(value)
+    monthPhase = value
+    Call SetStage(value)
+End Sub
+Sub MonthTouch(name, x, y, waitMs)
+    Call Note("[月卡166] 命中=" & name & " 点击=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+End Sub
+Function MonthActivityFrame()
+    MonthActivityFrame = True
+    If MatchPattern("166_活动框一") Then
+        Exit Function
+    End If
+    MonthActivityFrame = MatchPattern("166_活动框二")
+End Function
+Function MonthHallKnown()
+    MonthHallKnown = True
+    If MatchPattern("166_大厅识别一") Then
+        Exit Function
+    End If
+    If MatchPattern("166_大厅识别二") Then
+        Exit Function
+    End If
+    MonthHallKnown = MatchPattern("166_大厅识别三")
+End Function
+Function MonthActivityIcon()
+    MonthActivityIcon = True
+    If MatchPattern("166_大厅活动入口一") Then
+        Exit Function
+    End If
+    MonthActivityIcon = MatchPattern("166_大厅活动入口二")
+End Function
+Sub MonthResourcePrompt()
+    Dim x, y, text
+    If Not monthKeepDownload Then
+        If MatchPattern("166_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = ReadActivityText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                Call MonthTouch("166_资源下载提示标题", x, y, 0)
+            End If
+            text = ReadActivityText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                Call MonthTouch("166_资源下载提示网络", x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function EnterMonthlyActivities()
+    Dim initialStarted, enterStarted, text, hallResult
+    EnterMonthlyActivities = RESULT_TIMEOUT
+    Call MonthStage("166进入活动界面")
+    Call Note("[月卡166] 入口 EnterMonthlyActivities")
+    initialStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：活动位置检查超时或前台中断")
+            Exit Function
+        End If
+        If MonthActivityFrame() Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：原活动框已确认")
+            Exit Function
+        End If
+        If TickCount() - initialStarted > 2000 Then
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    hallResult = ReturnToHall()
+    If hallResult <> RESULT_OK Then
+        Call Note("[月卡166] 出口：进入活动前返回大厅失败")
+        Exit Function
+    End If
+    enterStarted = TickCount()
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：进入活动业务总超时或前台中断")
+            Exit Function
+        End If
+        Call MonthResourcePrompt()
+        If MonthActivityFrame() Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：专业版当前位置活动框复核成功，进入月卡分页")
+            Exit Function
+        End If
+        text = ReadActivityText(65, 7, 247, 59)
+        If text = "活动" Then
+            EnterMonthlyActivities = RESULT_OK
+            Call Note("[月卡166] 出口：OCR活动标题已确认")
+            Exit Function
+        Else
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Call Note("[月卡166] 出口：活动标题未成立且公共返回失败")
+                Exit Function
+            End If
+        End If
+        If MonthHallKnown() Then
+            If MonthActivityIcon() Then
+                Call MonthTouch("166_大厅活动入口", foundX, foundY, 1500)
+            Else
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Call Note("[月卡166] 出口：无活动图标且公共返回失败")
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 300
+        If TickCount() - enterStarted > 60000 Then
+            Call Note("[月卡166] 出口：专业版活动入口60秒超时；不提交完成")
+            Delay 2000
+            Exit Function
+        End If
+    Loop
+End Function
+Function FindMonthlyPage()
+    Dim searchStarted, lastAction, swipeCount
+    FindMonthlyPage = RESULT_TIMEOUT
+    searchStarted = TickCount()
+    lastAction = TickCount() + 1500
+    swipeCount = 0
+    monthlySearchDirection = 0
+    Call MonthStage("166查找月卡分页")
+    Call Note("[月卡166] 入口 FindMonthlyPage，入口限时35秒")
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：分页业务总超时或前台中断")
+            Exit Function
+        End If
+        If monthlySearchDirection < 4 Then
+            monthlySearchDirection = monthlySearchDirection + 1
+        Else
+            monthlySearchDirection = 0
+        End If
+        If MatchPattern("166_月卡页面") Then
+            FindMonthlyPage = RESULT_OK
+            Call Note("[月卡166] 出口：月卡页面已确认，搜索方向=" & monthlySearchDirection)
+            Exit Function
+        End If
+        If MonthActivityFrame() Then
+            If MatchPattern("166_月卡图标") Then
+                Call MonthTouch("166_月卡图标", foundX, foundY, 1500)
+                lastAction = TickCount()
+            End If
+            If TickCount() - lastAction > 1500 Then
+                swipeCount = swipeCount + 1
+                Call Note("[月卡166] 活动分页滑动序号=" & swipeCount)
+                If swipeCount <= 7 Then
+                    Call SwipeActivityPage(False)
+                Else
+                    Call SwipeActivityPage(True)
+                    If swipeCount = 14 Then
+                        swipeCount = 0
+                    End If
+                End If
+                lastAction = TickCount()
+            End If
+        End If
+        If TickCount() - searchStarted > 35000 Then
+            Call Note("[月卡166] 出口：专业版分页35秒超时；不提交完成")
+            Delay 2000
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function DetectMonthlyCard()
+    Dim detected
+    DetectMonthlyCard = RESULT_TIMEOUT
+    monthCardType = -1
+    Call MonthStage("166识别月卡类型")
+    Call Progress()
+    Call Note("[月卡166] 入口 DetectMonthlyCard；顺序左卡、右卡、双卡、未购买")
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：卡型未知至总超时或前台中断")
+            Exit Function
+        End If
+        detected = False
+        If MatchPattern("166_类型左卡") Then
+            monthCardType = 1
+            detected = True
+        ElseIf MatchPattern("166_类型右卡") Then
+            monthCardType = 3
+            detected = True
+        ElseIf MatchPattern("166_类型双卡") Then
+            monthCardType = 2
+            detected = True
+        ElseIf MatchPattern("166_类型未购买") Then
+            monthCardType = 0
+            detected = True
+        End If
+        If detected Then
+            Call Note("[月卡166] 卡型=" & monthCardType & "；0未购买 1左卡 2双卡 3右卡；等待1000毫秒")
+            Delay 1000
+            If BusinessExpired() Then
+                Call Note("[月卡166] 出口：卡型等待后总超时或中断")
+                Exit Function
+            End If
+            DetectMonthlyCard = RESULT_OK
+            Call Note("[月卡166] 出口：卡型已确认")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Sub MonthClaimPair(name, dx)
+    Dim x, y
+    If MatchPattern(name) Then
+        x = foundX + dx
+        y = foundY - 184
+        Call MonthTouch(name, x, y, 500)
+        Call MonthTouch(name, x, y, 500)
+    End If
+End Sub
+Function ClaimMonthlyStones()
+    Dim finished
+    ClaimMonthlyStones = RESULT_TIMEOUT
+    Call MonthStage("166领取月卡龙石")
+    Call Progress()
+    Call Note("[月卡166] 入口 ClaimMonthlyStones，卡型=" & monthCardType)
+    If monthCardType = 0 Then
+        ClaimMonthlyStones = RESULT_OK
+        Call Note("[月卡166] 出口：明确未购买，无奖励终态")
+        Exit Function
+    End If
+    Do
+        If BusinessExpired() Then
+            Call Note("[月卡166] 出口：领取总超时或前台中断")
+            Exit Function
+        End If
+        If MatchPattern("166_奖励弹窗") Then
+            Call MonthTouch("166_奖励弹窗", foundX, foundY, 0)
+        End If
+        finished = False
+        If monthCardType = 1 Then
+            Call MonthClaimPair("166_左卡可领", 63)
+            finished = MatchPattern("166_左卡灰色")
+        ElseIf monthCardType = 2 Then
+            Call MonthClaimPair("166_左卡可领", 63)
+            Call MonthClaimPair("166_右卡可领", 410)
+            finished = MatchPattern("166_双卡灰色")
+        ElseIf monthCardType = 3 Then
+            Call MonthClaimPair("166_右卡可领", 410)
+            finished = MatchPattern("166_右卡灰色")
+        End If
+        If finished Then
+            If BusinessExpired() Then
+                Call Note("[月卡166] 出口：灰色终态命中时总超时或中断")
+                Exit Function
+            End If
+            ClaimMonthlyStones = RESULT_OK
+            Call Note("[月卡166] 出口：对应月卡灰色终态确认，卡型=" & monthCardType)
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteMonthlyStones()
+    Dim result
+    ExecuteMonthlyStones = RESULT_TIMEOUT
+    terminalConfirmed = False
+    Call Note("[月卡166] 业务入口 ExecuteMonthlyStones")
+    result = EnterMonthlyActivities()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：活动入口失败，返回超时")
+        Exit Function
+    End If
+    result = FindMonthlyPage()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：月卡分页失败，返回超时")
+        Exit Function
+    End If
+    result = DetectMonthlyCard()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：卡型未确认，返回超时")
+        Exit Function
+    End If
+    result = ClaimMonthlyStones()
+    If result <> RESULT_OK Then
+        Call Note("[月卡166] 业务出口：月卡终态未确认，返回超时")
+        Exit Function
+    End If
+    If BusinessExpired() Then
+        Call Note("[月卡166] 业务出口：终态提交前已超时或中断")
+        Exit Function
+    End If
+    terminalConfirmed = True
+    ExecuteMonthlyStones = RESULT_OK
+    Call MonthStage("166月卡业务终态确认")
+    Call Note("[月卡166] 业务出口：成功，等待公共返回大厅后提交")
+End Function

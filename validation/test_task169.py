@@ -142,7 +142,7 @@ class RewardEvidence(unittest.TestCase):
    self.assertIn('FindMultiColor '+','.join(json.dumps(x,ensure_ascii=False) for x in b['definition'])+',foundX,foundY',source)
  def test_existing_profiles_unchanged(self):
   before=json.loads((E/'接入前图色.json').read_text('utf-8'));now=json.loads((R/'evidence/图色参数.json').read_text('utf-8'))
-  self.assertEqual([r for r in now if r['name'] != '首次启动协议' and not r['name'].startswith(('167_','166_'))][:-14],before)
+  self.assertEqual([r for r in now if r['name'] != '首次启动协议' and not r['name'].startswith(('167_','166_','055_'))][:-14],before)
  def test_mail_login_hall_timers_and_scheduler_source_unchanged(self):
   allowed={Path(p) for p in ['app/入口.mq','common/配置读取.mq','common/任务状态.mq','common/任务注册.mq','common/任务分派.mq','common/图色参数.mq']}
   baseline=json.loads((E/'修改前基线.json').read_text('utf-8'))
@@ -159,5 +159,5 @@ class RewardEvidence(unittest.TestCase):
   before=contract((E/'接入前配置.uip').read_text('utf-8-sig'))
   after=contract((R/'ui/最小配置.uip').read_text('utf-8-sig'))
   for key,value in before.items():self.assertEqual(after[key],value)
-  self.assertEqual(set(after)-set(before),{'任务奖励启用','任务奖励间隔秒','日常签到启用','签到间隔秒','月卡龙石启用','月卡间隔秒','保留下载提示'})
+  self.assertEqual(set(after)-set(before),{'任务奖励启用','任务奖励间隔秒','日常签到启用','签到间隔秒','月卡龙石启用','月卡间隔秒','保留下载提示','好友体力启用','好友体力间隔秒'})
 if __name__=='__main__':unittest.main()

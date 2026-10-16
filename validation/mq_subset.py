@@ -1,4 +1,4 @@
-"""Execute only the actual MQ control-flow subset under mocked APIs. Not an MQ compiler."""
+﻿"""Execute only the actual MQ control-flow subset under mocked APIs. Not an MQ compiler."""
 import re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -9,7 +9,7 @@ def expression(s):
 
 def load(paths, env):
  # Unit fixtures without the monitor model the no-interruption dependency explicitly.
- for key,value in {'monthEnabled':False,'monthInterval':3600,'monthRegisteredTask':166,'monthKeepDownload':False,'signEnabled':False,'signInterval':3600,'signRegisteredTask':167,'ForegroundInterrupted':lambda:False,'HandleForegroundRecovery':lambda:False,'BeginForegroundCommit':lambda:True,'EndForegroundCommit':lambda:None,'foregroundLoginPending':False,'BeginForegroundRecovery':lambda:None,'EndForegroundRecovery':lambda:None}.items():env.setdefault(key,value)
+ for key,value in {'friendEnabled':False,'friendInterval':14400,'friendRegisteredTask':55,'monthEnabled':False,'monthInterval':3600,'monthRegisteredTask':166,'monthKeepDownload':False,'signEnabled':False,'signInterval':3600,'signRegisteredTask':167,'ForegroundInterrupted':lambda:False,'HandleForegroundRecovery':lambda:False,'BeginForegroundCommit':lambda:True,'EndForegroundCommit':lambda:None,'foregroundLoginPending':False,'BeginForegroundRecovery':lambda:None,'EndForegroundRecovery':lambda:None}.items():env.setdefault(key,value)
  env['mqcat']=lambda *args: ''.join(str(x) for x in args)
  allglobals=[]
  for line in (ROOT/'app/入口.mq').read_text('utf-8-sig').splitlines():

@@ -1,0 +1,14 @@
+{
+  "projectTaskId": 55,
+  "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\专业版日常任务清单.md",
+  "line": 91,
+  "evidence": "| 55 | 好友体力 | root.707 | `日常_游戏好友体力`：勾选；好友体力；原默认false<br>`日常_游戏好友体力_一键领取`：UI 未定位，需查动态界面或后续配置更新 | I:9325–9376；D:4608；U:1044 |",
+  "initializationEvidence": "root.816 L588：L10_1=好友体力；L638：L5_1[55]=L10_1",
+  "existingProjectIds": [
+    168,
+    169,
+    167,
+    166
+  ],
+  "note": "邮件168/任务169沿用专业版任务列表序号；本任务55与专业版序号一致。不是707减常数，也不是新增目录排序。现有签到167/月卡166编号保持。"
+}

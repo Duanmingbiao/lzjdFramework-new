@@ -62,7 +62,7 @@ class QQScreenshotPixels(unittest.TestCase):
 
     def test_prior_professional_and_hall_profile_records_unchanged(self):
         before=json.loads((EVIDENCE/'修改前基线.json').read_text('utf-8'))
-        current=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if r['name'] not in ['游戏协议弹窗','首次启动协议'] and not r['name'].startswith(('169_','167_','166_'))]
+        current=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if r['name'] not in ['游戏协议弹窗','首次启动协议'] and not r['name'].startswith(('169_','167_','166_','055_'))]
         self.assertEqual(current[:-3],before['existingProfileData'])
         self.assertEqual([r['name'] for r in current[-3:]],[r['name'] for r in RECORDS])
 

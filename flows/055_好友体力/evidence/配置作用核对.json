@@ -1,0 +1,38 @@
+{
+  "currentImplementation": {
+    "enabledDefault": false,
+    "intervalSecondsDefault": 14400,
+    "intervalEvidence": "root.707完成时任务时间=now+14400；初始化3600另列为静态证据",
+    "oneClickUI": false,
+    "oneClickReason": "用户明确暂不添加；root.707未读取该值"
+  },
+  "priorEvidence": {
+    "enabled": {
+      "key": "日常_游戏好友体力",
+      "UI": "已保留静态UI中为多选框，false；该UI版本归属不能单凭安装副本证明与V5.510完全相同",
+      "initialization": "root.816 L9325-9376",
+      "refresh": "root.817 L8557-8579"
+    },
+    "oneClick": {
+      "key": "日常_游戏好友体力_一键领取",
+      "initialized": true,
+      "refreshed": true,
+      "readInRoot707": false,
+      "UIControl": "现有静态UI未定位",
+      "default": "待实机确认；不自行设定",
+      "businessEffect": "root.707无读取和条件分支；不能称为单领/批领开关"
+    },
+    "interval": {
+      "initializedSeconds": 3600,
+      "root707ReturnAssignedFutureSeconds": 14400,
+      "finalProjectDefault": "待完整调度核对后确定，不能只引用初始化3600"
+    },
+    "professionalFailures": {
+      "entryTimeoutMs": 10000,
+      "timeoutMarksComplete": true,
+      "maxFailures": 2,
+      "requiredCount": 2,
+      "projectRule": "超时不能成功，不关闭勾选；公共无限恢复。"
+    }
+  }
+}

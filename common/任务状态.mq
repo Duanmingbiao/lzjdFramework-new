@@ -1,4 +1,11 @@
 ﻿Sub NewSession()
+    friendDone = False
+    friendFailed = False
+    friendCount = 0
+    friendFailures = 0
+    friendDue = 0
+    friendFirst = True
+    friendPhase = "未开始"
     monthDone = False
     monthFailed = False
     monthCount = 0
@@ -52,7 +59,10 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
-    If taskId = 166 Then
+    If taskId = 55 Then
+        friendDone = False
+        friendFailed = False
+    ElseIf taskId = 166 Then
         monthDone = False
         monthFailed = False
     ElseIf taskId = 167 Then
@@ -70,7 +80,12 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
-    If currentTask = 166 Then
+    If currentTask = 55 Then
+        friendFailed = True
+        friendFailures = friendFailures + 1
+        friendPhase = "等待恢复"
+        Call Note("[好友体力55] 保存恢复 原业务=" & resumeTask & " 失败次数=" & friendFailures)
+    ElseIf currentTask = 166 Then
         monthFailed = True
         monthFailures = monthFailures + 1
         Call Note("保留原业务=" & resumeTask & "，月卡失败次数=" & monthFailures)
@@ -92,8 +107,8 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 Then
-        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166")
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 Then
+        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55")
         Exit Function
     End If
     If Not terminalConfirmed Then
@@ -108,7 +123,15 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 166 Then
+    If currentTask = 55 Then
+        friendDone = True
+        friendFailed = False
+        friendCount = friendCount + 1
+        friendDue = TickCount() + friendInterval * 1000
+        friendFirst = False
+        friendPhase = "完成"
+        Call Note("[好友体力55] 返回大厅连续确认后提交 次数=" & friendCount & " 间隔秒=" & friendInterval)
+    ElseIf currentTask = 166 Then
         monthDone = True
         monthFailed = False
         monthCount = monthCount + 1
