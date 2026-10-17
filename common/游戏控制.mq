@@ -17,6 +17,21 @@ Sub RestartGame()
     If currentTask = 71 Then
         Call RestartEarthTask()
     End If
+    If currentTask = 78 Then
+        Call RestartGatherTask()
+    End If
+    If currentTask = 79 Then
+        Call RestartUniverseTask()
+    End If
+    If currentTask = 82 Then
+        Call RestartMemoryTask()
+    End If
+    If currentTask = 80 Then
+        Call RestartFriezaTask()
+    End If
+    If currentTask = 81 Then
+        Call RestartDuelTask()
+    End If
     If currentTask = 88 Then
         Call RestartNamekTask()
     End If

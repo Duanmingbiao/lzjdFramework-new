@@ -1,0 +1,53 @@
+﻿Sub LoadUniverseSettings()
+    universeEnabled = WorldBoolean("日常_超宇宙战士")
+    universeCapsule = WorldBoolean("日常_超宇宙战士_胶囊任务")
+    universeFailureMode = WorldNumber("设置_重要_开战失败", 1, 1)
+End Sub
+Sub NewUniverseSession()
+    universeDue = Time()
+    universeDone = False
+    universeCount = 0
+    universeFailures = 0
+    universeRestarts = 0
+    universeRecoveries = 0
+    universeTerminal = False
+    universeFullClear = False
+    universeReason = ""
+    universePhase = "未开始"
+    universeFinishedAt = 0
+End Sub
+Function SelectUniverse()
+    SelectUniverse = 0
+    If universeDone Then
+        Exit Function
+    End If
+    If universeEnabled Then
+        If Time() >= universeDue Then
+            SelectUniverse = 79
+        End If
+    End If
+End Function
+Sub StartUniverseTask()
+    universeTerminal = False
+    universeFullClear = False
+    universeReason = ""
+    universePhase = "开始"
+    universeFinishedAt = 0
+    worldLastMatch = ""
+    Call WorldLog("任务开始Unix=" & Time() & " 胶囊任务=" & universeCapsule & " 开战失败处理=" & universeFailureMode)
+End Sub
+Sub RecoverUniverseTask()
+    universeTerminal = False
+    universeFailures = universeFailures + 1
+    universeRecoveries = universeRecoveries + 1
+    Call WorldLog("保存原任务=79 阶段=" & universePhase & " 是否提交完成=否")
+End Sub
+Sub RestartUniverseTask()
+    universeRestarts = universeRestarts + 1
+    Call WorldLog("重启原任务=79 次数=" & universeRestarts)
+End Sub
+Sub CommitUniverseTask()
+    universeCount = universeCount + 1
+    universeDone = True
+    Call WorldLog("本轮提交次数=" & universeCount & " 终态=" & universeReason & " 已完成锁存=是；等待公共重置或新会话，不自行安排零点重跑")
+End Sub

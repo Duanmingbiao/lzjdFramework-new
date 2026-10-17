@@ -72,7 +72,7 @@ class StaminaTests(unittest.TestCase):
   for folder in ['168_领邮件奖励','169_领任务奖励','167_日常签到','166_领月卡龙石','055_好友体力','056_Q友体力']:
    for p in (ROOT/'flows'/folder).glob('*.mq'):self.assertEqual(p.read_bytes(),(E/'before'/p.relative_to(ROOT).with_suffix('.txt')).read_bytes())
  def test_exact_catalog_conversion_append_only(self):
-  before=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('151_','152_','070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(before)],before);self.assertEqual([x['definition'] for x in now[len(before):]],[x['definition'] for x in conv])
+  before=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('081_','080_','082_','079_','078_','151_','152_','070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(before)],before);self.assertEqual([x['definition'] for x in now[len(before):]],[x['definition'] for x in conv])
 
  def test_recovery_after_midnight_keeps_today_next_occurrence(self):
   self.state();self.at(4*3600);day=self.e['StaminaDayStart'](self.stamp);self.e['CommitTimedStamina'](53);self.assertEqual(self.e['stamina53Due'],day+75605)
@@ -89,4 +89,32 @@ class StaminaTests(unittest.TestCase):
  def test_only_expected_integration_sources_changed(self):
   allowed={'app/入口.mq','common/配置读取.mq','common/任务状态.mq','common/图色参数.mq','common/任务注册.mq','common/任务分派.mq','common/任务调度.mq','common/前台监控.mq','common/游戏控制.mq','ui/最小配置.uip','project.json','assistant-sync.json','evidence/图色参数.json'}
   for rel,h in json.loads((E/'修改前基线.json').read_text('utf-8')).items():
+   if rel=='common/大厅清障.mq':
+    text=(ROOT/rel).read_text('utf-8-sig')
+    duelAddition='    If currentTask = 81 Then\n        If duelHallDelay > 0 Then\n            HallActionWait = duelHallDelay * 1000\n        End If\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(duelAddition),1);text=text.replace(duelAddition,'')
+    addition='    If currentTask = 80 Then\n        If friezaHallDelay > 0 Then\n            HallActionWait = friezaHallDelay * 1000\n        End If\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(addition),1)
+    original=b'\xef\xbb\xbf'+text.replace(addition,'').replace('\n','\r\n').encode('utf8')
+    self.assertEqual(hashlib.sha256(original).hexdigest(),h,rel)
+    continue
+   if rel=='common/运行计时.mq':
+    text=(ROOT/rel).read_text('utf-8-sig')
+    universeAddition='    If currentTask = 79 Then\n        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(universeAddition),1);text=text.replace(universeAddition,'')
+    duelAddition='    If currentTask = 81 And duelRunning Then\n        BusinessExpired = DuelWatchdogExpired()\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(duelAddition),1);text=text.replace(duelAddition,'')
+    addition='    If currentTask = 80 And friezaRunning Then\n        BusinessExpired = FriezaWatchdogExpired()\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(addition),1)
+    original=b'\xef\xbb\xbf'+text.replace(addition,'').replace('\n','\r\n').encode('utf8')
+    self.assertEqual(hashlib.sha256(original).hexdigest(),h,rel)
+    continue
+   if rel=='common/返回大厅.mq':
+    # Undo only the authorized stage-restoration patch for this historical hash.
+    # Current success/timeout/interruption behavior is tested separately.
+    text=(ROOT/rel).read_text('utf-8-sig')
+    text=text.replace('    Dim returnStarted, acted, callerStage\n    callerStage = stageName\n','    Dim returnStarted, acted\n')
+    text=text.replace('            Exit Do\n','            Exit Function\n').replace('    Call SetStage(callerStage)\n','')
+    self.assertEqual(hashlib.sha256(b'\xef\xbb\xbf'+text.replace('\n','\r\n').encode('utf8')).hexdigest(),h,rel)
+    continue
    if rel not in allowed:self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)

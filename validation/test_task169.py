@@ -142,7 +142,7 @@ class RewardEvidence(unittest.TestCase):
    self.assertIn('FindMultiColor '+','.join(json.dumps(x,ensure_ascii=False) for x in b['definition'])+',foundX,foundY',source)
  def test_existing_profiles_unchanged(self):
   before=json.loads((E/'接入前图色.json').read_text('utf-8'));now=json.loads((R/'evidence/图色参数.json').read_text('utf-8'))
-  self.assertEqual([r for r in now if r['name'] != '首次启动协议' and not r['name'].startswith(('167_','166_','055_','056_','050_','151_','152_','070_','032_','强敌_','083_','084_','085_'))][:-14],before)
+  self.assertEqual([r for r in now if r['name'] != '首次启动协议' and not r['name'].startswith(('081_','080_','082_','079_','078_','167_','166_','055_','056_','050_','151_','152_','070_','032_','强敌_','083_','084_','085_'))][:-14],before)
  def test_mail_login_hall_timers_and_scheduler_source_unchanged(self):
   allowed={Path(p) for p in ['app/入口.mq','common/配置读取.mq','common/任务状态.mq','common/任务注册.mq','common/任务分派.mq','common/图色参数.mq']}
   baseline=json.loads((E/'修改前基线.json').read_text('utf-8'))
@@ -161,5 +161,5 @@ class RewardEvidence(unittest.TestCase):
   # 2026-10-17 user-selected strong-enemy-only profile disables mail by default.
   before['邮件启用'][1]['选中']='false'
   for key,value in before.items():self.assertEqual(after[key],value)
-  self.assertEqual(set(after)-set(before),{'任务奖励启用','任务奖励间隔秒','日常签到启用','签到间隔秒','月卡龙石启用','月卡间隔秒','保留下载提示','好友体力启用','好友体力间隔秒','Q友体力启用','Q友一键领取','Q友体力间隔秒','定时体力启用','体力龙石补领','体力追回','体力兑换','悟空冒险启用','悟空隐藏关卡','悟空扫荡关卡','悟空间隔秒','合作冒险启用','合作队伍模式','世界首领启用','首领买次数','首领执行时','首领执行分','打沙鲁启用','跨服首领启用','跨服首领周日停','跨服首领买次数','跨服首领执行时','跨服首领执行分','红绸军启用','红绸军地图','红绸军中午时','红绸军中午分','红绸军下午时','红绸军下午分','超战士传说启用','激战超越极限启用','那美克星组队战启用','地球保卫战启用','地球保卫买次数','地球保卫执行时间'})
+  self.assertEqual(set(after)-set(before),{'任务奖励启用','任务奖励间隔秒','日常签到启用','签到间隔秒','月卡龙石启用','月卡间隔秒','保留下载提示','好友体力启用','好友体力间隔秒','Q友体力启用','Q友一键领取','Q友体力间隔秒','定时体力启用','体力龙石补领','体力追回','体力兑换','悟空冒险启用','悟空隐藏关卡','悟空扫荡关卡','悟空间隔秒','合作冒险启用','合作队伍模式','世界首领启用','首领买次数','首领执行时','首领执行分','打沙鲁启用','跨服首领启用','跨服首领周日停','跨服首领买次数','跨服首领执行时','跨服首领执行分','红绸军启用','红绸军地图','红绸军中午时','红绸军中午分','红绸军下午时','红绸军下午分','超战士传说启用','激战超越极限启用','那美克星组队战启用','地球保卫战启用','地球保卫买次数','地球保卫执行时间','战士集结启用','战士集结双倍','战士集结扫荡','日常_超宇宙战士','日常_超宇宙战士_胶囊任务','设置_重要_开战失败','日常_战士记忆','日常_弗利萨军团','设置_重连_超时时间','设置_重要_任务失败上限','设置_重要_闪退','设置_重要_返回大厅延迟','日常_强者对决','日常_强者对决_星级','日常_强者对决_预言','日常_强者对决_一键刷新_星级','日常_强者对决_一键刷新_倍数'})
 if __name__=='__main__':unittest.main()

@@ -1,0 +1,26 @@
+-- Static decompilation; generated names. Not executed or behavior-validated.
+local L0_1, L1_1, L2_1, L3_1, L4_1, L5_1, L6_1, L7_1, L8_1, L9_1
+L0_1 = nil
+L1_1 = nil
+L2_1 = SS
+L2_1 = L2_1["全局变量获取"]
+L3_1 = "dzc"
+L2_1 = L2_1(L3_1)
+L1_1 = L2_1
+L2_1 = nil
+L3_1 = _ENV["初始化数据"]
+L3_1()
+L3_1 = L1_1["重连设置"]
+L3_1 = L3_1["重连模式"]
+if 3 <= L3_1 then
+  return L0_1
+end
+L3_1 = SS
+L3_1 = L3_1["全局变量获取"]
+L4_1 = "dzc"
+L3_1 = L3_1(L4_1)
+L2_1 = L3_1
+L3_1 = L2_1["家族领地"]
+L4_1 = L1_1["家族领地"]
+L4_1 = L4_1["任务时间"]
+L3_1["任务时间"] = L4_1

@@ -1,0 +1,392 @@
+﻿Function DuelMatch(index)
+    Dim key
+    If index < 10 Then
+        key = "081_P0" & index
+    Else
+        key = "081_P" & index
+    End If
+    DuelMatch = WorldMatch(key)
+End Function
+Function DuelPair(first, second)
+    DuelPair = True
+    If DuelMatch(first) Then
+        Exit Function
+    End If
+    DuelPair = DuelMatch(second)
+End Function
+Function EnterDuel()
+    Dim scans
+    EnterDuel = RESULT_TIMEOUT
+    Call WorldStage("强者对决入口")
+    scans = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Do While Not Sys.AppIsFront(GAME_PACKAGE)
+            If BusinessExpired() Then
+                Exit Function
+            End If
+            Delay 20
+        Loop
+        If scans > 1 Then
+            scans = 0
+            Swipe 370, 300, 370, 1000, 300
+        Else
+            scans = scans + 1
+            Swipe 370, 1000, 370, 300, 300
+        End If
+        Call WorldWait(1000)
+        If DuelPair(0, 1) Then
+            EnterDuel = ConfirmDuelTerminal("完整图色确认未开启")
+            Exit Function
+        End If
+        Call WorldWait(200)
+        If DuelPair(2, 3) Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If DuelMatch(4) Then
+            duelEntryMode = 2
+            EnterDuel = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If DuelMatch(5) Then
+            If duelProphecy <> 0 Then
+                duelEntryMode = 1
+                EnterDuel = RESULT_OK
+            Else
+                EnterDuel = ConfirmDuelTerminal("对决已完成且不抽预言")
+            End If
+            Exit Function
+        End If
+        If DuelMatch(6) Then
+            Call WorldWait(1000)
+            Call DuelProgress()
+            EnterDuel = ConfirmDuelTerminal("完整灰色完成图色出口")
+            Exit Function
+        End If
+    Loop
+End Function
+Function RefreshDuelManual()
+    Dim attempts, x, y, starsFound
+    RefreshDuelManual = RESULT_TIMEOUT
+    Call WorldStage("强者对决普通刷新")
+    attempts = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If duelStars < 2 Then
+            If DuelMatch(7) Then
+                RefreshDuelManual = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If DuelMatch(8) Then
+            x = foundX
+            y = foundY
+            Call WorldWait(500)
+            starsFound = False
+            If duelStars = 0 Then
+                starsFound = DuelPair(9, 10)
+            ElseIf duelStars = 1 Or duelStars = 2 Then
+                starsFound = DuelPair(13, 14)
+            ElseIf duelStars = 3 Then
+                starsFound = DuelPair(15, 16)
+            End If
+            If starsFound Then
+                Call WorldWait(1000)
+                Call DuelProgress()
+                RefreshDuelManual = RESULT_OK
+                Exit Function
+            End If
+            Call WorldWait(500)
+            If DuelPair(11, 12) Then
+                Call WorldWait(1000)
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldTap(x + 53, y - 97, 0) Then
+                    Exit Function
+                End If
+                attempts = attempts + 1
+            End If
+        End If
+        If duelStars < 2 And attempts > 1 Then
+            RefreshDuelManual = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function DuelQuickCondition()
+    DuelQuickCondition = False
+    If duelQuickStars = 1 Then
+        If duelQuickMultiple = 0 Then
+            DuelQuickCondition = DuelMatch(18)
+        ElseIf duelQuickMultiple = 1 Then
+            DuelQuickCondition = DuelMatch(19)
+        ElseIf duelQuickMultiple = 2 Then
+            DuelQuickCondition = DuelMatch(20)
+        End If
+    ElseIf duelQuickStars = 0 Then
+        If duelQuickMultiple = 1 Then
+            DuelQuickCondition = DuelMatch(21)
+        ElseIf duelQuickMultiple = 2 Then
+            DuelQuickCondition = DuelMatch(22)
+        End If
+    End If
+End Function
+Function RefreshDuelQuick()
+    Dim opened, toggles, dy
+    RefreshDuelQuick = RESULT_TIMEOUT
+    Call WorldStage("强者对决一键刷新")
+    opened = False
+    toggles = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If DuelMatch(8) Then
+            If Not opened Then
+                If Not WorldOffset(260, -95, 1000) Then
+                    Exit Function
+                End If
+                opened = True
+            Else
+                RefreshDuelQuick = RESULT_OK
+                Exit Function
+            End If
+        End If
+        Call WorldWait(5)
+        If DuelMatch(17) Then
+            toggles = toggles + 1
+            dy = 252
+            If toggles = 1 Or toggles = 5 Then
+                dy = 114
+            ElseIf toggles = 2 Or toggles = 6 Then
+                dy = 188
+            End If
+            If Not WorldOffset(-90, dy, 0) Then
+                Exit Function
+            End If
+            If toggles = 7 Then
+                toggles = 0
+            End If
+            Call WorldWait(1000)
+        End If
+        Call WorldWait(5)
+        If DuelQuickCondition() Then
+            If Not WorldOffset(-288, 320, 500) Then
+                Exit Function
+            End If
+            opened = True
+        End If
+    Loop
+End Function
+Function RunDuelBattle()
+    Dim starts
+    RunDuelBattle = RESULT_TIMEOUT
+    Call WorldStage("强者对决挑战")
+    starts = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If DuelMatch(17) Then
+            If Not WorldOffset(-288, 320, 1000) Then
+                Exit Function
+            End If
+        End If
+        If DuelPair(23, 24) Then
+            If Not WorldOffset(0, 0, 2000) Then
+                Exit Function
+            End If
+            Call DuelProgress()
+            starts = 0
+        End If
+        If WorldMatch("152_开战图标6") Then
+            If Not WorldTap(398, 982, 1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            starts = starts + 1
+        End If
+        If WorldMatch("078_跳过战斗") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            Call WorldWait(1000)
+            starts = 0
+            Call DuelProgress()
+        End If
+        If DuelPair(25, 26) Then
+            Call WorldWait(500)
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            Call DuelProgress()
+            starts = 0
+            RunDuelBattle = RESULT_OK
+            Exit Function
+        End If
+        If DuelMatch(5) Then
+            If duelProphecy <> 0 Then
+                RunDuelBattle = RESULT_OK
+            Else
+                RunDuelBattle = ConfirmDuelTerminal("对决完成且不抽预言")
+            End If
+            Exit Function
+        End If
+        If starts > 10 Then
+            If duelFailureMode = 1 Then
+                Call WorldLog("专业版开战超过10次请求公共重启，不提交")
+            Else
+                duelEarlyStop = True
+                Call WorldLog("专业版写完成后PC1765仍跳往1768；继续最终确认，不提前提交")
+                RunDuelBattle = RESULT_OK
+            End If
+            Exit Function
+        End If
+    Loop
+End Function
+Function ReturnDuelPage()
+    ReturnDuelPage = RESULT_TIMEOUT
+    Call WorldStage("强者对决挑战后确认")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If DuelPair(25, 26) Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            Call DuelProgress()
+        End If
+        Call WorldWait(5)
+        If DuelMatch(5) Then
+            If duelProphecy <> 0 Then
+                ReturnDuelPage = RESULT_OK
+            Else
+                ReturnDuelPage = ConfirmDuelTerminal("最终确认对决完成且不抽预言")
+            End If
+            Exit Function
+        End If
+        Call WorldWait(5)
+        If DuelMatch(6) Then
+            Call WorldWait(1000)
+            Call DuelProgress()
+            ReturnDuelPage = ConfirmDuelTerminal("最终灰色完成图色出口")
+            Exit Function
+        End If
+    Loop
+End Function
+Function RunDuelProphecy()
+    Dim actionAt
+    RunDuelProphecy = RESULT_TIMEOUT
+    Call WorldStage("强者对决强者预言")
+    actionAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If DuelMatch(27) Then
+            If Not WorldOffset(461, -970, 500) Then
+                Exit Function
+            End If
+        End If
+        If DuelMatch(28) Then
+            If duelProphecy = 1 Then
+                If Not WorldOffset(93, -194, 1000) Then
+                    Exit Function
+                End If
+            ElseIf duelProphecy = 2 Then
+                If Not WorldOffset(434, -194, 1000) Then
+                    Exit Function
+                End If
+            End If
+            actionAt = TickCount()
+        End If
+        If DuelMatch(29) Then
+            If Not WorldOffset(485, -306, 500) Then
+                Exit Function
+            End If
+        End If
+        If DuelPair(30, 31) Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If DuelMatch(32) Then
+            Call WorldWait(500)
+            RunDuelProphecy = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - actionAt > 8000 Or duelProphecy = 1 Then
+            If DuelMatch(33) Then
+                Call WorldWait(500)
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+            End If
+        End If
+    Loop
+End Function
+Function ExecuteDuel()
+    Dim result
+    ExecuteDuel = RESULT_TIMEOUT
+    If duelPendingTerminal Then
+        ExecuteDuel = ConfirmDuelTerminal("专业版已确认出口；恢复时只补公共大厅提交，不重复刷新或抽取")
+        Exit Function
+    End If
+    Call DuelProgress()
+    duelRunning = True
+    result = EnterGatherHall()
+    If result <> RESULT_OK Then
+        If Not ForegroundInterrupted() Then
+            duelTimedOut = True
+            duelReason = "异时空公共入口超时，入口未确认"
+        End If
+        Exit Function
+    End If
+    result = EnterDuel()
+    If duelTerminal Or result <> RESULT_OK Then
+        ExecuteDuel = result
+        Exit Function
+    End If
+    If duelEntryMode = 2 Then
+        If duelQuickStars = 0 And duelQuickMultiple = 0 Then
+            result = RefreshDuelManual()
+        Else
+            Call DuelProgress()
+            result = RefreshDuelQuick()
+        End If
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = RunDuelBattle()
+        If duelTerminal Or result <> RESULT_OK Then
+            ExecuteDuel = result
+            Exit Function
+        End If
+        result = ReturnDuelPage()
+        If duelTerminal Or result <> RESULT_OK Then
+            ExecuteDuel = result
+            Exit Function
+        End If
+    End If
+    If duelProphecy <> 0 Then
+        result = RunDuelProphecy()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    Call WorldWait(500)
+    ExecuteDuel = ConfirmDuelTerminal("专业版预言结束出口")
+End Function

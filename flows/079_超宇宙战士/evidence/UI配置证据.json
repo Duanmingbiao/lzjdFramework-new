@@ -1,0 +1,10 @@
+{
+  "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\script.uip.decoded.txt",
+  "sha256": "4aee20cede08050f6d1d99958293220511897c8ddb1ed74da9c228a684c1033e",
+  "declarations": [
+    "下拉框:{名称:\"设置_重要_开战失败\",选择响应:\"函数名1\",选项:[\"结束任务\",\"重启任务\",],初始选项:1},",
+    "多选框:{名称:\"日常_超宇宙战士\",提示内容:\"超宇宙战士[\",点击响应:\"函数名1\",选中:false,文字大小:10,高度:0,宽度:0},",
+    "多选框:{名称:\"日常_超宇宙战士_胶囊任务\",提示内容:\"胶囊任务]\",点击响应:\"函数名1\",选中:false,文字大小:10,高度:0,宽度:0},"
+  ],
+  "scope": "feature keys and relevant shared failure selector; not a full UI clone"
+}

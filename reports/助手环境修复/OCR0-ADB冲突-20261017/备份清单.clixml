@@ -1,0 +1,53 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Management.Automation.PSCustomObject</T>
+      <T>System.Object</T>
+    </TN>
+    <MS>
+      <S N="Source">D:\ProgramData\按键精灵\按键精灵手机助手\android\adb.exe</S>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\OCR0-ADB冲突-20261017\assistant\adb.exe</S>
+      <S N="SHA256">AD5D27384D1B5BCEB6342BB3204FEE977217422BCAFD252AB18F763A3DE43931</S>
+    </MS>
+  </Obj>
+  <Obj RefId="1">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Source">D:\ProgramData\按键精灵\按键精灵手机助手\android\AdbWinApi.dll</S>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\OCR0-ADB冲突-20261017\assistant\AdbWinApi.dll</S>
+      <S N="SHA256">14A51482AA003DB79A400F4B15C158397FE6D57EE6606B3D633FA431A7BFDF4B</S>
+    </MS>
+  </Obj>
+  <Obj RefId="2">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Source">D:\ProgramData\按键精灵\按键精灵手机助手\android\AdbWinUsbApi.dll</S>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\OCR0-ADB冲突-20261017\assistant\AdbWinUsbApi.dll</S>
+      <S N="SHA256">041C6859BB4FC78D3A903DD901298CD1ECFB75B6BE0646B74954CD722280A407</S>
+    </MS>
+  </Obj>
+  <Obj RefId="3">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Source">D:\leidian\LDPlayer9\adb.exe</S>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\OCR0-ADB冲突-20261017\leidian\adb.exe</S>
+      <S N="SHA256">705DDC21F33AC52105D1B075B019962AD0E44FB3D560BDE69CE8CB3A36BCA183</S>
+    </MS>
+  </Obj>
+  <Obj RefId="4">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Source">D:\leidian\LDPlayer9\AdbWinApi.dll</S>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\OCR0-ADB冲突-20261017\leidian\AdbWinApi.dll</S>
+      <S N="SHA256">9FFACEDC41B2752075571E1A474FF50C5DCBE1F64DB56DB24AAEC78AEA1126DF</S>
+    </MS>
+  </Obj>
+  <Obj RefId="5">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Source">D:\leidian\LDPlayer9\AdbWinUsbApi.dll</S>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\OCR0-ADB冲突-20261017\leidian\AdbWinUsbApi.dll</S>
+      <S N="SHA256">13918FDAB0C3AC77D077453A6036247CFECA10910AEC845F188C41148C630BB2</S>
+    </MS>
+  </Obj>
+</Objs>

@@ -1,0 +1,423 @@
+﻿Function ConfirmUniverseTerminal(reason)
+    ConfirmUniverseTerminal = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    universeReason = reason
+    universeFinishedAt = Time()
+    universeTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("专业版本轮出口=" & reason & "；等待公共回大厅确认，未提交")
+    ConfirmUniverseTerminal = RESULT_OK
+End Function
+
+Function EnterUniverse()
+    EnterUniverse = RESULT_TIMEOUT
+    Call WorldStage("超宇宙战士入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("079_未开启") Then
+            Call WorldWait(200)
+            EnterUniverse = ConfirmUniverseTerminal("图色确认未开启")
+            Exit Function
+        End If
+        If WorldPair("079_入口") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("079_地图") Or WorldMatch("079_地图三") Then
+            Call WorldWait(300)
+            EnterUniverse = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("079_全通关入口") Then
+            Call WorldWait(1000)
+            If Not WorldTap(150, 50, 300) Then
+                Exit Function
+            End If
+            universeFullClear = True
+        End If
+    Loop
+End Function
+
+Function UniverseMapPoint(layout, index)
+    Dim x, y
+    UniverseMapPoint = False
+    x = 0
+    y = 0
+    If layout = 1 Then
+        If index = 1 Then
+            x = 393
+            y = 1070
+        ElseIf index = 2 Then
+            x = 190
+            y = 843
+        ElseIf index = 3 Then
+            x = 383
+            y = 779
+        ElseIf index = 4 Then
+            x = 620
+            y = 622
+        ElseIf index = 5 Then
+            x = 441
+            y = 491
+        ElseIf index = 6 Then
+            x = 191
+            y = 372
+        End If
+    ElseIf layout = 2 Then
+        If index = 1 Then
+            x = 506
+            y = 967
+        ElseIf index = 2 Then
+            x = 183
+            y = 882
+        ElseIf index = 3 Then
+            x = 374
+            y = 741
+        ElseIf index = 4 Then
+            x = 665
+            y = 637
+        ElseIf index = 5 Then
+            x = 454
+            y = 598
+        ElseIf index = 6 Then
+            x = 253
+            y = 370
+        End If
+    ElseIf layout = 3 Then
+        If index = 1 Then
+            x = 388
+            y = 1085
+        ElseIf index = 2 Then
+            x = 180
+            y = 869
+        ElseIf index = 3 Then
+            x = 432
+            y = 734
+        ElseIf index = 4 Then
+            x = 639
+            y = 645
+        ElseIf index = 5 Then
+            x = 304
+            y = 350
+        End If
+    End If
+    If x > 0 Then
+        UniverseMapPoint = WorldTap(x, y, 300)
+    End If
+End Function
+
+Function RunUniverse()
+    Dim point, attempts, battles, misses, actionAt
+    RunUniverse = RESULT_TIMEOUT
+    Call WorldStage("超宇宙战士地图挑战")
+    point = 1
+    attempts = 0
+    battles = 0
+    actionAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("079_巡图一") Then
+            If point <= 6 Then
+                If Not UniverseMapPoint(1, point) Then
+                    Exit Function
+                End If
+                point = point + 1
+            Else
+                point = 1
+            End If
+        End If
+        If WorldMatch("079_巡图二") Then
+            If point <= 6 Then
+                If Not UniverseMapPoint(2, point) Then
+                    Exit Function
+                End If
+                point = point + 1
+            Else
+                point = 1
+            End If
+        End If
+        If WorldMatch("079_巡图三") Then
+            If point <= 5 Then
+                If Not UniverseMapPoint(3, point) Then
+                    Exit Function
+                End If
+                point = point + 1
+            Else
+                point = 1
+            End If
+        End If
+        If WorldPair("079_获得") Then
+            If Not WorldTap(150, 50, 250) Then
+                Exit Function
+            End If
+            attempts = 0
+            actionAt = TickCount()
+        End If
+        If WorldPair("079_关卡详情") Then
+            If WorldPair("079_挑战按钮") Then
+                If attempts >= 2 Then
+                    If Not WorldTap(210, 858, 250) Then
+                        Exit Function
+                    End If
+                End If
+                If Not WorldTap(507, 862, 250) Then
+                    Exit Function
+                End If
+                attempts = attempts + 1
+                Call WorldLog("地图挑战尝试=" & attempts)
+            End If
+        End If
+        If WorldMatch("152_开战图标6") Then
+            battles = battles + 1
+            misses = 0
+            If battles < 2 Then
+                If Not WorldTap(398, 982, 1000) Then
+                    Exit Function
+                End If
+                Do
+                    If BusinessExpired() Then
+                        Exit Function
+                    End If
+                    If WorldMatch("079_首次开战确认") Then
+                        If Not WorldTap(398, 982, 1000) Then
+                            Exit Function
+                        End If
+                    Else
+                        misses = misses + 1
+                        Call WorldWait(200)
+                    End If
+                    If misses > 5 Then
+                        Exit Do
+                    End If
+                Loop
+                If Not WorldTap(128, 1228, 1500) Then
+                    Exit Function
+                End If
+                attempts = 0
+                actionAt = TickCount()
+            Else
+                If Not WorldTap(128, 1228, 1500) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If attempts > 5 Or TickCount() - actionAt > 15000 Then
+            RunUniverse = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ReturnUniversePage(finalReturn)
+    ReturnUniversePage = RESULT_TIMEOUT
+    If finalReturn Then
+        Call WorldStage("超宇宙战士最终界面确认")
+    Else
+        Call WorldStage("超宇宙战士挑战后返回")
+    End If
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If finalReturn Then
+            Call WorldWait(50)
+            If WorldMatch("079_胶囊失败") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+            End If
+        Else
+            If WorldPair("079_获得") Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("079_全通关返回") Then
+                If Not WorldTap(150, 50, 1000) Then
+                    Exit Function
+                End If
+            End If
+            Call WorldWait(50)
+            If WorldMatch("079_关闭窗口") Then
+                If Not WorldOffset(0, 0, 200) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldPair("079_返回界面") Then
+            If finalReturn Then
+                Call WorldWait(50)
+            Else
+                Call WorldWait(200)
+            End If
+            ReturnUniversePage = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function RunUniverseCapsule()
+    Dim actionAt, started, idleLimit, starts, quickCount
+    RunUniverseCapsule = RESULT_TIMEOUT
+    Call WorldStage("超宇宙战士胶囊任务")
+    actionAt = TickCount()
+    started = TickCount()
+    idleLimit = 5000
+    starts = 0
+    quickCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("079_胶囊入口") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        Call WorldWait(50)
+        If WorldMatch("079_打开胶囊") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            starts = 0
+        End If
+        Call WorldWait(50)
+        If WorldMatch("079_胶囊任务页") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            starts = 0
+            quickCount = 0
+        End If
+        Call WorldWait(50)
+        If WorldMatch("079_打开胶囊") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            starts = 0
+            quickCount = 0
+        End If
+        Call WorldWait(50)
+        If WorldMatch("079_胶囊快速挑战") Then
+            quickCount = quickCount + 1
+            If quickCount > 4 Then
+                If Not WorldOffset(-440, 850, 200) Then
+                    Exit Function
+                End If
+                quickCount = 0
+            Else
+                If Not WorldOffset(-150, 850, 200) Then
+                    Exit Function
+                End If
+            End If
+            actionAt = TickCount()
+            idleLimit = 15000
+            starts = 0
+            Call WorldLog("胶囊快速计数=" & quickCount)
+        End If
+        Call WorldWait(50)
+        If WorldMatch("152_开战图标6") Then
+            If Not WorldTap(398, 982, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            starts = starts + 1
+            Call WorldLog("胶囊开战累计=" & starts)
+        End If
+        If WorldMatch("079_阵容不足") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If WorldMatch("078_跳过战斗") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            starts = 0
+            quickCount = 0
+            idleLimit = 15000
+        End If
+        If WorldPair("079_胶囊获得") Then
+            If Not WorldTap(150, 50, 500) Then
+                Exit Function
+            End If
+            starts = 0
+            quickCount = 0
+            actionAt = TickCount()
+        End If
+        If WorldMatch("079_胶囊失败") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            universeReason = "专业版胶囊失败出口；不是挑战成功"
+            RunUniverseCapsule = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - actionAt > idleLimit Or starts > 10 Or TickCount() - started > 180000 Then
+            If starts > 10 And universeFailureMode = 1 Then
+                Call WorldLog("专业版开战超过10次且选择重启任务；交公共恢复79，不提交")
+                Exit Function
+            End If
+            RunUniverseCapsule = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ExecuteUniverse()
+    Dim result
+    ExecuteUniverse = RESULT_TIMEOUT
+    result = EnterGatherHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterUniverse()
+    If universeTerminal Then
+        ExecuteUniverse = result
+        Exit Function
+    End If
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    If Not universeFullClear Then
+        result = RunUniverse()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    result = ReturnUniversePage(False)
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    If universeCapsule Then
+        result = RunUniverseCapsule()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    result = ReturnUniversePage(True)
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldWait(500)
+    If universeReason = "" Then
+        universeReason = "专业版挑战及可选胶囊处理后确认返回界面"
+    End If
+    ExecuteUniverse = ConfirmUniverseTerminal(universeReason)
+End Function

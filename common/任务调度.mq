@@ -34,6 +34,18 @@
     businessStarted = TickCount()
     result = DispatchTask(selected)
     Call Note("[流程] DispatchTask(selected) 返回=" & result)
+    If currentTask = 82 And result = RESULT_WAIT Then
+        If memoryUncompleted Then
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If ReleaseMemoryUncompleted(hallResult = RESULT_OK) Then
+                Exit Sub
+            End If
+            result = RESULT_TIMEOUT
+        End If
+    End If
     If currentTask = 88 And result = RESULT_WAIT Then
         If namekDeferred Then
             hallResult = ReturnToHall()
@@ -112,7 +124,54 @@
     If HandleForegroundRecovery() Then
         Exit Sub
     End If
+    If currentTask = 80 And result = RESULT_OK And terminalConfirmed Then
+        If hallResult <> RESULT_OK Then
+            friezaTimedOut = True
+            friezaReason = "专业版公共返回大厅失败，不提交完成"
+        End If
+    End If
+    If currentTask = 81 And result = RESULT_OK And terminalConfirmed Then
+        If hallResult <> RESULT_OK Then
+            duelTimedOut = True
+            duelReason = "专业版公共返回大厅失败，不提交完成"
+        End If
+    End If
     Call SaveRecovery()
     Call Note("[流程] 调度出口 业务未提交成功，进入恢复")
+    If currentTask = 81 And duelTimedOut And Not duelRestartOnTimeout Then
+        If Sys.IsRunning(GAME_PACKAGE) Then
+            duelRunning = False
+            duelWatchdogTripped = False
+            Call DuelProgress()
+            duelRunning = True
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If ReleaseDuelTimeout(hallResult = RESULT_OK) Then
+                Exit Sub
+            End If
+            duelRunning = False
+            Exit Sub
+        End If
+    End If
+    If currentTask = 80 And friezaTimedOut And Not friezaRestartOnTimeout Then
+        If Sys.IsRunning(GAME_PACKAGE) Then
+            friezaRunning = False
+            friezaWatchdogTripped = False
+            Call FriezaProgress()
+            friezaRunning = True
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If ReleaseFriezaTimeout(hallResult = RESULT_OK) Then
+                Exit Sub
+            End If
+            // Keep the no-restart option even when hall confirmation failed.
+            friezaRunning = False
+            Exit Sub
+        End If
+    End If
     Call RestartGame()
 End Sub

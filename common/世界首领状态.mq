@@ -41,6 +41,16 @@ Function WorldName(taskId)
     WorldName = "世界首领70"
     If taskId = 32 Then
         WorldName = "世界首领_打沙鲁32"
+    ElseIf taskId = 78 Then
+        WorldName = "战士集结78"
+    ElseIf taskId = 79 Then
+        WorldName = "超宇宙战士79"
+    ElseIf taskId = 82 Then
+        WorldName = "战士记忆82"
+    ElseIf taskId = 80 Then
+        WorldName = "弗利萨军团80"
+    ElseIf taskId = 81 Then
+        WorldName = "强者对决81"
     ElseIf taskId = 83 Then
         WorldName = "跨服世界首领83"
     ElseIf taskId = 71 Then
@@ -59,7 +69,17 @@ Sub WorldLog(message)
     Call Note("[" & WorldName(currentTask) & "] " & message)
 End Sub
 Sub WorldStage(value)
-    If currentTask = 71 Then
+    If currentTask = 78 Then
+        gatherPhase = value
+    ElseIf currentTask = 79 Then
+        universePhase = value
+    ElseIf currentTask = 82 Then
+        memoryPhase = value
+    ElseIf currentTask = 80 Then
+        friezaPhase = value
+    ElseIf currentTask = 81 Then
+        duelPhase = value
+    ElseIf currentTask = 71 Then
         earthPhase = value
     ElseIf currentTask = 88 Then
         namekPhase = value

@@ -1,7 +1,22 @@
 ﻿Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 71 Then
+    If taskId = 81 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteDuel()
+    ElseIf taskId = 80 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteFrieza()
+    ElseIf taskId = 82 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMemory()
+    ElseIf taskId = 79 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteUniverse()
+    ElseIf taskId = 78 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteGather()
+    ElseIf taskId = 71 Then
         terminalConfirmed = False
         DispatchTask = ExecuteEarth()
     ElseIf taskId = 88 Then

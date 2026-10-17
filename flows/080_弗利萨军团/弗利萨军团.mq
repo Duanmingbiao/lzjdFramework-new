@@ -1,0 +1,327 @@
+﻿Function EnterFrieza()
+    EnterFrieza = RESULT_TIMEOUT
+    Call WorldStage("弗利萨军团入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("080_入口") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("080_未开启") Then
+            Call WorldWait(200)
+            EnterFrieza = ConfirmFriezaTerminal("图色确认未开启")
+            Exit Function
+        End If
+        If WorldMatch("080_已完成") Then
+            Call WorldWait(200)
+            EnterFrieza = ConfirmFriezaTerminal("图色确认已完成")
+            Exit Function
+        End If
+        If WorldMatch("080_基地界面") Then
+            Call WorldWait(200)
+            friezaEntryMode = 1
+            EnterFrieza = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("080_旧关入口") Then
+            Call WorldWait(200)
+            friezaEntryMode = 2
+            EnterFrieza = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldMatch("080_新关入口") Then
+            Call WorldWait(200)
+            friezaEntryMode = 3
+            EnterFrieza = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function RunFriezaOld()
+    Dim actionAt
+    RunFriezaOld = RESULT_TIMEOUT
+    Call WorldStage("弗利萨军团旧关处理")
+    actionAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldPair("080_旧关绿色") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("080_旧关蓝色") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            Call WorldWait(200)
+        End If
+        If WorldPair("080_旧关确定") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            Call FriezaProgress()
+            Call WorldWait(1500)
+            Exit Do
+        End If
+        Call WorldWait(500)
+        If TickCount() - actionAt > 10000 Then
+            Exit Do
+        End If
+    Loop
+    Call FriezaProgress()
+    Call WorldStage("弗利萨军团旧关后返回")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldPair("080_旧关蓝色") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            Call WorldWait(200)
+        End If
+        If WorldPair("080_旧关确定") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("080_已完成") Then
+            Call WorldWait(200)
+            RunFriezaOld = ConfirmFriezaTerminal("旧关返回图色确认已完成")
+            Exit Function
+        End If
+        If WorldMatch("080_基地界面") Then
+            Call WorldWait(200)
+            friezaEntryMode = 1
+            RunFriezaOld = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FriezaAutoTriple()
+    FriezaAutoTriple = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If WorldMatch("086_三倍已就绪") Then
+        FriezaAutoTriple = True
+        Exit Function
+    End If
+    If WorldMatch("086_开启自动") Then
+        If Not WorldOffset(-310, 170, 50) Then
+            Exit Function
+        End If
+    ElseIf WorldMatch("086_开启三倍") Then
+        If Not WorldOffset(318, 92, 50) Then
+            Exit Function
+        End If
+    ElseIf WorldMatch("086_战斗基准") Then
+        If Not WorldOffset(318, 16, 50) Then
+            Exit Function
+        End If
+    End If
+End Function
+
+Function FriezaStartBattle()
+    FriezaStartBattle = False
+    If Not WorldTap(398, 982, 500) Then
+        Exit Function
+    End If
+    FriezaStartBattle = WorldTap(587, 982, 500)
+End Function
+
+Function RunFriezaNew()
+    Dim started
+    RunFriezaNew = RESULT_TIMEOUT
+    Call WorldStage("弗利萨军团新关挑战")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("080_新关入口") Then
+            If Not WorldTap(355, 1100, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("080_新关挑战") Then
+            If Not WorldTap(514, 760, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("080_新关获得") Then
+            If Not WorldTap(150, 50, 500) Then
+                Exit Function
+            End If
+            Call FriezaProgress()
+        End If
+        If WorldMatch("152_开战图标6") Then
+            If Not FriezaStartBattle() Then
+                Exit Function
+            End If
+        End If
+        If FriezaAutoTriple() Then
+            Call WorldWait(500)
+            Call FriezaProgress()
+        End If
+        If WorldMatch("080_已完成") Then
+            Call WorldWait(200)
+            RunFriezaNew = ConfirmFriezaTerminal("新关图色确认已完成")
+            Exit Function
+        End If
+        If WorldMatch("080_基地界面") Then
+            RunFriezaNew = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 360000 Then
+            friezaTimedOut = True
+            friezaReason = "专业版新关360秒超时处理，不是完成"
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FriezaBaseFailure(counter)
+    FriezaBaseFailure = RESULT_WAIT
+    If counter > 10 Then
+        If friezaFailureMode = 1 Then
+            Call WorldLog("专业版基地计数超过10请求公共重启，不提交")
+            FriezaBaseFailure = RESULT_TIMEOUT
+        Else
+            FriezaBaseFailure = ConfirmFriezaTerminal("专业版基地开战失败选择结束任务；不是胜利")
+        End If
+    End If
+End Function
+
+Function RunFriezaBase()
+    Dim counter, result
+    RunFriezaBase = RESULT_TIMEOUT
+    Call WorldStage("弗利萨军团秘密基地")
+    counter = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("080_基地界面") Then
+            If Not WorldTap(467, 134, 200) Then
+                Exit Function
+            End If
+            counter = 0
+        End If
+        If WorldPair("080_探索") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            counter = 0
+        End If
+        If WorldPair("080_触发战斗") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            counter = 0
+        End If
+        If WorldMatch("152_开战图标6") Then
+            If Not FriezaStartBattle() Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_跳过战斗") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            Call WorldWait(2000)
+            counter = 0
+            Call FriezaProgress()
+        End If
+        If WorldPair("080_基地结束") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            RunFriezaBase = RESULT_OK
+            Exit Function
+        End If
+        // root.624 local R4 is only cleared; do not invent a counter increment.
+        result = FriezaBaseFailure(counter)
+        If result <> RESULT_WAIT Then
+            RunFriezaBase = result
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FinishFrieza()
+    FinishFrieza = RESULT_TIMEOUT
+    Call WorldStage("弗利萨军团基地结束确认")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldPair("080_基地结束") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            Call FriezaProgress()
+            Call WorldWait(200)
+        End If
+        If WorldMatch("080_已完成") Then
+            Call WorldWait(200)
+            Exit Do
+        End If
+    Loop
+    Call WorldWait(500)
+    FinishFrieza = ConfirmFriezaTerminal("基地结束后图色确认已完成")
+End Function
+
+Function ExecuteFrieza()
+    Dim result
+    ExecuteFrieza = RESULT_TIMEOUT
+    Call FriezaProgress()
+    friezaRunning = True
+    result = EnterGatherHall()
+    If result <> RESULT_OK Then
+        If Not ForegroundInterrupted() Then
+            friezaTimedOut = True
+            friezaReason = "专业版异时空公共入口超时，入口未确认"
+        End If
+        Exit Function
+    End If
+    result = EnterFrieza()
+    If friezaTerminal Or result <> RESULT_OK Then
+        ExecuteFrieza = result
+        Exit Function
+    End If
+    Call FriezaProgress()
+    If friezaEntryMode = 2 Then
+        result = RunFriezaOld()
+    ElseIf friezaEntryMode = 3 Then
+        result = RunFriezaNew()
+    End If
+    If friezaEntryMode = 2 Or friezaEntryMode = 3 Then
+        If friezaTerminal Or result <> RESULT_OK Then
+            ExecuteFrieza = result
+            Exit Function
+        End If
+    End If
+    If friezaTerminal Then
+        ExecuteFrieza = result
+        Exit Function
+    End If
+    Call FriezaProgress()
+    result = RunFriezaBase()
+    If friezaTerminal Or result <> RESULT_OK Then
+        ExecuteFrieza = result
+        Exit Function
+    End If
+    ExecuteFrieza = FinishFrieza()
+End Function

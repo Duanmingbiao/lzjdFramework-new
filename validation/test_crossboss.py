@@ -108,11 +108,11 @@ class CrossBossTests(unittest.TestCase):
  def test_qq_or_interruption_no_click_success(self):
   self.f.interrupt=True;self.f.visible={'083_灰入口一'};self.assertEqual(self.e['EnterCrossBoss'](),4);self.assertFalse(self.f.taps)
  def test_all_raw_recognition_records_exact_and_append_only(self):
-  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv]);by={x['name']:x['definition'] for x in conv}
+  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('081_','080_','082_','079_','078_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv]);by={x['name']:x['definition'] for x in conv}
   for r in json.loads((E/'原始图色.json').read_text('utf-8')):self.assertEqual(by[r['name']],[0,0,719,1279,r['main'],r['offsets'],r['direction'],r['similarity']])
  def test_old_business_and_independent_state_unchanged(self):
   base=json.loads((E/'修改前基线.json').read_text('utf-8'))
   for rel,h in base.items():
    if rel.startswith('flows/') or rel in ['common/悟空冒险状态.mq','common/合作冒险状态.mq','common/定时体力状态.mq']:self.assertEqual(hashlib.sha256(__import__('historical_source').before_boss_native_exits_bytes(ROOT/rel)).hexdigest(),h,rel)
  def test_ui_hierarchy_defaults_and_existing_editable_controls(self):
-  ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertLess(ui.index('日常任务:{'),ui.index('名称:"强敌一级分隔"'));self.assertLess(ui.index('名称:"首领功能分隔"'),ui.index('名称:"跨服首领分隔"'));self.assertIn('名称:"跨服首领执行时",初始文本:"09"',ui);self.assertIn('名称:"跨服首领执行分",初始文本:"10"',ui);self.assertIn('名称:"跨服首领启用",提示内容:"    跨服世界首领",选中:true',ui)
+  ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertLess(ui.index('日常功能:{'),ui.index('名称:"强敌一级分隔"'));self.assertLess(ui.index('名称:"首领功能分隔"'),ui.index('名称:"跨服首领分隔"'));self.assertIn('名称:"跨服首领执行时",初始文本:"09"',ui);self.assertIn('名称:"跨服首领执行分",初始文本:"10"',ui);self.assertIn('名称:"跨服首领启用",提示内容:"    跨服世界首领",选中:false',ui)

@@ -1,0 +1,132 @@
+﻿Sub LoadFriezaSettings()
+    Dim raw
+    friezaEnabled = WorldBoolean("日常_弗利萨军团")
+    friezaFailureMode = WorldNumber("设置_重要_开战失败", 1, 1)
+    friezaIdleLimit = WorldNumber("设置_重连_超时时间", 120, 999) * 1000
+    friezaFailureLimit = WorldNumber("设置_重要_任务失败上限", 2, 9999)
+    friezaHallDelay = WorldNumber("设置_重要_返回大厅延迟", 0, 99)
+    raw = ReadUIConfig("设置_重要_闪退", True)
+    friezaRestartOnTimeout = True
+    If Not IsNull(raw) Then
+        friezaRestartOnTimeout = LCase(Trim(CStr(raw))) = "true" Or Trim(CStr(raw)) = "1"
+    End If
+End Sub
+Sub NewFriezaSession()
+    friezaDone = False
+    friezaAbandoned = False
+    friezaCount = 0
+    friezaFailures = 0
+    friezaRecoveries = 0
+    friezaRestarts = 0
+    friezaTerminal = False
+    friezaTimedOut = False
+    friezaTimeoutCounted = False
+    friezaRunning = False
+    friezaWatchdogTripped = False
+    friezaWatchdogAt = TickCount()
+    friezaReason = ""
+    friezaPhase = "未开始"
+End Sub
+Function SelectFrieza()
+    SelectFrieza = 0
+    If friezaEnabled And Not friezaDone And Not friezaAbandoned Then
+        SelectFrieza = 80
+    End If
+End Function
+Sub StartFriezaTask()
+    friezaTerminal = False
+    friezaTimedOut = False
+    friezaTimeoutCounted = False
+    friezaRunning = False
+    friezaWatchdogTripped = False
+    friezaWatchdogAt = TickCount()
+    friezaReason = ""
+    friezaPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("专业版无进展超时毫秒=" & friezaIdleLimit & " 失败上限=" & friezaFailureLimit & " 超时重启=" & CStr(friezaRestartOnTimeout))
+End Sub
+Sub FriezaProgress()
+    If friezaRunning Then
+        If TickCount() - friezaWatchdogAt > friezaIdleLimit Then
+            friezaTimedOut = True
+            friezaWatchdogTripped = True
+            friezaReason = "专业版公共无进展超时；迟到的进展不能撤销"
+        End If
+    End If
+    friezaWatchdogAt = TickCount()
+End Sub
+Function FriezaWatchdogExpired()
+    Dim interrupted
+    interrupted = ForegroundInterrupted()
+    FriezaWatchdogExpired = interrupted
+    If interrupted Then
+        Exit Function
+    End If
+    If friezaWatchdogTripped Then
+        FriezaWatchdogExpired = True
+        Exit Function
+    End If
+    If TickCount() - friezaWatchdogAt > friezaIdleLimit Then
+        friezaTimedOut = True
+        friezaWatchdogTripped = True
+        friezaReason = "专业版公共无进展超时"
+        FriezaWatchdogExpired = True
+    End If
+End Function
+Sub RecoverFriezaTask()
+    friezaTerminal = False
+    friezaRunning = False
+    friezaRecoveries = friezaRecoveries + 1
+    If friezaTimedOut And Not friezaTimeoutCounted Then
+        friezaFailures = friezaFailures + 1
+        friezaTimeoutCounted = True
+        If friezaFailures >= friezaFailureLimit Then
+            friezaAbandoned = True
+        End If
+    End If
+    If friezaAbandoned Then
+        resumeTask = 0
+    End If
+    Call WorldLog("保存原任务=80 原因=" & friezaReason & " 阶段=" & friezaPhase & " 超时失败次数=" & friezaFailures & " 放弃本轮=" & CStr(friezaAbandoned) & " 正常完成次数=" & friezaCount)
+End Sub
+Sub RestartFriezaTask()
+    friezaRunning = False
+    friezaRestarts = friezaRestarts + 1
+    Call WorldLog("公共重启80 次数=" & friezaRestarts)
+End Sub
+Sub CommitFriezaTask()
+    friezaDone = True
+    friezaRunning = False
+    friezaCount = friezaCount + 1
+    Call WorldLog("公共大厅确认后提交80 次数=" & friezaCount & " 出口=" & friezaReason & "；不等同战斗胜利，不自行安排跨日重跑")
+End Sub
+Function ConfirmFriezaTerminal(reason)
+    ConfirmFriezaTerminal = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    friezaTerminal = True
+    terminalConfirmed = True
+    friezaReason = reason
+    Call WorldLog("专业版本轮出口=" & reason & "；等待公共返回大厅，尚未提交")
+    ConfirmFriezaTerminal = RESULT_OK
+End Function
+Function ReleaseFriezaTimeout(hallConfirmed)
+    ReleaseFriezaTimeout = False
+    If currentTask <> 80 Or Not friezaTimedOut Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    currentTask = 0
+    friezaRunning = False
+    terminalConfirmed = False
+    If friezaAbandoned Then
+        resumeTask = 0
+    Else
+        resumeTask = 80
+    End If
+    ReleaseFriezaTimeout = True
+    Call EndForegroundCommit()
+End Function

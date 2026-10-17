@@ -6,6 +6,18 @@ Sub ResetHallClearing()
 End Sub
 Function HallActionWait()
     HallActionWait = 1000
+    If currentTask = 80 Then
+        If friezaHallDelay > 0 Then
+            HallActionWait = friezaHallDelay * 1000
+        End If
+        Exit Function
+    End If
+    If currentTask = 81 Then
+        If duelHallDelay > 0 Then
+            HallActionWait = duelHallDelay * 1000
+        End If
+        Exit Function
+    End If
     If hallReturnDelaySeconds > 0 Then
         HallActionWait = hallReturnDelaySeconds * 1000
     End If

@@ -1,0 +1,61 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Management.Automation.PSCustomObject</T>
+      <T>System.Object</T>
+    </TN>
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq</S>
+      <S N="Hash">A5D79B02C08E1AE6F9648D8F2F7C7A8F6BD33E7E137391B742875C7E16CF0A3E</S>
+    </MS>
+  </Obj>
+  <Obj RefId="1">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop</S>
+      <S N="Hash">CE6592CE7BE925F6A8E6D4C9B4A3E923A886C43B26908ADC84650D17694FE9AB</S>
+    </MS>
+  </Obj>
+  <Obj RefId="2">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip</S>
+      <S N="Hash">06954C7D0D0A2280D94D4E4EC1966B8B17E4711449C613CB0091207586C8F35A</S>
+    </MS>
+  </Obj>
+  <Obj RefId="3">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\演示例子(8ac40912-ecda-4706-9256-3362ccf606ee).mq</S>
+      <S N="Hash">26009A075680A6014CD32FEE0FF5E0710CF25FC26C91B17E3B5B048E7D04B607</S>
+    </MS>
+  </Obj>
+  <Obj RefId="4">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\演示例子(8ac40912-ecda-4706-9256-3362ccf606ee).prop</S>
+      <S N="Hash">AAFF79AE7C159D3D71801E9134E652DB6102752EF2975A6684C5542C9BD034E9</S>
+    </MS>
+  </Obj>
+  <Obj RefId="5">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\UI界面例子(1297cf77-4cfa-40fc-a757-d2fe4b374ec9).mq</S>
+      <S N="Hash">6263C37BB67294EC690A191D66EE4AB56310CF5D91A2F0E167710605FC916590</S>
+    </MS>
+  </Obj>
+  <Obj RefId="6">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\UI界面例子(1297cf77-4cfa-40fc-a757-d2fe4b374ec9).prop</S>
+      <S N="Hash">408C0B6400572207EF27DE50F5F3417B966B4250B9014AFEC8D7B144249946E2</S>
+    </MS>
+  </Obj>
+  <Obj RefId="7">
+    <TNRef RefId="0" />
+    <MS>
+      <S N="Path">D:\ProgramData\按键精灵\按键精灵手机助手\Script\UI界面例子(1297cf77-4cfa-40fc-a757-d2fe4b374ec9).uip</S>
+      <S N="Hash">DADEA4522E4E232C2E8559C92880E3203D201097B38AF7C9EBF0A350D1DCFF15</S>
+    </MS>
+  </Obj>
+</Objs>

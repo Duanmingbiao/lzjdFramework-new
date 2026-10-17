@@ -18,6 +18,7 @@ class Foreground(unittest.TestCase):
    AppIsFront=lambda _,p:self.front==p
    IsRunning=lambda _,p:True
   self.e={'Thread':self.thread,'Sys':Sys(),'TickCount':lambda:self.now,'TracePrint':self.logs.append,'WriteForegroundLog':self.logs.append,'Note':self.logs.append,'SetStage':lambda x:None,'Delay':self.delay,'KillApp':self.kill,'RunApp':self.launch,'GAME_PACKAGE':'game','QQ_PACKAGE':'qq','RESULT_OK':1,'RESULT_WAIT':2,'RESULT_FAIL':3,'RESULT_TIMEOUT':4,'mailEnabled':True,'rewardEnabled':True,'mailInterval':21600,'rewardInterval':21600,'registeredTask':168,'rewardRegisteredTask':169,'loginLimit':600000,'businessLimit':120000,'ReleaseCapture':lambda:None,'Tap':lambda x,y:self.events.append(('tap',x,y))}
+  self.e['CStr']=str
   load(['common/前台监控.mq','common/任务状态.mq','common/任务注册.mq','common/运行计时.mq','common/游戏控制.mq','common/任务调度.mq','common/点击操作.mq'],self.e)
   self.e['NewSession']();self.e['InitForegroundMonitor']()
   self.e['EnsureGameHall']=lambda:1

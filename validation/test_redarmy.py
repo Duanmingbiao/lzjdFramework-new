@@ -140,7 +140,7 @@ class RedArmyTests(unittest.TestCase):
  def test_interrupt_no_click_or_terminal(self):
   self.f.interrupt=True;self.f.visible={'084_未开启'};self.assertEqual(self.e['EnterRedArmy'](),4);self.assertFalse(self.f.taps)
  def test_append_only_exact_33_profiles_and123_calls(self):
-  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));conv=json.loads((E/'图色转换.json').read_text('utf-8'));raw=json.loads((E/'原始图色.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual(len(conv),33);self.assertEqual(len(raw),123);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv]);by={x['name']:x['definition'] for x in conv}
+  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('081_','080_','082_','078_','079_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));raw=json.loads((E/'原始图色.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual(len(conv),33);self.assertEqual(len(raw),123);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv]);by={x['name']:x['definition'] for x in conv}
   for x in raw:self.assertEqual(by[x['name']],[0,0,719,1279,x['main'],x['offsets'],x['direction'],x['similarity']])
   self.assertEqual([x['name'] for x in conv if x['definition'][6]==0],['085_首怪打完','085_等待主界面'])
  def test_all_existing_business_files_and_states_unchanged(self):
@@ -148,7 +148,7 @@ class RedArmyTests(unittest.TestCase):
   for rel,h in base.items():
    if rel.startswith('flows/') or rel in ['common/悟空冒险状态.mq','common/合作冒险状态.mq','common/定时体力状态.mq','common/跨服首领状态.mq','common/强敌入口.mq']:self.assertEqual(hashlib.sha256(__import__('historical_source').before_boss_native_exits_bytes(ROOT/rel)).hexdigest(),h,rel)
  def test_ui_hierarchy_default_values_and_isolation(self):
-  ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertLess(ui.index('名称:"强敌一级分隔"'),ui.index('名称:"红绸军启用"'));self.assertLess(ui.index('名称:"跨服首领启用"'),ui.index('名称:"红绸军启用"'));self.assertIn('名称:"红绸军启用",提示内容:"    消灭红绸军（中午/下午）",选中:true',ui);self.assertIn('名称:"红绸军中午分",初始文本:"30"',ui);self.assertIn('名称:"红绸军下午时",初始文本:"20"',ui)
+  ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertLess(ui.index('名称:"强敌一级分隔"'),ui.index('名称:"红绸军启用"'));self.assertLess(ui.index('名称:"跨服首领启用"'),ui.index('名称:"红绸军启用"'));self.assertIn('名称:"红绸军启用",提示内容:"    消灭红绸军（中午/下午）",选中:false',ui);self.assertIn('名称:"红绸军中午分",初始文本:"30"',ui);self.assertIn('名称:"红绸军下午时",初始文本:"20"',ui)
 
  def test_actual_mq_recognition_definitions_equal_evidence(self):
   source=(ROOT/'common/图色参数.mq').read_text('utf-8-sig')

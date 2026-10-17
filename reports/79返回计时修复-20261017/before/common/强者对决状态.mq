@@ -1,0 +1,146 @@
+﻿Sub LoadDuelSettings()
+    Dim raw
+    duelEnabled = WorldBoolean("日常_强者对决")
+    duelStars = WorldNumber("日常_强者对决_星级", 0, 3)
+    duelProphecy = WorldNumber("日常_强者对决_预言", 0, 2)
+    duelQuickStars = WorldNumber("日常_强者对决_一键刷新_星级", 0, 1)
+    duelQuickMultiple = WorldNumber("日常_强者对决_一键刷新_倍数", 0, 2)
+    duelFailureMode = WorldNumber("设置_重要_开战失败", 1, 1)
+    duelIdleLimit = WorldNumber("设置_重连_超时时间", 120, 999) * 1000
+    duelFailureLimit = WorldNumber("设置_重要_任务失败上限", 2, 9999)
+    duelHallDelay = WorldNumber("设置_重要_返回大厅延迟", 0, 99)
+    raw = ReadUIConfig("设置_重要_闪退", True)
+    duelRestartOnTimeout = True
+    If Not IsNull(raw) Then
+        duelRestartOnTimeout = LCase(Trim(CStr(raw))) = "true" Or Trim(CStr(raw)) = "1"
+    End If
+End Sub
+Sub NewDuelSession()
+    duelDone = False
+    duelAbandoned = False
+    duelCount = 0
+    duelFailures = 0
+    duelRecoveries = 0
+    duelRestarts = 0
+    duelTerminal = False
+    duelPendingTerminal = False
+    duelEarlyStop = False
+    duelTimedOut = False
+    duelTimeoutCounted = False
+    duelRunning = False
+    duelWatchdogTripped = False
+    duelWatchdogAt = TickCount()
+    duelReason = ""
+    duelPhase = "未开始"
+End Sub
+Function SelectDuel()
+    SelectDuel = 0
+    If duelEnabled And Not duelDone And Not duelAbandoned Then
+        SelectDuel = 81
+    End If
+End Function
+Sub StartDuelTask()
+    duelTerminal = False
+    duelEarlyStop = False
+    duelTimedOut = False
+    duelTimeoutCounted = False
+    duelRunning = False
+    duelWatchdogTripped = False
+    duelWatchdogAt = TickCount()
+    duelReason = ""
+    duelPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("专业版无进展超时毫秒=" & duelIdleLimit & " 失败上限=" & duelFailureLimit & " 超时重启=" & duelRestartOnTimeout)
+End Sub
+Sub DuelProgress()
+    If duelRunning Then
+        If TickCount() - duelWatchdogAt > duelIdleLimit Then
+            duelTimedOut = True
+            duelWatchdogTripped = True
+            duelReason = "专业版公共无进展超时；迟到的进展不能撤销"
+        End If
+    End If
+    duelWatchdogAt = TickCount()
+End Sub
+Function DuelWatchdogExpired()
+    Dim interrupted
+    interrupted = ForegroundInterrupted()
+    DuelWatchdogExpired = interrupted
+    If interrupted Then
+        Exit Function
+    End If
+    If duelWatchdogTripped Then
+        DuelWatchdogExpired = True
+        Exit Function
+    End If
+    If TickCount() - duelWatchdogAt > duelIdleLimit Then
+        duelTimedOut = True
+        duelWatchdogTripped = True
+        duelReason = "专业版公共无进展超时"
+        DuelWatchdogExpired = True
+    End If
+End Function
+Sub RecoverDuelTask()
+    duelTerminal = False
+    duelRunning = False
+    duelRecoveries = duelRecoveries + 1
+    If duelTimedOut And Not duelTimeoutCounted Then
+        duelFailures = duelFailures + 1
+        duelTimeoutCounted = True
+        If duelFailures >= duelFailureLimit Then
+            duelAbandoned = True
+        End If
+    End If
+    If duelAbandoned Then
+        resumeTask = 0
+    End If
+    If duelEarlyStop Then
+        duelAbandoned = True
+        resumeTask = 0
+        Call WorldLog("专业版结束任务标记已写；最终界面未确认，停止重选，不计正常完成")
+    End If
+    Call WorldLog("保存原任务=81 原因=" & duelReason & " 阶段=" & duelPhase & " 超时失败次数=" & duelFailures & " 放弃本轮=" & duelAbandoned & " 正常完成次数=" & duelCount)
+End Sub
+Sub RestartDuelTask()
+    duelRunning = False
+    duelRestarts = duelRestarts + 1
+    Call WorldLog("公共重启81 次数=" & duelRestarts)
+End Sub
+Sub CommitDuelTask()
+    duelDone = True
+    duelPendingTerminal = False
+    duelRunning = False
+    duelCount = duelCount + 1
+    Call WorldLog("公共大厅确认后提交81 次数=" & duelCount & " 出口=" & duelReason & "；不等同战斗胜利，不自行安排跨日重跑")
+End Sub
+Function ConfirmDuelTerminal(reason)
+    ConfirmDuelTerminal = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    duelTerminal = True
+    duelPendingTerminal = True
+    terminalConfirmed = True
+    duelReason = reason
+    Call WorldLog("专业版本轮出口=" & reason & "；等待公共返回大厅，尚未提交")
+    ConfirmDuelTerminal = RESULT_OK
+End Function
+Function ReleaseDuelTimeout(hallConfirmed)
+    ReleaseDuelTimeout = False
+    If currentTask <> 81 Or Not duelTimedOut Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    currentTask = 0
+    duelRunning = False
+    terminalConfirmed = False
+    If duelAbandoned Then
+        resumeTask = 0
+    Else
+        resumeTask = 81
+    End If
+    ReleaseDuelTimeout = True
+    Call EndForegroundCommit()
+End Function

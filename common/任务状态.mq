@@ -1,4 +1,9 @@
 ﻿Sub NewSession()
+    Call NewGatherSession()
+    Call NewUniverseSession()
+    Call NewMemorySession()
+    Call NewFriezaSession()
+    Call NewDuelSession()
     Call NewEarthSession()
     Call NewNamekSession()
     Call NewBeyondSession()
@@ -78,6 +83,23 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 79 Then
+        Call Note("[流程] SaveCurrentTask 即将初始化任务79")
+        Call StartUniverseTask()
+        Call Note("[流程] SaveCurrentTask 已完成任务79初始化")
+    End If
+    If taskId = 82 Then
+        Call StartMemoryTask()
+    End If
+    If taskId = 80 Then
+        Call StartFriezaTask()
+    End If
+    If taskId = 81 Then
+        Call StartDuelTask()
+    End If
+    If taskId = 78 Then
+        Call StartGatherTask()
+    End If
     If taskId = 71 Then
         Call StartEarthTask()
     End If
@@ -134,8 +156,23 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
+    If currentTask = 79 Then
+        Call RecoverUniverseTask()
+    End If
+    If currentTask = 82 Then
+        Call RecoverMemoryTask()
+    End If
+    If currentTask = 80 Then
+        Call RecoverFriezaTask()
+    End If
+    If currentTask = 81 Then
+        Call RecoverDuelTask()
+    End If
     If currentTask = 71 Then
         Call RecoverEarthTask()
+    End If
+    If currentTask = 78 Then
+        Call RecoverGatherTask()
     End If
     If currentTask = 88 Then
         Call RecoverNamekTask()
@@ -198,7 +235,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
+    If currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -216,6 +253,16 @@ Function CommitTask(hallConfirmed)
     End If
     If currentTask = 71 Then
         Call CommitEarthTask()
+    ElseIf currentTask = 78 Then
+        Call CommitGatherTask()
+    ElseIf currentTask = 79 Then
+        Call CommitUniverseTask()
+    ElseIf currentTask = 82 Then
+        Call CommitMemoryTask()
+    ElseIf currentTask = 80 Then
+        Call CommitFriezaTask()
+    ElseIf currentTask = 81 Then
+        Call CommitDuelTask()
     ElseIf currentTask = 88 Then
         Call CommitNamekTask()
     ElseIf currentTask = 87 Then

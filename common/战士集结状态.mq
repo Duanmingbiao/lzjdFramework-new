@@ -1,0 +1,63 @@
+﻿Sub LoadGatherSettings()
+    gatherEnabled = WorldBoolean("战士集结启用")
+    gatherDouble = WorldBoolean("战士集结双倍")
+    gatherSweep = WorldBoolean("战士集结扫荡")
+End Sub
+Sub NewGatherSession()
+    gatherDue = Time()
+    gatherFinishedAt = 0
+    gatherCount = 0
+    gatherFailures = 0
+    gatherRestarts = 0
+    gatherRecoveries = 0
+    gatherTerminal = False
+    gatherPhase = "未开始"
+    gatherReason = ""
+    gatherEntryTimeout = False
+    gatherPeriodEnded = False
+End Sub
+Function SelectGather()
+    SelectGather = 0
+    If gatherEnabled Then
+        If Time() >= gatherDue Then
+            SelectGather = 78
+        End If
+    End If
+End Function
+Sub StartGatherTask()
+    gatherFinishedAt = 0
+    gatherTerminal = False
+    gatherEntryTimeout = False
+    gatherPeriodEnded = False
+    gatherReason = ""
+    gatherPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("任务开始Unix=" & Time() & " 重启次数=" & gatherRestarts & " 恢复次数=" & gatherRecoveries)
+End Sub
+Sub RecoverGatherTask()
+    gatherTerminal = False
+    gatherFailures = gatherFailures + 1
+    gatherRecoveries = gatherRecoveries + 1
+    Call WorldLog("保存原任务=78 阶段=" & gatherPhase & " 是否提交完成=否")
+End Sub
+Sub RestartGatherTask()
+    gatherRestarts = gatherRestarts + 1
+    Call WorldLog("重启原任务=78 次数=" & gatherRestarts)
+End Sub
+Sub CommitGatherTask()
+    Dim dayStart, finishedAt
+    finishedAt = Time()
+    If gatherFinishedAt > 0 Then
+        finishedAt = gatherFinishedAt
+    End If
+    dayStart = WorldDayStart(finishedAt)
+    gatherCount = gatherCount + 1
+    If gatherPeriodEnded Or finishedAt >= dayStart + 72000 Then
+        gatherDue = dayStart + 86400
+    ElseIf gatherEntryTimeout Then
+        gatherDue = dayStart + 72300
+    Else
+        gatherDue = dayStart + 72000
+    End If
+    Call WorldLog("本轮提交次数=" & gatherCount & " 终态=" & gatherReason & " 下一次执行Unix=" & gatherDue)
+End Sub

@@ -1,0 +1,72 @@
+﻿Sub LoadMemorySettings()
+    memoryEnabled = WorldBoolean("日常_战士记忆")
+    memoryFailureMode = WorldNumber("设置_重要_开战失败", 1, 1)
+End Sub
+Sub NewMemorySession()
+    memoryDone = False
+    memoryCount = 0
+    memoryFailures = 0
+    memoryRestarts = 0
+    memoryRecoveries = 0
+    memoryTerminal = False
+    memoryUncompleted = False
+    memoryReason = ""
+    memoryPhase = "未开始"
+End Sub
+Function SelectMemory()
+    SelectMemory = 0
+    If memoryEnabled And Not memoryDone Then
+        SelectMemory = 82
+    End If
+End Function
+Sub StartMemoryTask()
+    memoryTerminal = False
+    memoryUncompleted = False
+    memoryReason = ""
+    memoryPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("任务开始Unix=" & Time() & " 开战失败处理=" & memoryFailureMode)
+End Sub
+Sub RecoverMemoryTask()
+    memoryTerminal = False
+    memoryUncompleted = False
+    memoryFailures = memoryFailures + 1
+    memoryRecoveries = memoryRecoveries + 1
+    Call WorldLog("保存原任务=82 阶段=" & memoryPhase & " 是否提交完成=否")
+End Sub
+Sub RestartMemoryTask()
+    memoryRestarts = memoryRestarts + 1
+    Call WorldLog("重启原任务=82 次数=" & memoryRestarts)
+End Sub
+Sub CommitMemoryTask()
+    memoryDone = True
+    memoryCount = memoryCount + 1
+    Call WorldLog("本轮提交次数=" & memoryCount & " 专业版出口=" & memoryReason & "；不是挑战胜利证明；不自行安排跨日重跑")
+End Sub
+Function ConfirmMemoryTerminal(reason)
+    ConfirmMemoryTerminal = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    memoryReason = reason
+    memoryTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("专业版本轮出口=" & reason & "；等待公共回大厅，尚未提交")
+    ConfirmMemoryTerminal = RESULT_OK
+End Function
+Function ReleaseMemoryUncompleted(hallConfirmed)
+    ReleaseMemoryUncompleted = False
+    If currentTask <> 82 Or Not memoryUncompleted Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    Call WorldLog("专业版开战超过20次选择结束任务：返回大厅，不写完成、不安排臆测冷却；交回串行调度")
+    memoryUncompleted = False
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    ReleaseMemoryUncompleted = True
+    Call EndForegroundCommit()
+End Function

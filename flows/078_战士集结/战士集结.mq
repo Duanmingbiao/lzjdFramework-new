@@ -1,0 +1,301 @@
+﻿Function ConfirmGatherTerminal(reason)
+    ConfirmGatherTerminal = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    gatherReason = reason
+    gatherFinishedAt = Time()
+    gatherTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("专业版本轮出口=" & reason & "；等待公共返回大厅连续确认，未提交")
+    ConfirmGatherTerminal = RESULT_OK
+End Function
+
+Function EnterGatherHall()
+    Dim started, result
+    EnterGatherHall = RESULT_TIMEOUT
+    Call WorldStage("异时空冒险入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("078_异时空页面一") Or WorldMatch("078_异时空页面二") Or WorldMatch("078_异时空页面三") Then
+            EnterGatherHall = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If EnemyHallKnown() Then
+            If WorldPair("078_异时空入口") Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Or BusinessExpired() Then
+                    Exit Function
+                End If
+                If Sys.AppIsFront(GAME_PACKAGE) Then
+                    Swipe 150, 545, 500, 545, 300
+                End If
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+
+Function EnterGather()
+    Dim started
+    EnterGather = RESULT_TIMEOUT
+    Call WorldStage("战士集结入口与开始收集")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("078_入口") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_本期结束") Then
+            Call WorldWait(1000)
+            gatherPeriodEnded = True
+            EnterGather = ConfirmGatherTerminal("图色确认本期已结束")
+            Exit Function
+        End If
+        If WorldMatch("078_开始收集") Then
+            If Not WorldOffset(251, -263, 300) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_收集界面") Then
+            Call WorldWait(300)
+            EnterGather = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 20000 Then
+            gatherEntryTimeout = True
+            EnterGather = ConfirmGatherTerminal("专业版入口20秒出口；20点前改约20:05，不冒充次数耗尽")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function RunGather()
+    Dim newCount, oldCount, mode, oldY, searchAt, actionAt, x, y, matched
+    RunGather = RESULT_TIMEOUT
+    newCount = 0
+    oldCount = 0
+    mode = 0
+    oldY = 0
+    searchAt = TickCount()
+    actionAt = TickCount()
+    Call WorldStage("战士集结推图与扫荡")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If newCount < 4 And TickCount() - searchAt < 5000 Then
+            If WorldMatch("078_新关卡") Then
+                oldY = foundY
+                If Not WorldOffset(0, 0, 300) Then
+                    Exit Function
+                End If
+                mode = 1
+            End If
+            actionAt = TickCount()
+        Else
+            If WorldMatch("078_老关卡") Then
+                oldY = foundY
+                If Not WorldOffset(0, 0, 300) Then
+                    Exit Function
+                End If
+                mode = 2
+            End If
+        End If
+        If WorldMatch("078_关卡详情") Then
+            x = foundX
+            y = foundY
+            If gatherDouble Then
+                If Not WorldTap(x - 286, y + 626, 0) Then
+                    Exit Function
+                End If
+            End If
+            Call WorldWait(200)
+            If mode = 1 Then
+                If Not WorldTap(x - 121, y + 558, 200) Then
+                    Exit Function
+                End If
+                If Not WorldTap(x, y, 1000) Then
+                    Exit Function
+                End If
+                newCount = newCount + 1
+                actionAt = TickCount()
+            Else
+                If oldCount < 4 Then
+                    If Not WorldTap(x - 121, y + 558, 0) Then
+                        Exit Function
+                    End If
+                    If oldCount >= 3 Then
+                        actionAt = TickCount()
+                    End If
+                Else
+                    If gatherSweep And oldY < 350 Then
+                        If Not WorldTap(x - 452, y + 558, 0) Then
+                            Exit Function
+                        End If
+                    Else
+                        oldCount = 9
+                    End If
+                End If
+                Call WorldWait(500)
+                If Not WorldTap(x, y, 1000) Then
+                    Exit Function
+                End If
+                oldCount = oldCount + 1
+            End If
+            Call WorldLog("新图计数=" & newCount & " 老图计数=" & oldCount & " 模式=" & mode & " 老图Y=" & oldY)
+        End If
+        If WorldMatch("078_关卡对话") Then
+            If Not WorldOffset(55, 1040, 100) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("152_开战图标6") Then
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(398, 982, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_跳过战斗") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            Call WorldWait(3000)
+            actionAt = TickCount()
+        End If
+        If WorldMatch("078_阵容不满") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_结算一") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            searchAt = TickCount()
+        End If
+        If WorldMatch("078_结算二") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            oldCount = 0
+            newCount = 0
+            searchAt = TickCount()
+            actionAt = TickCount()
+        End If
+        If WorldMatch("078_扫荡返回") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If oldCount >= 8 Or TickCount() - actionAt > 10000 Then
+            If WorldMatch("078_收集界面") Then
+                RunGather = RESULT_OK
+                Exit Function
+            End If
+        End If
+    Loop
+End Function
+
+Function FinishGather()
+    Dim started, slot, dx
+    FinishGather = RESULT_TIMEOUT
+    Call WorldStage("战士集结七位置任务")
+    started = TickCount()
+    slot = 1
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("078_收集界面") Then
+            dx = 102
+            If slot = 2 Then
+                dx = 170
+            ElseIf slot = 3 Then
+                dx = 246
+            ElseIf slot = 4 Then
+                dx = 316
+            ElseIf slot = 5 Then
+                dx = 363
+            ElseIf slot = 6 Then
+                dx = 433
+            ElseIf slot = 7 Then
+                dx = 513
+            End If
+            If Not WorldOffset(dx, -155, 500) Then
+                Exit Function
+            End If
+            slot = slot + 1
+            If slot > 7 Then
+                slot = 1
+            End If
+        End If
+        If WorldMatch("078_任务详情") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_任务提示") Then
+            If Not WorldOffset(-161, -560, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("078_任务关闭") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - started > 10000 Then
+            If WorldMatch("078_收集界面") Then
+                FinishGather = ConfirmGatherTerminal("专业版七位置处理10秒且重新确认收集界面")
+                Exit Function
+            End If
+        End If
+    Loop
+End Function
+
+Function ExecuteGather()
+    Dim result
+    ExecuteGather = RESULT_TIMEOUT
+    result = EnterGatherHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterGather()
+    If gatherTerminal Then
+        ExecuteGather = result
+        Exit Function
+    End If
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = RunGather()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteGather = FinishGather()
+End Function

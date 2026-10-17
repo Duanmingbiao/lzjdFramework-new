@@ -125,7 +125,7 @@ class WorldBossTests(unittest.TestCase):
   for rel,h in base.items():
    if rel.startswith('flows/') or rel in ['common/悟空冒险状态.mq','common/合作冒险状态.mq']:self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)
  def test_append_only_catalog_and_ui_layout(self):
-  e=ROOT/'flows/070_世界首领/evidence';old=json.loads((e/'before/evidence/图色参数.txt').read_text('utf-8'));cat=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('083_','084_','085_'))];self.assertEqual(cat[:len(old)],old);self.assertEqual(len(cat)-len(old),64);ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertLess(ui.index('日常任务:{'),ui.index('名称:"悟空冒险启用"'));self.assertLess(ui.index('名称:"合作冒险启用"'),ui.index('名称:"强敌一级分隔"'));self.assertIn('名称:"打沙鲁启用"',ui)
+  e=ROOT/'flows/070_世界首领/evidence';old=json.loads((e/'before/evidence/图色参数.txt').read_text('utf-8'));cat=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('081_','080_','082_','079_','078_','083_','084_','085_'))];self.assertEqual(cat[:len(old)],old);self.assertEqual(len(cat)-len(old),64);ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertLess(ui.index('日常功能:{'),ui.index('名称:"悟空冒险启用"'));self.assertLess(ui.index('名称:"合作冒险启用"'),ui.index('名称:"强敌一级分隔"'));self.assertIn('名称:"打沙鲁启用"',ui)
 
  def test_missed_night_after_midnight_waits_configured_time(self):
   self.at(22);self.e['worldDue']=self.stamp-3600;self.stamp=self.e['WorldDayStart'](self.stamp)+86400+3600;self.now=0;self.e['worldEnabled']=True;self.assertEqual(self.e['SelectWorldBoss'](),0);self.assertEqual(self.e['worldDue'],self.e['WorldDayStart'](self.stamp)+36000)

@@ -1,0 +1,66 @@
+[
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-800.readable.lua",
+    "sha256": "e1c9f410ed7a4e5815e7b85115235430585475a0fef4c3ec49b3a0960d60e36d",
+    "lines": [
+      1162,
+      1183
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-801.readable.lua",
+    "sha256": "9eb8f60abde502772dd25954c7ee54b9b6b7f9f186117fd43588a870d9859b06",
+    "lines": [
+      362,
+      398
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-806.readable.lua",
+    "sha256": "5ecef23e65785a0c32b45165e4dd0a1d170395a0f0897e82068bf7c497cc6101",
+    "lines": [
+      295,
+      340
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-806.readable.lua",
+    "sha256": "5ecef23e65785a0c32b45165e4dd0a1d170395a0f0897e82068bf7c497cc6101",
+    "lines": [
+      763,
+      823
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-812.readable.lua",
+    "sha256": "810910aaddc987e00414b97ad651e300ad575bad022fe8a0811db8f75d004650",
+    "lines": [
+      312,
+      435
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-816.readable.lua",
+    "sha256": "2b7a993162a0b3ab4ba349b1a7dbd82d8d9647d7ed10b21cccafd25c3d7aa1ba",
+    "lines": [
+      4510,
+      4600
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-816.readable.lua",
+    "sha256": "2b7a993162a0b3ab4ba349b1a7dbd82d8d9647d7ed10b21cccafd25c3d7aa1ba",
+    "lines": [
+      612,
+      615
+    ]
+  },
+  {
+    "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\lua52-reconstructed\\function-816.readable.lua",
+    "sha256": "2b7a993162a0b3ab4ba349b1a7dbd82d8d9647d7ed10b21cccafd25c3d7aa1ba",
+    "lines": [
+      661,
+      665
+    ]
+  }
+]

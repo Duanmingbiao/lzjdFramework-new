@@ -1,0 +1,23 @@
+{
+  "scope": "local MQ control-flow simulation and encoding; NOT assistant compilation or device validation",
+  "tests": 658,
+  "failures": 0,
+  "errors": 0,
+  "durationSeconds": 18.375,
+  "memoryTests": 43,
+  "mqSourceCount": 53,
+  "gbkRoundTripFiles": 54,
+  "protectedFilesUnchanged": {
+    "D:\\game\\anjian-new\\assistant-sync.json": true,
+    "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": true,
+    "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": true,
+    "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": true,
+    "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": true,
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": true,
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": true,
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": true
+  },
+  "built": false,
+  "synced": false,
+  "pass": true
+}

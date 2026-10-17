@@ -8,6 +8,11 @@ def expression(s):
  return s
 
 def load(paths, env):
+ for key,value in {'duelEnabled':False,'duelRunning':False,'duelTimedOut':False,'duelRestartOnTimeout':True,'NewDuelSession':lambda:None,'LoadDuelSettings':lambda:None,'SelectDuel':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'friezaEnabled':False,'friezaRunning':False,'friezaTimedOut':False,'friezaRestartOnTimeout':True,'NewFriezaSession':lambda:None,'LoadFriezaSettings':lambda:None,'SelectFrieza':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'memoryEnabled':False,'memoryUncompleted':False,'NewMemorySession':lambda:None,'LoadMemorySettings':lambda:None,'SelectMemory':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'universeEnabled':False,'NewUniverseSession':lambda:None,'LoadUniverseSettings':lambda:None,'SelectUniverse':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'gatherEnabled':False,'NewGatherSession':lambda:None,'LoadGatherSettings':lambda:None,'SelectGather':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'earthEnabled':False,'earthRegisteredTask':71,'NewEarthSession':lambda:None,'LoadEarthSettings':lambda:None,'SelectEarth':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'namekEnabled':False,'namekRegisteredTask':88,'namekDeferred':False,'NewNamekSession':lambda:None,'LoadNamekSettings':lambda:None,'SelectNamek':lambda:0}.items():env.setdefault(key,value)
  # Unit fixtures without the monitor model the no-interruption dependency explicitly.

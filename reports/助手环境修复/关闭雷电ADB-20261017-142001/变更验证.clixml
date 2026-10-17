@@ -1,0 +1,17 @@
+<Objs Version="1.1.0.1" xmlns="http://schemas.microsoft.com/powershell/2004/04">
+  <Obj RefId="0">
+    <TN RefId="0">
+      <T>System.Management.Automation.PSCustomObject</T>
+      <T>System.Object</T>
+    </TN>
+    <MS>
+      <S N="Backup">D:\game\anjian-new\reports\助手环境修复\关闭雷电ADB-20261017-142001</S>
+      <S N="Target">D:\leidian\LDPlayer9\vms\config\leidian0.config</S>
+      <I32 N="Before">1</I32>
+      <I32 N="After">0</I32>
+      <B N="ADBAndOCRUnchanged">true</B>
+      <B N="OtherConfigurationUnchanged">true</B>
+      <B N="SimulatorRestarted">false</B>
+    </MS>
+  </Obj>
+</Objs>

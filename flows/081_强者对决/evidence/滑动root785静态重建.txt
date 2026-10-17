@@ -1,0 +1,189 @@
+local L3_1, L4_1, L5_1, L6_1, L7_1, L8_1, L9_1, L10_1
+L3_1 = nil
+if A0_1 == "大厅" then
+  if A1_1 == "滑左" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 150
+    L7_1 = 545
+    L8_1 = 500
+    L9_1 = 545
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑右" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 500
+    L7_1 = 545
+    L8_1 = 150
+    L9_1 = 545
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+elseif A0_1 == "异时空冒险" then
+  if A1_1 == "滑上" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 300
+    L8_1 = 370
+    L9_1 = 1000
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑下" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 1000
+    L8_1 = 370
+    L9_1 = 300
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+elseif A0_1 == "强敌入袭" then
+  if A1_1 == "滑上" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 300
+    L8_1 = 370
+    L9_1 = 1000
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑下" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 1000
+    L8_1 = 370
+    L9_1 = 300
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+elseif A0_1 == "试炼" then
+  if A1_1 == "滑上" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 300
+    L8_1 = 370
+    L9_1 = 1000
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑下" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 1000
+    L8_1 = 370
+    L9_1 = 300
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+elseif A0_1 == "竞技场" then
+  if A1_1 == "滑上" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 300
+    L8_1 = 370
+    L9_1 = 750
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑下" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 750
+    L8_1 = 370
+    L9_1 = 300
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+elseif A0_1 == "极限挑战" then
+  if A1_1 == "滑上" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 300
+    L8_1 = 370
+    L9_1 = 750
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑下" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = 370
+    L7_1 = 750
+    L8_1 = 370
+    L9_1 = 300
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+elseif A0_1 == "活动" then
+  if A1_1 == "滑左" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = A2_1[1]
+    L7_1 = A2_1[2]
+    L8_1 = A2_1[3]
+    L9_1 = A2_1[4]
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑右" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = A2_1[3]
+    L7_1 = A2_1[4]
+    L8_1 = A2_1[1]
+    L9_1 = A2_1[2]
+    L10_1 = 300
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+  L4_1 = LuaAuxLib
+  L4_1 = L4_1.LuaAuxLid
+  L5_1 = 71
+  L6_1 = 100
+  L7_1 = 100
+  L8_1 = 100
+  L9_1 = 50
+  L10_1 = 100
+  L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+elseif A0_1 == "任务领取" then
+  if A1_1 == "滑下" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = A2_1[1]
+    L7_1 = A2_1[2]
+    L8_1 = A2_1[3]
+    L9_1 = A2_1[4]
+    L10_1 = 500
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  elseif A1_1 == "滑上" then
+    L4_1 = LuaAuxLib
+    L4_1 = L4_1.LuaAuxLid
+    L5_1 = 71
+    L6_1 = A2_1[3]
+    L7_1 = A2_1[4]
+    L8_1 = A2_1[1]
+    L9_1 = A2_1[2]
+    L10_1 = 500
+    L4_1(L5_1, L6_1, L7_1, L8_1, L9_1, L10_1)
+  end
+end
+return L3_1
