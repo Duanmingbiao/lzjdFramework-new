@@ -1,0 +1,251 @@
+﻿Function EnterSenzu()
+    Dim started, actionAt, result, clicked
+    EnterSenzu = RESULT_TIMEOUT
+    Call WorldStage("悟空送仙豆大厅入口")
+    started = TickCount()
+    actionAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("153_P00") Then
+            EnterSenzu = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - actionAt > 2000 Then
+            If WorldMatch("153_大厅一") Or WorldMatch("153_大厅二") Or WorldMatch("153_大厅三") Then
+                If WorldMatch("153_入口") Then
+                    If Not WorldOffset(0, 0, 0) Then
+                        Exit Function
+                    End If
+                Else
+                    result = ReturnToHall()
+                    If result <> RESULT_OK Then
+                        Exit Function
+                    End If
+                    If Not Sys.AppIsFront(GAME_PACKAGE) Or BusinessExpired() Then
+                        Exit Function
+                    End If
+                    Swipe 150, 545, 500, 545, 300
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("专业版入口60秒失败；按现工程未知页面不提交契约恢复153，不伪装业务完成")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+
+Function AssistSenzu()
+    Dim refreshAt, actionAt, count, superReady, i, x, y
+    AssistSenzu = RESULT_TIMEOUT
+    Call WorldStage("悟空送仙豆协助好友")
+    refreshAt = TickCount()
+    actionAt = TickCount()
+    count = 0
+    superReady = False
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If count > 4 Then
+            senzuAssist = False
+            Call WorldLog("专业版协助结束；协助好友锁存关闭，不代表运送完成")
+            AssistSenzu = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - refreshAt > 3000 Then
+            If WorldMatch("153_P00") Then
+                If Not WorldOffset(437, -102, 0) Then
+                    Exit Function
+                End If
+                refreshAt = TickCount()
+                actionAt = TickCount()
+                count = count + 1
+                Call WorldWait(50)
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("153_协助入口") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            count = 0
+            Call WorldWait(50)
+        End If
+        Call WorldWait(50)
+        If WorldPair("153_协助列表") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            count = count + 1
+            Call WorldWait(50)
+        End If
+        Call WorldWait(50)
+        If WorldMatch("153_P05") Then
+            If Not WorldOffset(-288, 713, 1000) Then
+                Exit Function
+            End If
+            superReady = True
+        End If
+        If superReady Then
+            If WorldMatch("153_P06") Then
+                x = foundX - 288
+                y = foundY + 713
+                For i = 1 To 80
+                    If Not WorldTap(x, y, 20) Then
+                        Exit Function
+                    End If
+                Next
+                superReady = False
+            End If
+        End If
+        If TickCount() - actionAt > 10000 Then
+            If WorldMatch("153_P07") Then
+                If Not WorldOffset(14, 18, 1000) Then
+                    Exit Function
+                End If
+                superReady = True
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("153_已协助关闭") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If WorldMatch("153_P10") Then
+            If Not WorldOffset(-371, 574, 1000) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+    Loop
+End Function
+
+Function TransportSenzu()
+    Dim refreshes
+    TransportSenzu = RESULT_TIMEOUT
+    Call WorldStage("悟空送仙豆运送")
+    refreshes = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("153_P11") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P00") Then
+            If Not WorldOffset(230, -97, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P12") Then
+            If Not WorldTap(80, 600, 250) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P13") Then
+            If Not WorldTap(584, 582, 0) Then
+                Exit Function
+            End If
+            refreshes = refreshes + 1
+            Call WorldWait(250)
+        End If
+        If WorldMatch("153_P14") Then
+            If Not WorldOffset(0, 0, 100) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P15") Then
+            If Not WorldOffset(-22, -571, 100) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P16") Then
+            If Not WorldTap(360, 1100, 250) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P17") Then
+            If Not WorldTap(140, 1100, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(360, 1100, 250) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("153_护送完成") Then
+            If Not WorldOffset(0, 0, 100) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("153_消费石头") Then
+            Call WorldWait(500)
+            TransportSenzu = RESULT_OK
+            Exit Function
+        End If
+        If refreshes > 4 Then
+            TransportSenzu = ConfirmSenzuExit("专业版运送刷新超过4次，结束本轮任务并置原计数3", True)
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FinishSenzu()
+    FinishSenzu = RESULT_TIMEOUT
+    Call WorldStage("悟空送仙豆收尾确认")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldPair("153_消费石头") Then
+            If Not WorldOffset(0, 0, 50) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("153_P00") Then
+            If senzuCount + 1 > 3 Then
+                Call WorldWait(1000)
+            End If
+            FinishSenzu = ConfirmSenzuExit("专业版运送收尾回到仙豆界面", False)
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ExecuteSenzu()
+    Dim result
+    ExecuteSenzu = RESULT_TIMEOUT
+    result = EnterSenzu()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    If senzuAssist Then
+        result = AssistSenzu()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If Not ResetSenzuTimer() Then
+        Exit Function
+    End If
+    result = TransportSenzu()
+    If terminalConfirmed Or result <> RESULT_OK Then
+        ExecuteSenzu = result
+        Exit Function
+    End If
+    If Not ResetSenzuTimer() Then
+        Exit Function
+    End If
+    ExecuteSenzu = FinishSenzu()
+End Function

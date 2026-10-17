@@ -1,0 +1,488 @@
+[
+  {
+    "source": "root.709",
+    "line": 193,
+    "name": "150_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 221,
+    "name": "150_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 253,
+    "name": "150_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 291,
+    "name": "150_P03",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 331,
+    "name": "150_P04",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 344,
+    "name": "150_P05",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 387,
+    "name": "150_P06",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 412,
+    "name": "150_P07",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 448,
+    "name": "150_P08",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 461,
+    "name": "150_P09",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 502,
+    "name": "150_P10",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 515,
+    "name": "150_P11",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 552,
+    "name": "150_P06",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 571,
+    "name": "150_P07",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 602,
+    "name": "150_P10",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 615,
+    "name": "150_P11",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 635,
+    "name": "150_P12",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 666,
+    "name": "150_P13",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 696,
+    "name": "150_P14",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 731,
+    "name": "150_P15",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 766,
+    "name": "150_P16",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 796,
+    "name": "150_P17",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 826,
+    "name": "150_P18",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 856,
+    "name": "150_P19",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 888,
+    "name": "150_P20",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 918,
+    "name": "150_P21",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 948,
+    "name": "150_P22",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 978,
+    "name": "150_P23",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1008,
+    "name": "150_P24",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1038,
+    "name": "150_P25",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1145,
+    "name": "150_P26",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1226,
+    "name": "150_P27",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1256,
+    "name": "150_P28",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1286,
+    "name": "150_P29",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1317,
+    "name": "150_P30",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1330,
+    "name": "150_P31",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1372,
+    "name": "150_P08",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1385,
+    "name": "150_P09",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1434,
+    "name": "150_P32",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1464,
+    "name": "150_P15",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1499,
+    "name": "150_P16",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1529,
+    "name": "150_P17",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1559,
+    "name": "150_P18",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1589,
+    "name": "150_P19",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1615,
+    "name": "150_P20",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1645,
+    "name": "150_P33",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1675,
+    "name": "150_P22",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1705,
+    "name": "150_P23",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1735,
+    "name": "150_P24",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1765,
+    "name": "150_P25",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1872,
+    "name": "150_P26",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1942,
+    "name": "150_P27",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 1974,
+    "name": "150_P28",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2006,
+    "name": "150_P29",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2039,
+    "name": "150_P30",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2052,
+    "name": "150_P34",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2089,
+    "name": "150_P35",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2123,
+    "name": "150_P36",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2155,
+    "name": "150_P37",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2190,
+    "name": "150_P38",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2228,
+    "name": "150_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2260,
+    "name": "150_P39",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2292,
+    "name": "150_P40",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2322,
+    "name": "150_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2354,
+    "name": "150_P40",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2388,
+    "name": "150_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2448,
+    "name": "150_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2488,
+    "name": "150_P43",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2537,
+    "name": "150_P44",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2566,
+    "name": "150_P45",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2579,
+    "name": "150_P46",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2601,
+    "name": "150_P47",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2636,
+    "name": "150_P48",
+    "autoclick": false
+  },
+  {
+    "source": "root.709",
+    "line": 2664,
+    "name": "150_P49",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 22,
+    "name": "150_P50",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 35,
+    "name": "150_P51",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 48,
+    "name": "150_P52",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 61,
+    "name": "150_P53",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 74,
+    "name": "150_P46",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 85,
+    "name": "150_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.787龙珠大冒险",
+    "line": 98,
+    "name": "150_P01",
+    "autoclick": false
+  }
+]

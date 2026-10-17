@@ -1,0 +1,11 @@
+{
+  "name": "龙珠激斗",
+  "id": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+  "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "lastSynced": {
+    ".mq": "f5adf9767e075c805436652c99ac8ec4988b375cb47aceabf4225aa53b3350cb",
+    ".uip": "06954c7d0d0a2280d94d4e4ec1966b8b17e4711449c613cb0091207586c8f35a",
+    ".prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+  },
+  "validation": "Code-only SHA256 sync; existing settings preserved byte-for-byte; official compilation/device testing pending."
+}

@@ -2,6 +2,22 @@
     LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
+    If currentTask = 150 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 155 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 154 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 153 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
     If currentTask = 79 Then
         BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
         Exit Function

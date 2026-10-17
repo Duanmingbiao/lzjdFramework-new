@@ -1,0 +1,96 @@
+local L1_1, L2_1, L3_1, L4_1, L5_1, L6_1, L7_1, L8_1, L9_1, L10_1, L11_1, L12_1
+L1_1 = nil
+L2_1 = nil
+L3_1 = LuaAuxLib
+L3_1 = L3_1.LuaAuxLid
+L4_1 = 226
+L5_1 = "日常_蛇道_普通关卡"
+L6_1 = nil
+L7_1 = 0
+L8_1 = nil
+L3_1 = L3_1(L4_1, L5_1, L6_1, L7_1, L8_1)
+L2_1 = L3_1
+L3_1 = nil
+L4_1 = LuaAuxLib
+L4_1 = L4_1.LuaAuxLid
+L5_1 = 226
+L6_1 = "日常_蛇道_困难关卡"
+L7_1 = nil
+L8_1 = 0
+L9_1 = nil
+L4_1 = L4_1(L5_1, L6_1, L7_1, L8_1, L9_1)
+L3_1 = L4_1
+L4_1 = nil
+L5_1 = LuaAuxLib
+L5_1 = L5_1.StringSplit
+L6_1 = L2_1
+L7_1 = ","
+L5_1 = L5_1(L6_1, L7_1)
+L4_1 = L5_1
+L5_1 = nil
+L6_1 = LuaAuxLib
+L6_1 = L6_1.StringSplit
+L7_1 = L3_1
+L8_1 = ","
+L6_1 = L6_1(L7_1, L8_1)
+L5_1 = L6_1
+L6_1 = nil
+L6_1 = 0
+L7_1 = pairs
+L8_1 = L4_1
+L7_1, L8_1, L9_1 = L7_1(L8_1)
+for L10_1, L11_1 in L7_1, L8_1, L9_1 do
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 == A0_1 then
+    L1_1 = 1
+    return L1_1
+  end
+end
+L7_1 = pairs
+L8_1 = L5_1
+L7_1, L8_1, L9_1 = L7_1(L8_1)
+for L10_1, L11_1 in L7_1, L8_1, L9_1 do
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 == A0_1 then
+    L1_1 = 2
+    return L1_1
+  end
+end
+L1_1 = L6_1
+return L1_1

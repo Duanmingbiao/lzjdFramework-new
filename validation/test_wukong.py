@@ -65,6 +65,6 @@ class WukongTests(unittest.TestCase):
   for rel,h in json.loads((E/'修改前基线.json').read_text('utf-8')).items():
    if rel.startswith('flows/'):self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)
  def test_append_only_exact_profiles(self):
-  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('081_','080_','082_','079_','078_','152_','070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv])
+  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('150_','155_','154_','153_','081_','080_','082_','079_','078_','152_','070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv])
  def test_ui_three_levels_no152_registration(self):
   text=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertIn('日常功能:{',text);self.assertIn('名称:"悟空冒险启用"',text);self.assertIn('名称:"悟空隐藏关卡"',text);self.assertIn('名称:"悟空扫荡关卡"',text);self.assertNotIn(152,json.loads((ROOT/'flows/152_合作大冒险/evidence/before/project.txt').read_text('utf-8'))['registeredTasks'])

@@ -14,6 +14,18 @@
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If currentTask = 150 Then
+        Call RestartAdventureTask()
+    End If
+    If currentTask = 155 Then
+        Call RestartSnakeTask()
+    End If
+    If currentTask = 154 Then
+        Call RestartPlantTask()
+    End If
+    If currentTask = 153 Then
+        Call RestartSenzuTask()
+    End If
     If currentTask = 71 Then
         Call RestartEarthTask()
     End If

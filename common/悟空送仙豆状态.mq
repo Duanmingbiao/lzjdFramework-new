@@ -1,0 +1,70 @@
+﻿Sub LoadSenzuSettings()
+    senzuEnabled = WorldBoolean("日常_悟空送仙豆")
+End Sub
+Sub NewSenzuSession()
+    senzuDue = Time()
+    senzuDone = False
+    senzuAssist = True
+    senzuCount = 0
+    senzuRecoveries = 0
+    senzuRestarts = 0
+    senzuPhase = "未开始"
+    senzuReason = ""
+    senzuStop = False
+    senzuFinishedAt = 0
+End Sub
+Function SelectSenzu()
+    SelectSenzu = 0
+    If senzuEnabled And Not senzuDone And Time() >= senzuDue Then
+        SelectSenzu = 153
+    End If
+End Function
+Sub StartSenzuTask()
+    senzuReason = ""
+    senzuStop = False
+    senzuFinishedAt = 0
+    Call WorldStage("悟空送仙豆启动")
+    Call WorldLog("协助好友=" & CStr(senzuAssist) & " 已提交次数=" & senzuCount)
+End Sub
+Sub RecoverSenzuTask()
+    senzuReason = ""
+    senzuStop = False
+    senzuRecoveries = senzuRecoveries + 1
+    Call WorldLog("保存原任务153；不写完成，不改下次时间；协助好友=" & CStr(senzuAssist))
+End Sub
+Sub RestartSenzuTask()
+    senzuRestarts = senzuRestarts + 1
+    Call WorldLog("重启原任务153 次数=" & senzuRestarts)
+End Sub
+Sub CommitSenzuTask()
+    If senzuStop Then
+        senzuCount = 3
+        senzuDone = True
+    Else
+        senzuCount = senzuCount + 1
+        senzuDue = senzuFinishedAt + 3600
+        senzuDone = senzuCount > 3
+    End If
+    Call WorldLog("公共大厅确认后提交153 次数=" & senzuCount & " 出口=" & senzuReason & " 下次Unix=" & senzuDue & " 已完成=" & CStr(senzuDone))
+End Sub
+Function ResetSenzuTimer()
+    ResetSenzuTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    Call WorldLog("专业版任务计时重置")
+    ResetSenzuTimer = True
+End Function
+Function ConfirmSenzuExit(reason, stopTask)
+    ConfirmSenzuExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    senzuReason = reason
+    senzuStop = stopTask
+    senzuFinishedAt = Time()
+    terminalConfirmed = True
+    Call WorldLog("专业版出口=" & reason & "；仍须公共大厅确认，尚未提交")
+    ConfirmSenzuExit = RESULT_OK
+End Function

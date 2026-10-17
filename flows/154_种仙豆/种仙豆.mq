@@ -1,0 +1,174 @@
+﻿Function EnterPlant()
+    Dim started, result
+    EnterPlant = RESULT_TIMEOUT
+    Call WorldStage("种仙豆大厅入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("154_P00") Then
+            EnterPlant = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If WorldMatch("153_大厅一") Or WorldMatch("153_大厅二") Or WorldMatch("153_大厅三") Then
+            If WorldPair("154_入口") Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If Not Sys.AppIsFront(GAME_PACKAGE) Or BusinessExpired() Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("专业版入口60秒出口；现公共契约保留154恢复，不以未知界面标完成")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ConfirmPlantPage()
+    ConfirmPlantPage = RESULT_TIMEOUT
+    Call WorldStage("种仙豆页面确认")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("154_P00") Then
+            Call WorldWait(1000)
+            If BusinessExpired() Then
+                Exit Function
+            End If
+            ConfirmPlantPage = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function RunPlant()
+    Dim started, collectCount, phase
+    RunPlant = RESULT_TIMEOUT
+    Call WorldStage("种仙豆收取与金币升级")
+    started = TickCount()
+    collectCount = 0
+    phase = 0
+    If Not ResetPlantTimer() Then
+        Exit Function
+    End If
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If phase = 0 Then
+            If WorldMatch("154_P00") Then
+                If Not WorldOffset(-23, -70, 1000) Then
+                    Exit Function
+                End If
+                collectCount = collectCount + 1
+            End If
+        ElseIf phase = 1 Then
+            If WorldMatch("154_P01") Then
+                If Not WorldOffset(250, -940, 1500) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("154_P02") Then
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("154_P03") Then
+                Call WorldLog("专业版主界面需要龙石出口；不点击购买")
+                RunPlant = RESULT_OK
+                Exit Function
+            End If
+            If WorldMatch("154_P04") Then
+                Call WorldLog("专业版升级弹层需要龙石出口；不确认购买")
+                RunPlant = RESULT_OK
+                Exit Function
+            End If
+            If WorldMatch("154_P05") Then
+                Call WorldLog("专业版满级出口")
+                RunPlant = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If WorldMatch("154_P06") Then
+            If Not WorldTap(150, 50, 50) Then
+                Exit Function
+            End If
+            If Not ResetPlantTimer() Then
+                Exit Function
+            End If
+            phase = 1
+        End If
+        If collectCount > 5 Then
+            phase = 1
+        End If
+        If TickCount() - started > 20000 Then
+            Call WorldLog("专业版业务20秒阶段出口；不是终态，继续收尾确认")
+            RunPlant = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function FinishPlant()
+    Dim started
+    FinishPlant = RESULT_TIMEOUT
+    Call WorldStage("种仙豆收尾确认")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("154_P06") Then
+            If Not WorldTap(150, 50, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("154_P04") Then
+            If Not WorldOffset(-30, 20, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("154_P00") Or WorldMatch("154_P05") Then
+            Call WorldWait(500)
+            FinishPlant = ConfirmPlantExit("原种仙豆主界面或满级界面确认")
+            Exit Function
+        End If
+        If TickCount() - started > 10000 Then
+            Call WorldLog("专业版收尾10秒失败；保留154恢复，未确认页面不提交")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecutePlant()
+    Dim result
+    ExecutePlant = RESULT_TIMEOUT
+    result = EnterPlant()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = ConfirmPlantPage()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = RunPlant()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecutePlant = FinishPlant()
+End Function

@@ -3,9 +3,9 @@
   "id": "f36a80cf-4e0e-4492-ab30-c8035f412569",
   "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
   "lastSynced": {
-    ".mq": "f5adf9767e075c805436652c99ac8ec4988b375cb47aceabf4225aa53b3350cb",
-    ".uip": "06954c7d0d0a2280d94d4e4ec1966b8b17e4711449c613cb0091207586c8f35a",
+    ".mq": "17a0eef38ce03d74be738405ff1417f232890d73d947f44ff7314a59180fef97",
+    ".uip": "242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f",
     ".prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
   },
-  "validation": "Code-only SHA256 sync; existing settings preserved byte-for-byte; official compilation/device testing pending."
+  "validation": "Task155 and task150 entry swipe direction fixed to professional 500,545 -> 150,545 at 300ms; SHA256 sync; all checkbox defaults false; not official compilation or device execution."
 }

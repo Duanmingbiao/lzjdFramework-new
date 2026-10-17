@@ -72,7 +72,7 @@ class StaminaTests(unittest.TestCase):
   for folder in ['168_领邮件奖励','169_领任务奖励','167_日常签到','166_领月卡龙石','055_好友体力','056_Q友体力']:
    for p in (ROOT/'flows'/folder).glob('*.mq'):self.assertEqual(p.read_bytes(),(E/'before'/p.relative_to(ROOT).with_suffix('.txt')).read_bytes())
  def test_exact_catalog_conversion_append_only(self):
-  before=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('081_','080_','082_','079_','078_','151_','152_','070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(before)],before);self.assertEqual([x['definition'] for x in now[len(before):]],[x['definition'] for x in conv])
+  before=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('150_','155_','154_','153_','081_','080_','082_','079_','078_','151_','152_','070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(before)],before);self.assertEqual([x['definition'] for x in now[len(before):]],[x['definition'] for x in conv])
 
  def test_recovery_after_midnight_keeps_today_next_occurrence(self):
   self.state();self.at(4*3600);day=self.e['StaminaDayStart'](self.stamp);self.e['CommitTimedStamina'](53);self.assertEqual(self.e['stamina53Due'],day+75605)
@@ -100,6 +100,14 @@ class StaminaTests(unittest.TestCase):
     continue
    if rel=='common/运行计时.mq':
     text=(ROOT/rel).read_text('utf-8-sig')
+    advAddition='    If currentTask = 150 Then\n        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(advAddition),1);text=text.replace(advAddition,'')
+    snakeAddition='    If currentTask = 155 Then\n        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(snakeAddition),1);text=text.replace(snakeAddition,'')
+    plantAddition='    If currentTask = 154 Then\n        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(plantAddition),1);text=text.replace(plantAddition,'')
+    senzuAddition='    If currentTask = 153 Then\n        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit\n        Exit Function\n    End If\n'
+    self.assertEqual(text.count(senzuAddition),1);text=text.replace(senzuAddition,'')
     universeAddition='    If currentTask = 79 Then\n        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit\n        Exit Function\n    End If\n'
     self.assertEqual(text.count(universeAddition),1);text=text.replace(universeAddition,'')
     duelAddition='    If currentTask = 81 And duelRunning Then\n        BusinessExpired = DuelWatchdogExpired()\n        Exit Function\n    End If\n'

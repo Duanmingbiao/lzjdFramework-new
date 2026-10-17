@@ -1,0 +1,60 @@
+﻿Sub LoadAdventureSettings()
+    advEnabled = WorldBoolean("Lzdmx")
+    advReward = WorldNumber("Lzdmx许愿", 2, 5)
+End Sub
+Sub NewAdventureSession()
+    advDue = Time()
+    advDone = False
+    advCount = 0
+    advRecoveries = 0
+    advRestarts = 0
+    advPhase = "未开始"
+    advReason = ""
+    advFinishedAt = 0
+End Sub
+Function SelectAdventure()
+    SelectAdventure = 0
+    If advEnabled And Not advDone And Time() >= advDue Then
+        SelectAdventure = 150
+    End If
+End Function
+Sub StartAdventureTask()
+    advReason = ""
+    advFinishedAt = 0
+    Call WorldStage("龙珠大冒险启动")
+    Call WorldLog("原许愿配置索引=" & advReward & "；包含养成升级，不附加新配置")
+End Sub
+Sub RecoverAdventureTask()
+    advReason = ""
+    advFinishedAt = 0
+    advRecoveries = advRecoveries + 1
+    Call WorldLog("保存原任务150；出口或大厅未确认，不改期、不累计完成")
+End Sub
+Sub RestartAdventureTask()
+    advRestarts = advRestarts + 1
+    Call WorldLog("重启原任务150 次数=" & advRestarts)
+End Sub
+Sub CommitAdventureTask()
+    advDue = advFinishedAt + 28800
+    advCount = advCount + 1
+    Call WorldLog("公共大厅确认后提交150；原下次时间+8小时 次数=" & advCount & " 下次Unix=" & advDue & "；不写永久完成")
+End Sub
+Function ResetAdventureTimer()
+    ResetAdventureTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetAdventureTimer = True
+End Function
+Function ConfirmAdventureExit(reason)
+    ConfirmAdventureExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    advReason = reason
+    advFinishedAt = Time()
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；等待公共大厅确认，尚未提交")
+    ConfirmAdventureExit = RESULT_OK
+End Function

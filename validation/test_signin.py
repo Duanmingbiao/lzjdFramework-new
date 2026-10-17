@@ -78,7 +78,7 @@ class SignEvidence(unittest.TestCase):
   source=(ROOT/'common/图色参数.mq').read_text('utf-8-sig')
   for item in converted:
    a=next(x for x in raw['patterns'] if x['name']==item['name']);d=item['definition'];self.assertEqual(d[4:],[a['main'],a['offsets'],1,0.9]);self.assertEqual(d[:4],[0,0,719,1279] if a['region']==[0,0,0,0] else a['region']);self.assertIn(','.join(json.dumps(x,ensure_ascii=False) for x in d)+',foundX,foundY',source)
-  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));new=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in new if not x['name'].startswith(('081_','080_','082_','079_','078_','166_','055_','056_','050_','151_','152_','070_','032_','强敌_','083_','084_','085_'))],old+converted)
+  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));new=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));self.assertEqual([x for x in new if not x['name'].startswith(('150_','155_','154_','153_','081_','080_','082_','079_','078_','166_','055_','056_','050_','151_','152_','070_','032_','强敌_','083_','084_','085_'))],old+converted)
  def test_recovery_monitor_only_accepts_additional_task(self):
   old=(E/'before/common/前台监控.txt').read_text('utf-8-sig');new=before_monthly(ROOT/'common/前台监控.mq').read_text('utf-8-sig');self.assertEqual(new,old.replace('currentTask = 168 Or currentTask = 169','currentTask = 168 Or currentTask = 169 Or currentTask = 167'))
  def test_ui_existing_controls_preserved_and_two_added(self):

@@ -1,0 +1,56 @@
+﻿Sub LoadPlantSettings()
+    plantEnabled = WorldBoolean("日常_种仙豆")
+End Sub
+Sub NewPlantSession()
+    plantDue = WorldDayStart(Time()) + 21600
+    plantDone = False
+    plantCount = 0
+    plantRecoveries = 0
+    plantRestarts = 0
+    plantPhase = "未开始"
+    plantReason = ""
+End Sub
+Function SelectPlant()
+    SelectPlant = 0
+    If plantEnabled And Not plantDone And Time() >= plantDue Then
+        SelectPlant = 154
+    End If
+End Function
+Sub StartPlantTask()
+    plantReason = ""
+    Call WorldStage("种仙豆启动")
+    Call WorldLog("专业版06:00任务；本次执行不新增购买配置")
+End Sub
+Sub RecoverPlantTask()
+    plantReason = ""
+    plantRecoveries = plantRecoveries + 1
+    Call WorldLog("保存原任务154；未确认收尾，不提交完成")
+End Sub
+Sub RestartPlantTask()
+    plantRestarts = plantRestarts + 1
+    Call WorldLog("重启原任务154 次数=" & plantRestarts)
+End Sub
+Sub CommitPlantTask()
+    plantDone = True
+    plantCount = plantCount + 1
+    Call WorldLog("公共大厅确认后提交154 次数=" & plantCount & " 出口=" & plantReason & "；不自行安排一小时或跨日重跑")
+End Sub
+Function ResetPlantTimer()
+    ResetPlantTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    Call WorldLog("专业版任务计时重置")
+    ResetPlantTimer = True
+End Function
+Function ConfirmPlantExit(reason)
+    ConfirmPlantExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    plantReason = reason
+    terminalConfirmed = True
+    Call WorldLog("专业版出口=" & reason & "；尚未提交，等待公共大厅确认")
+    ConfirmPlantExit = RESULT_OK
+End Function

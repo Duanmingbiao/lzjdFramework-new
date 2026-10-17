@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-17T15:28:08",
+  "scope": "source static and mocked actual MQ subset only; not official compilation or device execution",
+  "tests": 911,
+  "failures": 0,
+  "errors": 0,
+  "static": {
+    "scope": "static structure and encoding only; not official MQ compilation",
+    "issues": [],
+    "moduleCount": 65,
+    "pass": true
+  },
+  "assistantSha256": "f5adf9767e075c805436652c99ac8ec4988b375cb47aceabf4225aa53b3350cb",
+  "assistantUnchanged": true,
+  "newTask": 150,
+  "newTests": 33,
+  "patterns": 58,
+  "rawRecognitionCalls": 81,
+  "originalControls": 2,
+  "synced": false,
+  "built": false,
+  "deviceConnected": false,
+  "assistantUiOperated": false,
+  "gitCommitted": false,
+  "sourceFiles": {
+    "app/入口.mq": "05a68ca5cb8ff81929865d679c0a9479d204bc6ec71e6f89aa10f3114a7de604",
+    "common/龙珠大冒险状态.mq": "d4431283d9321b6434ab966b87303adedfe7d48be40f7b2c46ef7010c3e8b651",
+    "flows/150_龙珠大冒险/龙珠大冒险.mq": "bdf27771cb8a1b98b09cfd742d6f732a5f38fd67ab01680b8a975764ed4db147",
+    "ui/最小配置.uip": "7d6f6c366a7f6bc885fc887371650d3ec44943d63661a4d1a7a8705375822857",
+    "project.json": "851d2be2486bdc228318fadb909451c2865039588324f6747c0b47e3872f2699"
+  },
+  "pass": true
+}

@@ -1,0 +1,73 @@
+{
+  "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "projectName": "龙珠激斗",
+  "projectId": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+  "modules": [
+    153,
+    154,
+    155,
+    150
+  ],
+  "checkboxCount": 36,
+  "checkedCount": 0,
+  "checkboxDefaults": {
+    "邮件启用": "false",
+    "任务奖励启用": "false",
+    "日常签到启用": "false",
+    "月卡龙石启用": "false",
+    "保留下载提示": "false",
+    "好友体力启用": "false",
+    "Q友体力启用": "false",
+    "Q友一键领取": "false",
+    "定时体力启用": "false",
+    "体力龙石补领": "false",
+    "体力追回": "false",
+    "体力兑换": "false",
+    "悟空冒险启用": "false",
+    "合作冒险启用": "false",
+    "世界首领启用": "false",
+    "打沙鲁启用": "false",
+    "跨服首领启用": "false",
+    "跨服首领周日停": "false",
+    "红绸军启用": "false",
+    "超战士传说启用": "false",
+    "激战超越极限启用": "false",
+    "那美克星组队战启用": "false",
+    "地球保卫战启用": "false",
+    "日常_悟空送仙豆": "false",
+    "日常_种仙豆": "false",
+    "日常_蛇道": "false",
+    "Lzdmx": "false",
+    "战士集结启用": "false",
+    "战士集结双倍": "false",
+    "战士集结扫荡": "false",
+    "日常_超宇宙战士": "false",
+    "日常_超宇宙战士_胶囊任务": "false",
+    "日常_弗利萨军团": "false",
+    "日常_战士记忆": "false",
+    "日常_强者对决": "false",
+    "设置_重要_闪退": "false"
+  },
+  "hashes": {
+    ".mq": "94b63647b3f02f407f71e94a1de5d3011cbf03992b272e3c97d8585acb89eb2a",
+    ".uip": "242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f",
+    ".prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+  },
+  "nonMqUiPreserved": {
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).lc": "f6f94c1b3be15d7d6124619f148e77351a9ae4f4e2b1205df6a3b363b43d2f60",
+    "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+  },
+  "backup": "D:\\game\\anjian-new\\reports\\同步备份\\四项功能-全不勾选-20261017-153217-736718",
+  "staticCheck": {
+    "scope": "static structure and encoding only; not official MQ compilation",
+    "issues": [],
+    "moduleCount": 65,
+    "pass": true
+  },
+  "allTestsPassedBeforeAndAfterSync": true,
+  "officialCompilationVerified": false,
+  "deviceExecutionVerified": false,
+  "deviceConnected": false,
+  "assistantUiOperated": false,
+  "gitCommitted": false
+}

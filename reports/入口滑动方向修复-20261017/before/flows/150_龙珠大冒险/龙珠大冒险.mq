@@ -1,0 +1,687 @@
+﻿Function EnterAdventure()
+    Dim started, attempts, result
+    EnterAdventure = RESULT_TIMEOUT
+    Call WorldStage("龙珠大冒险大厅入口")
+    started = TickCount()
+    attempts = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("150_P00") Or WorldMatch("150_P01") Then
+            EnterAdventure = RESULT_OK
+            Exit Function
+        ElseIf attempts > 10 Then
+            result = ReturnToHall()
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            attempts = 0
+        Else
+            attempts = attempts + 1
+        End If
+        If WorldMatch("150_P52") Or WorldMatch("150_P53") Or WorldMatch("150_P46") Then
+            If WorldMatch("150_P50") Or WorldMatch("150_P51") Then
+                If Not WorldOffset(-129, -108, 1500) Then
+                    Exit Function
+                End If
+                attempts = 0
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If Not Sys.AppIsFront(GAME_PACKAGE) Or BusinessExpired() Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        Call WorldWait(300)
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("原入口60秒失败；现公共契约保留150恢复，不以未知页面写完成")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteAdventure()
+    Dim result
+    ExecuteAdventure = RESULT_TIMEOUT
+    result = EnterAdventure()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = RunAdventure()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteAdventure = ConfirmAdventureExit("原业务及两段收尾均通过")
+End Function
+
+Function AdventureFindEvent(direction)
+    Dim name
+    name = "150_P12"
+    If direction > 0 Then
+        name = "150_P12D" & CStr(direction)
+    End If
+    AdventureFindEvent = WorldMatch(name)
+End Function
+Function AdventureAnswer()
+    Dim choice, dy
+    AdventureAnswer = RESULT_TIMEOUT
+    choice = Int(Rnd() * 3) + 1
+    dy = 277
+    If choice = 1 Then
+        dy = 33
+    ElseIf choice = 2 Then
+        dy = 156
+    End If
+    If Not WorldOffset(0, dy, 0) Then
+        Exit Function
+    End If
+    If Not ResetAdventureTimer() Then
+        Exit Function
+    End If
+    AdventureAnswer = RESULT_OK
+End Function
+Function AdventureBricks(tenDraw)
+    Dim ax, ay, i, dx, dy
+    AdventureBricks = RESULT_TIMEOUT
+    ax = foundX
+    ay = foundY
+    If Not WorldTap(ax, ay, 4500) Then
+        Exit Function
+    End If
+    For i = 1 To 24
+        dx = 48
+        dy = 372
+        If i = 2 Then
+            dx = 167
+            dy = 292
+        ElseIf i = 3 Then
+            dx = 286
+            dy = 218
+        ElseIf i = 4 Then
+            dx = 417
+            dy = 303
+        ElseIf i = 5 Then
+            dx = 533
+            dy = 384
+        ElseIf i = 6 Then
+            dx = 407
+            dy = 460
+        ElseIf i = 7 Then
+            dx = 535
+            dy = 535
+        ElseIf i = 8 Then
+            dx = 416
+            dy = 610
+        ElseIf i = 9 Then
+            dx = 536
+            dy = 690
+        ElseIf i = 10 Then
+            dx = 410
+            dy = 760
+        ElseIf i = 11 Then
+            dx = 535
+            dy = 836
+        ElseIf i = 12 Then
+            dx = 416
+            dy = 905
+        ElseIf i = 13 Then
+            dx = 300
+            dy = 980
+        ElseIf i = 14 Then
+            dx = 170
+            dy = 910
+        ElseIf i = 15 Then
+            dx = 52
+            dy = 828
+        ElseIf i = 16 Then
+            dx = 167
+            dy = 758
+        ElseIf i = 17 Then
+            dx = 45
+            dy = 673
+        ElseIf i = 18 Then
+            dx = 175
+            dy = 600
+        ElseIf i = 19 Then
+            dx = 45
+            dy = 525
+        ElseIf i = 20 Then
+            dx = 180
+            dy = 450
+        ElseIf i = 21 Then
+            dx = 295
+            dy = 377
+        ElseIf i = 22 Then
+            dx = 300
+            dy = 535
+        ElseIf i = 23 Then
+            dx = 295
+            dy = 685
+        ElseIf i = 24 Then
+            dx = 290
+            dy = 830
+        End If
+        If Not WorldTap(ax + dx, ay + dy, 0) Then
+            Exit Function
+        End If
+        If tenDraw Then
+            If Not WorldTap(ax + dx, ay + dy, 0) Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(40)
+    Next
+    If Not ResetAdventureTimer() Then
+        Exit Function
+    End If
+    AdventureBricks = RESULT_OK
+End Function
+Function AdventureMiniEvents(tenDraw)
+    Dim n
+    AdventureMiniEvents = RESULT_TIMEOUT
+    // Independent source order; these are not mutually exclusive branches.
+    If tenDraw Then
+        If WorldMatch("150_P13") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            advFailures = 0
+        End If
+        If WorldMatch("150_P14") Then
+            If Not WorldTap(510, 780, 5000) Then
+                Exit Function
+            End If
+            advFailures = 0
+        End If
+    Else
+        If WorldMatch("150_P32") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            advFailures = 0
+        End If
+    End If
+    If WorldMatch("150_P15") Then
+        If tenDraw Then
+            If Not WorldTap(165, 800, 1000) Then
+                Exit Function
+            End If
+        Else
+            If Not WorldOffset(0, 0, 5000) Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P16") Then
+        If Not WorldTap(100, 50, 0) Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P17") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P18") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P19") Then
+        If Not WorldOffset(-268, 121, 0) Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P20") Then
+        If tenDraw Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        Else
+            If Not WorldTap(100, 50, 0) Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    n = "150_P33"
+    If tenDraw Then
+        n = "150_P21"
+    End If
+    If WorldMatch(n) Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P22") Then
+        If tenDraw Then
+            If Not WorldTap(150, 50, 0) Then
+                Exit Function
+            End If
+        Else
+            If Not WorldTap(100, 50, 0) Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P23") Then
+        If tenDraw Then
+            If Not WorldTap(150, 50, 0) Then
+                Exit Function
+            End If
+        Else
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P24") Then
+        If tenDraw Then
+            If Not WorldTap(150, 50, 0) Then
+                Exit Function
+            End If
+        Else
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P25") Then
+        If AdventureAnswer() <> RESULT_OK Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P26") Then
+        If AdventureBricks(tenDraw) <> RESULT_OK Then
+            Exit Function
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P27") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        If Not tenDraw Then
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P28") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        If Not tenDraw Then
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If WorldMatch("150_P29") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        If Not tenDraw Then
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        advFailures = 0
+    End If
+    If tenDraw Then
+        n = "150_P31"
+    Else
+        n = "150_P34"
+    End If
+    If WorldMatch("150_P30") Or WorldMatch(n) Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        If Not ResetAdventureTimer() Then
+            Exit Function
+        End If
+        If tenDraw Then
+            advDirection = advDirection + 1
+            If advDirection > 4 Then
+                advDirection = 0
+            End If
+            advFailures = advFailures + 1
+        End If
+    End If
+    AdventureMiniEvents = RESULT_OK
+End Function
+Function AdventureTenEvents()
+    AdventureTenEvents = RESULT_TIMEOUT
+    advFailures = 0
+    Call WorldStage("龙珠大冒险十抽小事件")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("150_P06") Then
+            Exit Do
+        End If
+        If WorldMatch("150_P07") Then
+            If Not WorldTap(150, 50, 0) Then
+                Exit Function
+            End If
+            Exit Do
+        End If
+        If WorldMatch("150_P10") Or WorldMatch("150_P11") Then
+            If AdventureFindEvent(advDirection) Then
+                If Not WorldOffset(0, -150, 0) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If AdventureMiniEvents(True) <> RESULT_OK Then
+            Exit Function
+        End If
+        If WorldMatch("150_P08") Or WorldMatch("150_P09") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            Exit Do
+        End If
+        If advFailures >= 5 Then
+            advCloseTen = True
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    AdventureTenEvents = RESULT_OK
+End Function
+Function AdventureClaimItems()
+    Dim claimed
+    AdventureClaimItems = RESULT_TIMEOUT
+    claimed = False
+    If Not ResetAdventureTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("龙珠大冒险一键领取")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("150_P00") Then
+            If claimed Then
+                Exit Do
+            End If
+            If Not WorldTap(330, 1120, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P40") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P41") Then
+            If claimed Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldOffset(252, -90, 500) Then
+                    Exit Function
+                End If
+                claimed = True
+            End If
+        End If
+        If WorldMatch("150_P42") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            claimed = True
+        End If
+        Delay 20
+    Loop
+    AdventureClaimItems = RESULT_OK
+End Function
+Function AdventureClaimMilestones()
+    Dim claimed
+    AdventureClaimMilestones = RESULT_TIMEOUT
+    claimed = False
+    If Not ResetAdventureTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("龙珠大冒险收尾返回")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("150_P43") Then
+            If claimed Then
+                If Not WorldTap(108, 1211, 500) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldTap(80, 130, 500) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldMatch("150_P44") Then
+            If Not WorldTap(108, 1211, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P45") Or WorldMatch("150_P46") Then
+            Exit Do
+        End If
+        If WorldMatch("150_P47") Then
+            If Not WorldTap(636, 760, 500) Then
+                Exit Function
+            End If
+            claimed = True
+        End If
+        If WorldMatch("150_P48") Then
+            If Not WorldTap(108, 1211, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P49") Then
+            If Not WorldTap(108, 1211, 500) Then
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+    AdventureClaimMilestones = RESULT_OK
+End Function
+Function RunAdventure()
+    Dim mode, wishPending, ballPending, dx, dy
+    RunAdventure = RESULT_TIMEOUT
+    mode = 0
+    wishPending = False
+    ballPending = False
+    advFailures = 0
+    advCloseTen = False
+    advDirection = 0
+    Call WorldStage("龙珠大冒险确认页面")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("150_P00") Or WorldMatch("150_P01") Then
+            Call WorldWait(200)
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    If Not ResetAdventureTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("龙珠大冒险转动与事件")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("150_P02") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            advCloseTen = False
+            mode = 0
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P03") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            wishPending = False
+            advCloseTen = False
+            mode = 1
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P04") Or WorldMatch("150_P05") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            wishPending = False
+            advCloseTen = False
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P06") Then
+            If Not WorldOffset(-129, -108, 0) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P07") Then
+            If Not WorldTap(150, 50, 1000) Then
+                Exit Function
+            End If
+            advCloseTen = False
+        End If
+        If WorldMatch("150_P08") Or WorldMatch("150_P09") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            advCloseTen = False
+        End If
+        If WorldMatch("150_P10") Or WorldMatch("150_P11") Then
+            If advCloseTen Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+            Else
+                If AdventureTenEvents() <> RESULT_OK Then
+                    Exit Function
+                End If
+                Call WorldStage("龙珠大冒险转动与事件")
+            End If
+        End If
+        If mode = 1 Then
+            If AdventureMiniEvents(False) <> RESULT_OK Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P35") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+            advCloseTen = False
+            ballPending = True
+        End If
+        If ballPending Then
+            If WorldMatch("150_P36") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                If Not ResetAdventureTimer() Then
+                    Exit Function
+                End If
+                advCloseTen = False
+            End If
+            If WorldMatch("150_P37") Then
+                If Not WorldTap(485, 1251, 0) Then
+                    Exit Function
+                End If
+                If Not ResetAdventureTimer() Then
+                    Exit Function
+                End If
+                advCloseTen = False
+                ballPending = False
+            End If
+        End If
+        If wishPending Then
+            If WorldMatch("150_P38") Then
+                dx = 0
+                If advReward = 1 Or advReward = 4 Then
+                    dx = 192
+                ElseIf advReward = 2 Or advReward = 5 Then
+                    dx = 382
+                End If
+                dy = 0
+                If advReward >= 3 Then
+                    dy = 300
+                End If
+                If Not WorldOffset(dx, dy, 0) Then
+                    Exit Function
+                End If
+                If Not ResetAdventureTimer() Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldMatch("150_P01") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            wishPending = True
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("150_P39") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+            wishPending = True
+        End If
+        If WorldMatch("150_P40") Then
+            If Not ResetAdventureTimer() Then
+                Exit Function
+            End If
+            Exit Do
+        End If
+        Delay 20
+    Loop
+    If AdventureClaimItems() <> RESULT_OK Then
+        Exit Function
+    End If
+    If AdventureClaimMilestones() <> RESULT_OK Then
+        Exit Function
+    End If
+    RunAdventure = RESULT_OK
+End Function

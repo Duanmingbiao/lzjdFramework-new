@@ -1,0 +1,590 @@
+[
+  {
+    "source": "root.723",
+    "line": 66,
+    "name": "155_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 85,
+    "name": "155_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 198,
+    "name": "155_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 234,
+    "name": "155_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 355,
+    "name": "155_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 394,
+    "name": "155_P03",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 434,
+    "name": "155_P04",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 462,
+    "name": "155_P05",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 561,
+    "name": "155_P06",
+    "autoclick": true
+  },
+  {
+    "source": "root.723",
+    "line": 582,
+    "name": "155_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 608,
+    "name": "155_P07",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 676,
+    "name": "155_P08",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 726,
+    "name": "155_P09",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 776,
+    "name": "155_P10",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 826,
+    "name": "155_P11",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 876,
+    "name": "155_P12",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 926,
+    "name": "155_P13",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 976,
+    "name": "155_P14",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1026,
+    "name": "155_P15",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1076,
+    "name": "155_P16",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1126,
+    "name": "155_P17",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1176,
+    "name": "155_P18",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1226,
+    "name": "155_P19",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1276,
+    "name": "155_P20",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1326,
+    "name": "155_P21",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1376,
+    "name": "155_P22",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1426,
+    "name": "155_P23",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1463,
+    "name": "155_P24",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1499,
+    "name": "155_P25",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1535,
+    "name": "155_P26",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1588,
+    "name": "155_P27",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1616,
+    "name": "155_P28",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1635,
+    "name": "155_P29",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1658,
+    "name": "155_P30",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1682,
+    "name": "155_P31",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1707,
+    "name": "155_P32",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1782,
+    "name": "155_P33",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1814,
+    "name": "155_P34",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1846,
+    "name": "155_P35",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1879,
+    "name": "155_P36",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1908,
+    "name": "155_P37",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1933,
+    "name": "155_P38",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 1991,
+    "name": "155_P39",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2103,
+    "name": "155_P40",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2116,
+    "name": "155_P40",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2156,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2169,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2183,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2196,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2233,
+    "name": "155_P43",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2262,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2275,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2289,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2302,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2362,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2375,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2389,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2402,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2572,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2585,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2599,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2612,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2652,
+    "name": "155_P44",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2728,
+    "name": "155_P45",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2752,
+    "name": "155_P39",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2793,
+    "name": "155_P44",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2859,
+    "name": "155_P33",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2887,
+    "name": "155_P34",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2915,
+    "name": "155_P35",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2947,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2960,
+    "name": "155_P41",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2974,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 2987,
+    "name": "155_P42",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 3021,
+    "name": "155_P46",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 3061,
+    "name": "155_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 3094,
+    "name": "155_P29",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 3117,
+    "name": "155_P30",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 3141,
+    "name": "155_P47",
+    "autoclick": false
+  },
+  {
+    "source": "root.723",
+    "line": 3177,
+    "name": "155_P48",
+    "autoclick": false
+  },
+  {
+    "source": "root.724",
+    "line": 33,
+    "name": "155_P49",
+    "autoclick": false
+  },
+  {
+    "source": "root.724",
+    "line": 69,
+    "name": "155_P50",
+    "autoclick": false
+  },
+  {
+    "source": "root.724",
+    "line": 133,
+    "name": "155_P51",
+    "autoclick": false
+  },
+  {
+    "source": "root.724",
+    "line": 169,
+    "name": "155_P52",
+    "autoclick": false
+  },
+  {
+    "source": "root.724",
+    "line": 205,
+    "name": "155_P53",
+    "autoclick": false
+  },
+  {
+    "source": "root.724",
+    "line": 241,
+    "name": "155_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.725",
+    "line": 17,
+    "name": "155_P54",
+    "autoclick": false
+  },
+  {
+    "source": "root.725",
+    "line": 50,
+    "name": "155_P54",
+    "autoclick": false
+  },
+  {
+    "source": "root.725",
+    "line": 83,
+    "name": "155_P55",
+    "autoclick": false
+  },
+  {
+    "source": "root.725",
+    "line": 101,
+    "name": "155_P56",
+    "autoclick": false
+  },
+  {
+    "source": "root.725",
+    "line": 131,
+    "name": "155_P57",
+    "autoclick": false
+  },
+  {
+    "source": "root.725",
+    "line": 161,
+    "name": "155_P54",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 21,
+    "name": "155_P58",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 34,
+    "name": "155_P59",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 47,
+    "name": "155_P60",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 60,
+    "name": "155_P61",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 73,
+    "name": "155_P62",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 84,
+    "name": "155_P63",
+    "autoclick": false
+  },
+  {
+    "source": "root.787蛇道",
+    "line": 97,
+    "name": "155_P46",
+    "autoclick": false
+  }
+]

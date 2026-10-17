@@ -1,0 +1,241 @@
+﻿Function WorldBoolean(key)
+    Dim raw, text
+    WorldBoolean = False
+    raw = ReadUIConfig(key, False)
+    text = "<null>"
+    If Not IsNull(raw) Then
+        text = LCase(Trim(CStr(raw)))
+        If text = "true" Or text = "1" Then
+            WorldBoolean = True
+        End If
+    End If
+    Call WriteMainLog("[世界首领配置] 键=" & key & " 原始值=" & text)
+End Function
+Function WorldNumber(key, defaultValue, upper)
+    Dim raw, result
+    raw = ReadUIConfig(key, defaultValue)
+    result = defaultValue
+    If IsNumeric(raw) Then
+        If CDbl(raw) >= 0 And CDbl(raw) <= upper Then
+            result = Int(CDbl(raw))
+        End If
+    End If
+    Call WriteMainLog("[世界首领配置] 键=" & key & " 规范值=" & result)
+    WorldNumber = result
+End Function
+Sub LoadWorldBossSettings()
+    worldEnabled = WorldBoolean("世界首领启用")
+    cellEnabled = WorldBoolean("打沙鲁启用")
+    worldKeepDownload = WorldBoolean("保留下载提示")
+    worldBuyConfig = WorldNumber("首领买次数", 0, 4)
+    worldHour = WorldNumber("首领执行时", 10, 23)
+    worldMinute = WorldNumber("首领执行分", 0, 59)
+End Sub
+Function WorldDayStart(stamp)
+    WorldDayStart = Int((stamp + 28800) / 86400) * 86400 - 28800
+End Function
+Function IsWorldBoss(taskId)
+    IsWorldBoss = taskId = 70 Or taskId = 32
+End Function
+Function WorldName(taskId)
+    WorldName = "世界首领70"
+    If taskId = 32 Then
+        WorldName = "世界首领_打沙鲁32"
+    ElseIf taskId = 155 Then
+        WorldName = "蛇道155"
+    ElseIf taskId = 154 Then
+        WorldName = "种仙豆154"
+    ElseIf taskId = 153 Then
+        WorldName = "悟空送仙豆153"
+    ElseIf taskId = 78 Then
+        WorldName = "战士集结78"
+    ElseIf taskId = 79 Then
+        WorldName = "超宇宙战士79"
+    ElseIf taskId = 82 Then
+        WorldName = "战士记忆82"
+    ElseIf taskId = 80 Then
+        WorldName = "弗利萨军团80"
+    ElseIf taskId = 81 Then
+        WorldName = "强者对决81"
+    ElseIf taskId = 83 Then
+        WorldName = "跨服世界首领83"
+    ElseIf taskId = 71 Then
+        WorldName = "地球保卫战71"
+    ElseIf taskId = 88 Then
+        WorldName = "那美克星组队战88"
+    ElseIf taskId = 86 Then
+        WorldName = "超战士传说86"
+    ElseIf taskId = 87 Then
+        WorldName = "激战超越极限87"
+    ElseIf IsRedArmy(taskId) Then
+        WorldName = RedArmyName(taskId)
+    End If
+End Function
+Sub WorldLog(message)
+    Call Note("[" & WorldName(currentTask) & "] " & message)
+End Sub
+Sub WorldStage(value)
+    If currentTask = 155 Then
+        snakePhase = value
+    ElseIf currentTask = 154 Then
+        plantPhase = value
+    ElseIf currentTask = 153 Then
+        senzuPhase = value
+    ElseIf currentTask = 78 Then
+        gatherPhase = value
+    ElseIf currentTask = 79 Then
+        universePhase = value
+    ElseIf currentTask = 82 Then
+        memoryPhase = value
+    ElseIf currentTask = 80 Then
+        friezaPhase = value
+    ElseIf currentTask = 81 Then
+        duelPhase = value
+    ElseIf currentTask = 71 Then
+        earthPhase = value
+    ElseIf currentTask = 88 Then
+        namekPhase = value
+    ElseIf currentTask = 86 Then
+        legendPhase = value
+    ElseIf currentTask = 87 Then
+        beyondPhase = value
+    ElseIf currentTask = 32 Then
+        cellPhase = value
+    ElseIf currentTask = 83 Then
+        crossPhase = value
+    ElseIf IsRedArmy(currentTask) Then
+        Call SetRedArmyPhase(value)
+    Else
+        worldPhase = value
+    End If
+    worldLastMatch = ""
+    Call SetStage(value)
+    Call WorldLog("当前阶段=" & value)
+End Sub
+Sub NewWorldBossSession()
+    worldFinishedAt = 0
+    cellFinishedAt = 0
+    worldDue = WorldDayStart(Time()) + worldHour * 3600 + worldMinute * 60
+    cellDue = WorldDayStart(Time()) + 75600
+    worldBuyRuntime = worldBuyConfig
+    worldLastMatch = ""
+    worldLastOcr = ""
+    worldTerminalReason = ""
+    worldDone = False
+    worldFailed = False
+    worldCount = 0
+    worldFailures = 0
+    worldRestarts = 0
+    worldRecoveries = 0
+    worldPhase = "未开始"
+    worldTerminal = False
+    cellDone = False
+    cellFailed = False
+    cellCount = 0
+    cellFailures = 0
+    cellRestarts = 0
+    cellRecoveries = 0
+    cellPhase = "未开始"
+    cellTerminal = False
+End Sub
+Function SelectWorldBoss()
+    Dim nowStamp, dayStart
+    SelectWorldBoss = 0
+    nowStamp = Time()
+    dayStart = WorldDayStart(nowStamp)
+    If worldDue < dayStart Then
+        worldDue = dayStart + worldHour * 3600 + worldMinute * 60
+    End If
+    If worldEnabled And nowStamp >= worldDue Then
+        If nowStamp >= dayStart + 82800 Then
+            worldDue = dayStart + 86400 + worldHour * 3600 + worldMinute * 60
+            Call Note("[世界首领70] 已过23点窗口，不提交；下一次执行时间Unix=" & worldDue)
+        Else
+            SelectWorldBoss = 70
+            Exit Function
+        End If
+    End If
+    If cellEnabled And nowStamp >= cellDue Then
+        If nowStamp >= dayStart + 82800 Then
+            cellDue = dayStart + 86400 + 75600
+            Call Note("[打沙鲁32] 已过23点窗口，不提交；下一次执行时间Unix=" & cellDue)
+        ElseIf nowStamp >= dayStart + 75600 Then
+            SelectWorldBoss = 32
+        Else
+            cellDue = dayStart + 75600
+        End If
+    End If
+End Function
+Sub StartWorldBossTask(taskId)
+    worldLastMatch = ""
+    worldLastOcr = ""
+    worldTerminalReason = ""
+    If taskId = 32 Then
+        cellFinishedAt = 0
+        cellTerminal = False
+        cellDone = False
+        cellFailed = False
+        Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & cellRestarts & " 恢复次数=" & cellRecoveries)
+    Else
+        worldFinishedAt = 0
+        worldTerminal = False
+        worldDone = False
+        worldFailed = False
+        Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & worldRestarts & " 恢复次数=" & worldRecoveries & " 本会话剩余购买设置=" & worldBuyRuntime)
+    End If
+End Sub
+Sub RecoverWorldBossTask(taskId)
+    If taskId = 32 Then
+        cellTerminal = False
+        cellFailed = True
+        cellFailures = cellFailures + 1
+        cellRecoveries = cellRecoveries + 1
+        Call WorldLog("保存恢复原任务=32 阶段=" & cellPhase & " 失败次数=" & cellFailures & " 恢复次数=" & cellRecoveries & " 是否提交完成=否")
+    Else
+        worldTerminal = False
+        worldFailed = True
+        worldFailures = worldFailures + 1
+        worldRecoveries = worldRecoveries + 1
+        Call WorldLog("保存恢复原任务=70 阶段=" & worldPhase & " 失败次数=" & worldFailures & " 恢复次数=" & worldRecoveries & " 是否提交完成=否")
+    End If
+End Sub
+Sub RestartWorldBossTask(taskId)
+    If taskId = 32 Then
+        cellRestarts = cellRestarts + 1
+        Call WorldLog("重启次数=" & cellRestarts & " 恢复次数=" & cellRecoveries)
+    Else
+        worldRestarts = worldRestarts + 1
+        Call WorldLog("重启次数=" & worldRestarts & " 恢复次数=" & worldRecoveries)
+    End If
+End Sub
+Sub CommitWorldBossTask(taskId)
+    Dim dayStart, minute, finishedAt
+    finishedAt = Time()
+    If taskId = 70 And worldFinishedAt > 0 Then
+        finishedAt = worldFinishedAt
+    ElseIf taskId = 32 And cellFinishedAt > 0 Then
+        finishedAt = cellFinishedAt
+    End If
+    dayStart = WorldDayStart(finishedAt)
+    If taskId = 32 Then
+        cellDone = True
+        cellFailed = False
+        cellCount = cellCount + 1
+        cellDue = dayStart + 86400 + 75600
+        cellPhase = "本日已完成"
+        Call WorldLog("是否提交完成=是 次数=" & cellCount & " 下一次执行时间Unix=" & cellDue & " 重启次数=" & cellRestarts & " 恢复次数=" & cellRecoveries)
+    Else
+        worldDone = True
+        worldFailed = False
+        worldCount = worldCount + 1
+        If finishedAt < dayStart + 75600 Then
+            minute = Int(Rnd() * 50) + 1
+            worldDue = dayStart + 75600 + minute * 60
+            worldPhase = "本轮完成，等待夜间再次"
+        Else
+            worldDue = dayStart + 86400 + worldHour * 3600 + worldMinute * 60
+            worldPhase = "本日已完成"
+        End If
+        Call WorldLog("是否提交完成=是 次数=" & worldCount & " 下一次执行时间Unix=" & worldDue & " 重启次数=" & worldRestarts & " 恢复次数=" & worldRecoveries)
+    End If
+End Sub

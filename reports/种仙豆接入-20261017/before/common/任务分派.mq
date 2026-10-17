@@ -1,0 +1,75 @@
+﻿Function DispatchTask(taskId)
+    Call Note("[流程] 入口 DispatchTask")
+    DispatchTask = RESULT_FAIL
+    If taskId = 153 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteSenzu()
+    ElseIf taskId = 81 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteDuel()
+    ElseIf taskId = 80 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteFrieza()
+    ElseIf taskId = 82 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMemory()
+    ElseIf taskId = 79 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteUniverse()
+    ElseIf taskId = 78 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteGather()
+    ElseIf taskId = 71 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteEarth()
+    ElseIf taskId = 88 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteNamek()
+    ElseIf taskId = 87 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteBeyond()
+    ElseIf taskId = 86 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteLegend()
+    ElseIf IsRedArmy(taskId) Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteRedArmy(taskId)
+    ElseIf taskId = 83 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteCrossBoss()
+    ElseIf taskId = 70 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteWorldBoss()
+    ElseIf taskId = 32 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteCellBoss()
+    ElseIf taskId = 152 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteCoopAdventure()
+    ElseIf taskId = 151 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteWukongAdventure()
+    ElseIf IsTimedStamina(taskId) Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteTimedStamina(taskId)
+    ElseIf taskId = 56 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteQQFriendStamina()
+    ElseIf taskId = 55 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteFriendEnergy()
+    ElseIf taskId = 166 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMonthlyStones()
+    ElseIf taskId = 167 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteDailySign()
+    ElseIf taskId = 168 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteMail()
+    ElseIf taskId = 169 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteTaskRewards()
+    End If
+    Call Note("[流程] 出口 DispatchTask 到达函数末尾（不代表任务已提交）")
+End Function

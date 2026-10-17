@@ -43,6 +43,10 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    Call LoadAdventureSettings()
+    Call LoadSnakeSettings()
+    Call LoadPlantSettings()
+    Call LoadSenzuSettings()
     Call LoadUniverseSettings()
     Call LoadMemorySettings()
     Call LoadFriezaSettings()

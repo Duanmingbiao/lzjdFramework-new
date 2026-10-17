@@ -1,0 +1,33 @@
+{
+  "checkedAt": "2026-10-17T15:21:43",
+  "scope": "source static and mocked actual MQ subset only; not official compilation or device execution",
+  "tests": 878,
+  "failures": 0,
+  "errors": 0,
+  "static": {
+    "scope": "static structure and encoding only; not official MQ compilation",
+    "issues": [],
+    "moduleCount": 63,
+    "pass": true
+  },
+  "assistantSha256": "f5adf9767e075c805436652c99ac8ec4988b375cb47aceabf4225aa53b3350cb",
+  "assistantUnchanged": true,
+  "newTask": 155,
+  "newTests": 47,
+  "patterns": 64,
+  "rawRecognitionCalls": 98,
+  "originalControls": 13,
+  "synced": false,
+  "built": false,
+  "deviceConnected": false,
+  "assistantUiOperated": false,
+  "gitCommitted": false,
+  "sourceFiles": {
+    "app/入口.mq": "b35da37402950507e93b30140e51314bd96b1fc590f32f4ef24bdcf8922955de",
+    "common/蛇道状态.mq": "c937e0828eced78cbdd850c09957e630287ef9a6e786db6544a8f0e225f15ecd",
+    "flows/155_蛇道/蛇道.mq": "2eaf28551034ec7ec65f14ee4bff72cc42af68721106558407fc1ed940bdaa6b",
+    "ui/最小配置.uip": "b0668f76a7625dae999fefdecc1cb5989f7db3cfeb1f41145dd3b204755d09a3",
+    "project.json": "7b4816b8aa2effbb2fcb5493f901e6dbf82b50f26920f30dcb3918c0298cd063"
+  },
+  "pass": true
+}

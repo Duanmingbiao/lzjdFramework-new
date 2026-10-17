@@ -1,0 +1,139 @@
+﻿// User-defined foreground policy. This thread only samples and reports.
+// Peterson two-party gate: exactly one main thread and one monitor thread.
+// Shared reads/writes use the engine store; never call the iOS-only lock APIs.
+Sub EnterMainForegroundGate()
+    Call Thread.SetShareVar("fg.gate.main", True)
+    Call Thread.SetShareVar("fg.gate.turn", "monitor")
+    Do While Thread.GetShareVar("fg.gate.monitor") And Thread.GetShareVar("fg.gate.turn") = "monitor"
+        Delay 1
+    Loop
+End Sub
+Sub LeaveMainForegroundGate()
+    Call Thread.SetShareVar("fg.gate.main", False)
+End Sub
+Sub EnterMonitorForegroundGate()
+    Call Thread.SetShareVar("fg.gate.monitor", True)
+    Call Thread.SetShareVar("fg.gate.turn", "main")
+    Do While Thread.GetShareVar("fg.gate.main") And Thread.GetShareVar("fg.gate.turn") = "main"
+        Delay 1
+    Loop
+End Sub
+Sub LeaveMonitorForegroundGate()
+    Call Thread.SetShareVar("fg.gate.monitor", False)
+End Sub
+Sub InitForegroundMonitor()
+    Call Thread.SetShareVar("fg.gate.main", False)
+    Call Thread.SetShareVar("fg.gate.monitor", False)
+    Call Thread.SetShareVar("fg.gate.turn", "main")
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.since", 0)
+    Call Thread.SetShareVar("fg.last", "<未采样>")
+    Call Thread.SetShareVar("fg.reason", "")
+    Call Thread.SetShareVar("fg.ready", False)
+    foregroundLoginPending = False
+End Sub
+Sub ForegroundLog(message)
+    Call WriteForegroundLog("[龙珠激斗脚本][前台监控] " & message)
+End Sub
+Sub SampleForeground(gamePackage, qqPackage)
+    Dim package, nowAt, recovering, outside, startupProbe
+    startupProbe = Not Thread.GetShareVar("fg.ready")
+    // Lock only this short sample; never hold across waits or game lifecycle calls.
+    If startupProbe Then
+        Call ForegroundLog("线程互斥R3：首次采样进入共享互斥前")
+    End If
+    Call EnterMonitorForegroundGate()
+    If startupProbe Then
+        Call ForegroundLog("线程互斥R3：已进入共享互斥，读取前台前")
+    End If
+    package = Sys.GetFront()
+    If startupProbe Then
+        Call ForegroundLog("线程启动R2：首次前台读取完成")
+    End If
+    nowAt = TickCount()
+    If package <> Thread.GetShareVar("fg.last") Then
+        Call Thread.SetShareVar("fg.last", package)
+        Call ForegroundLog("前台包名=" & package)
+    End If
+    recovering = Thread.GetShareVar("fg.recovering")
+    outside = Thread.GetShareVar("fg.outside")
+    If recovering Then
+        Call Thread.SetShareVar("fg.outside", False)
+    ElseIf Not Thread.GetShareVar("fg.request") Then
+        If package = gamePackage Or package = qqPackage Or package = "com.tencent.mobileqq:openSdk" Then
+            If outside Then
+                Call ForegroundLog("回到允许前台，取消5秒倒计时")
+            End If
+            Call Thread.SetShareVar("fg.outside", False)
+        ElseIf Not outside Then
+            Call Thread.SetShareVar("fg.outside", True)
+            Call Thread.SetShareVar("fg.since", nowAt)
+            Call ForegroundLog("离开允许前台，开始5秒倒计时")
+        ElseIf nowAt - Thread.GetShareVar("fg.since") >= 5000 Then
+            Call Thread.SetShareVar("fg.reason", package)
+            Call Thread.SetShareVar("fg.request", True)
+            Call ForegroundLog("连续离开5秒，上报前台离开")
+        End If
+    End If
+    Call LeaveMonitorForegroundGate()
+End Sub
+Sub ForegroundMonitor()
+    // No cross-thread argument capture; initialize immutable package names locally.
+    Dim monitorGame, monitorQQ
+    Call ForegroundLog("线程启动R2：已进入监控线程")
+    monitorGame = "com.tencent.tmgp.dragonball"
+    monitorQQ = "com.tencent.mobileqq"
+    Call SampleForeground(monitorGame, monitorQQ)
+    Call ForegroundLog("线程启动R2：首次采样完成")
+    Call Thread.SetShareVar("fg.ready", True)
+    Do
+        Call SampleForeground(monitorGame, monitorQQ)
+        Delay 200
+    Loop
+End Sub
+Function ForegroundInterrupted()
+    Call EnterMainForegroundGate()
+    ForegroundInterrupted = Thread.GetShareVar("fg.request")
+    Call LeaveMainForegroundGate()
+End Function
+Sub BeginForegroundRecovery()
+    Call EnterMainForegroundGate()
+    Call Thread.SetShareVar("fg.recovering", True)
+    Call Thread.SetShareVar("fg.request", False)
+    Call Thread.SetShareVar("fg.outside", False)
+    Call LeaveMainForegroundGate()
+End Sub
+Sub EndForegroundRecovery()
+    Call EnterMainForegroundGate()
+    Call Thread.SetShareVar("fg.outside", False)
+    Call Thread.SetShareVar("fg.recovering", False)
+    Call LeaveMainForegroundGate()
+End Sub
+Function BeginForegroundCommit()
+    Dim accepted
+    // Serialize the report/commit boundary; no completion can consume a pending report.
+    Call EnterMainForegroundGate()
+    accepted = Not Thread.GetShareVar("fg.request")
+    BeginForegroundCommit = accepted
+    If Not accepted Then
+        Call LeaveMainForegroundGate()
+    End If
+End Function
+Sub EndForegroundCommit()
+    Call LeaveMainForegroundGate()
+End Sub
+Function HandleForegroundRecovery()
+    HandleForegroundRecovery = False
+    If Not ForegroundInterrupted() Then
+        Exit Function
+    End If
+    Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
+    If currentTask = 153 Or currentTask = 81 Or currentTask = 80 Or currentTask = 82 Or currentTask = 79 Or currentTask = 78 Or currentTask = 71 Or currentTask = 86 Or currentTask = 87 Or currentTask = 88 Or currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Or currentTask = 151 Or currentTask = 152 Or IsWorldBoss(currentTask) Or currentTask = 83 Or IsRedArmy(currentTask) Then
+        Call SaveRecovery()
+    End If
+    terminalConfirmed = False
+    Call RestartGame()
+    HandleForegroundRecovery = True
+End Function

@@ -1,4 +1,4 @@
-﻿"""Execute only the actual MQ control-flow subset under mocked APIs. Not an MQ compiler."""
+"""Execute only the actual MQ control-flow subset under mocked APIs. Not an MQ compiler."""
 import re
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
@@ -8,6 +8,10 @@ def expression(s):
  return s
 
 def load(paths, env):
+ for key,value in {'advEnabled':False,'NewAdventureSession':lambda:None,'LoadAdventureSettings':lambda:None,'SelectAdventure':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'snakeEnabled':False,'NewSnakeSession':lambda:None,'LoadSnakeSettings':lambda:None,'SelectSnake':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'plantEnabled':False,'NewPlantSession':lambda:None,'LoadPlantSettings':lambda:None,'SelectPlant':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'senzuEnabled':False,'NewSenzuSession':lambda:None,'LoadSenzuSettings':lambda:None,'SelectSenzu':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'duelEnabled':False,'duelRunning':False,'duelTimedOut':False,'duelRestartOnTimeout':True,'NewDuelSession':lambda:None,'LoadDuelSettings':lambda:None,'SelectDuel':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'friezaEnabled':False,'friezaRunning':False,'friezaTimedOut':False,'friezaRestartOnTimeout':True,'NewFriezaSession':lambda:None,'LoadFriezaSettings':lambda:None,'SelectFrieza':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'memoryEnabled':False,'memoryUncompleted':False,'NewMemorySession':lambda:None,'LoadMemorySettings':lambda:None,'SelectMemory':lambda:0}.items():env.setdefault(key,value)

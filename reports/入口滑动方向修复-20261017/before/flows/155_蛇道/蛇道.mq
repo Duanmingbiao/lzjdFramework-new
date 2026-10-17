@@ -1,0 +1,719 @@
+﻿Function SnakeSwipe(x1, y1, x2, y2, duration, waitMs)
+    SnakeSwipe = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe x1, y1, x2, y2, duration
+    Call WorldWait(waitMs)
+    SnakeSwipe = Not BusinessExpired()
+End Function
+Function EnterSnake()
+    Dim started, result, hallAt
+    EnterSnake = RESULT_TIMEOUT
+    Call WorldStage("蛇道大厅入口")
+    started = TickCount()
+    hallAt = started
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("155_P63") Or WorldMatch("155_P46") Then
+            EnterSnake = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("155_P60") Or WorldMatch("155_P61") Or WorldMatch("155_P62") Then
+            If WorldMatch("155_P58") Or WorldMatch("155_P59") Then
+                If Not WorldOffset(0, 0, 200) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If Not SnakeSwipe(150, 545, 500, 545, 300, 0) Then
+                    Exit Function
+                End If
+            End If
+            hallAt = TickCount()
+        End If
+        If TickCount() - hallAt > 4000 Then
+            result = ReturnToHall()
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("专业版入口60秒出口；公共契约保留155恢复，不将未知页面记完成")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function SnakeHireTextHit()
+    Dim text
+    SnakeHireTextHit = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    // Approved 3.8 substitute: same rectangle/keywords, not the same OCR engine.
+    text = WorldText(82, 545, 648, 637)
+    If IsNull(text) Then
+        Exit Function
+    End If
+    If Len(Trim(CStr(text))) = 0 Then
+        Exit Function
+    End If
+    SnakeHireTextHit = InStr(1, CStr(text), "雇佣") > 0 Or InStr(1, CStr(text), "该战士") > 0
+End Function
+Function SnakeHireScroll(fullPage)
+    SnakeHireScroll = False
+    If Not SnakeSwipe(358, 991, 358, 491, 400, 0) Then
+        Exit Function
+    End If
+    If Not SnakeSwipe(259, 655, 254, 654, 200, 1000) Then
+        Exit Function
+    End If
+    If fullPage Then
+        If Not SnakeSwipe(358, 991, 358, 741, 400, 0) Then
+            Exit Function
+        End If
+        If Not SnakeSwipe(259, 655, 254, 654, 200, 500) Then
+            Exit Function
+        End If
+    End If
+    SnakeHireScroll = True
+End Function
+Function HireSnakeWarrior()
+    Dim started, pages, dx, dy, remainder, phase, clicks, ax, ay
+    HireSnakeWarrior = RESULT_TIMEOUT
+    If snakeHireRow = 0 Then
+        HireSnakeWarrior = RESULT_OK
+        Exit Function
+    End If
+    Call WorldStage("蛇道雇佣战士")
+    pages = Int((snakeHireRow - 1) / 3)
+    remainder = snakeHireRow - Int(snakeHireRow / 3) * 3
+    dy = -285
+    If remainder = 1 Then
+        dy = -791
+    ElseIf remainder = 2 Then
+        dy = -539
+    End If
+    dx = 44
+    If snakeHireColumn = 1 Then
+        dx = 249
+    ElseIf snakeHireColumn = 2 Then
+        dx = 450
+    End If
+    phase = 0
+    clicks = 0
+    started = TickCount()
+    Do While TickCount() - started < 90000
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If phase = 0 Then
+            If WorldMatch("155_P00") Then
+                If Not WorldOffset(405, -100, 1000) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("155_P02") Then
+                ax = foundX
+                ay = foundY
+                Call WorldWait(500)
+                If pages > 0 Then
+                    If Not SnakeHireScroll(True) Then
+                        Exit Function
+                    End If
+                    pages = pages - 1
+                Else
+                    If Not WorldTap(ax + dx, ay + dy, 200) Then
+                        Exit Function
+                    End If
+                    If Not WorldTap(ax + dx, ay + dy, 300) Then
+                        Exit Function
+                    End If
+                    clicks = clicks + 1
+                End If
+                If clicks >= 3 Then
+                    phase = 1
+                End If
+            End If
+        Else
+            If WorldMatch("155_P02") Then
+                If Not SnakeHireScroll(False) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("155_P03") Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldMatch("155_P04") Then
+            Exit Do
+        End If
+        Call WorldWait(50)
+        If WorldMatch("155_P05") Then
+            If SnakeHireTextHit() Then
+                If Not WorldTap(517, 758, 200) Then
+                    Exit Function
+                End If
+                If Not WorldTap(517, 758, 500) Then
+                    Exit Function
+                End If
+            End If
+            Exit Do
+        End If
+    Loop
+    If Not BusinessExpired() Then
+        HireSnakeWarrior = RESULT_OK
+    End If
+End Function
+Function SweepSnake()
+    Dim started, ax, ay
+    SweepSnake = False
+    Call WorldStage("蛇道扫荡")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("155_P49") Then
+            If Not WorldOffset(252, -347, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("155_P50") Then
+            ax = foundX
+            ay = foundY
+            If Not WorldTap(ax + 26, ay + 316, 300) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax - 177, ay + 638, 300) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax - 174, ay + 860, 1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("155_P51") Then
+            If Not WorldOffset(-174, 860, 50) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("155_P52") Then
+            If Not WorldOffset(-174, 860, 50) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("155_P53") Then
+            If Not WorldOffset(-35, 531, 50) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("155_P00") Then
+            SweepSnake = True
+            Exit Function
+        End If
+        If TickCount() - started > 30000 Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function SnakeBattleVisible()
+    SnakeBattleVisible = False
+    If WorldMatch("155_P54") Then
+        SnakeBattleVisible = WorldOffset(-310, 93, 50)
+    End If
+End Function
+Function SnakeAutoTriple()
+    SnakeAutoTriple = False
+    If WorldMatch("155_P55") Then
+        SnakeAutoTriple = True
+    ElseIf WorldMatch("155_P56") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("155_P57") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("155_P54") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function SnakeReady()
+    SnakeReady = False
+    If snakeAnimation = 0 Then
+        SnakeReady = WorldMatch("155_P41")
+    Else
+        SnakeReady = WorldMatch("155_P42")
+    End If
+End Function
+Function SnakeFormation()
+    Dim ax, ay, sx, sy, tx, ty
+    SnakeFormation = False
+    // Never reuse a failed recognition's coordinates.
+    If Not SnakeReady() Then
+        Exit Function
+    End If
+    ax = foundX
+    ay = foundY
+    If snakeHireSlot <> 6 Then
+        sx = 70 + (snakeHireSlot - Int(snakeHireSlot / 3) * 3) * 180
+        sy = -620
+        If snakeHireSlot >= 3 Then
+            sy = -415
+        End If
+        tx = 250
+        ty = -120
+        If snakeHireSlot = 0 Then
+            tx = 450
+            ty = -180
+        End If
+        If Not SnakeSwipe(ax + sx, ay + sy, ax + tx, ay + ty, 100, 500) Then
+            Exit Function
+        End If
+        If Not WorldTap(ax - 31, ay - 101, 500) Then
+            Exit Function
+        End If
+    End If
+    SnakeFormation = True
+End Function
+Function StartSnakeBattle()
+    Dim misses, seen, started, formed
+    StartSnakeBattle = RESULT_TIMEOUT
+    Call WorldStage("蛇道出战确认")
+    misses = 0
+    seen = False
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("155_P43") Then
+            seen = True
+        Else
+            misses = misses + 1
+            Call WorldWait(500)
+        End If
+        If seen Then
+            If SnakeReady() Then
+                If Not WorldTap(398, 982, 0) Then
+                    Exit Function
+                End If
+                snakeActionAt = TickCount()
+                Call WorldWait(500)
+                Exit Do
+            End If
+        End If
+        If misses > 4 Then
+            Exit Do
+        End If
+    Loop
+    formed = False
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not formed Then
+            formed = SnakeFormation()
+        Else
+            If SnakeReady() Then
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                snakeStarts = snakeStarts + 1
+                snakeActionAt = TickCount()
+            End If
+            If WorldMatch("155_P44") Then
+                If Not WorldTap(560, 760, 500) Then
+                    Exit Function
+                End If
+                started = TickCount()
+            End If
+            If SnakeBattleVisible() Then
+                snakeStarts = 0
+                StartSnakeBattle = RESULT_OK
+                Exit Function
+            End If
+            Call WorldWait(500)
+            If WorldMatch("155_P45") Or WorldMatch("155_P39") Then
+                snakeStarts = 0
+                StartSnakeBattle = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If TickCount() - started > 15000 Or snakeStarts > 5 Then
+            StartSnakeBattle = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function SnakeChooseDifficulty()
+    Dim difficulty
+    SnakeChooseDifficulty = True
+    If WorldMatch("155_P32") Then
+        difficulty = SnakeDifficulty(snakeFloor)
+        If difficulty = 0 Then
+            SnakeChooseDifficulty = WorldOffset(240, -820, 0)
+        ElseIf difficulty = 1 Then
+            SnakeChooseDifficulty = WorldOffset(240, -528, 0)
+        Else
+            SnakeChooseDifficulty = WorldOffset(240, -225, 0)
+        End If
+    End If
+    If WorldMatch("155_P33") Then
+        SnakeChooseDifficulty = WorldOffset(240, -820, 0)
+    ElseIf WorldMatch("155_P34") Then
+        SnakeChooseDifficulty = WorldOffset(240, -528, 0)
+    ElseIf WorldMatch("155_P35") Then
+        SnakeChooseDifficulty = WorldOffset(240, -225, 0)
+    End If
+End Function
+Function SnakeProgressClick(dx, dy)
+    SnakeProgressClick = False
+    If Not WorldOffset(dx, dy, 0) Then
+        Exit Function
+    End If
+    If Not ResetSnakeTimer() Then
+        Exit Function
+    End If
+    snakeActionAt = TickCount()
+    SnakeProgressClick = True
+End Function
+Function SnakeMapStep()
+    Dim swept, ax, ay
+    SnakeMapStep = RESULT_OK
+    If WorldMatch("155_P07") Then
+        swept = SweepSnake()
+        If BusinessExpired() Then
+            SnakeMapStep = RESULT_TIMEOUT
+            Exit Function
+        End If
+        If swept And snakeMode <> 1 Then
+            SnakeMapStep = 5
+        End If
+        snakeActionAt = TickCount()
+        Exit Function
+    End If
+    If WorldMatch("155_P08") Then
+        snakeFloor = 1
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P09") Then
+        snakeFloor = 2
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P10") Then
+        snakeFloor = 3
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P11") Then
+        snakeFloor = 4
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P12") Then
+        snakeFloor = 5
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P13") Then
+        snakeFloor = 6
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P14") Then
+        snakeFloor = 7
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P15") Then
+        snakeFloor = 8
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P16") Then
+        snakeFloor = 9
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P17") Then
+        snakeFloor = 10
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P18") Then
+        snakeFloor = 11
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P19") Then
+        snakeFloor = 12
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P20") Then
+        snakeFloor = 13
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P21") Then
+        snakeFloor = 14
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P22") Then
+        snakeFloor = 15
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P23") Then
+        If Not SnakeProgressClick(0, -30) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    ElseIf WorldMatch("155_P24") Or WorldMatch("155_P25") Then
+        If Not SnakeProgressClick(0, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+        Exit Function
+    End If
+    If WorldMatch("155_P26") Then
+        ax = foundX
+        ay = foundY
+        If Not WorldTap(ax + 379, ay - 375, 1000) Then
+            SnakeMapStep = RESULT_TIMEOUT
+            Exit Function
+        End If
+        If Not WorldTap(ax + 481, ay - 809, 1000) Then
+            SnakeMapStep = RESULT_TIMEOUT
+            Exit Function
+        End If
+        If Not WorldTap(ax, ay, 0) Then
+            SnakeMapStep = RESULT_TIMEOUT
+        End If
+    End If
+End Function
+Function FinishSnake(retryLater)
+    Dim started, count
+    FinishSnake = RESULT_TIMEOUT
+    Call WorldStage("蛇道挑战后返回")
+    started = TickCount()
+    count = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("155_P33") Then
+            Call WorldOffset(0, 0, 1500)
+        End If
+        If WorldMatch("155_P34") Then
+            Call WorldOffset(0, 0, 1500)
+        End If
+        If WorldMatch("155_P35") Then
+            Call WorldOffset(0, 0, 1500)
+        End If
+        If SnakeReady() Then
+            Call WorldOffset(0, 0, 1500)
+        End If
+        If WorldMatch("155_P46") Then
+            Call WorldOffset(0, 0, 500)
+        End If
+        If WorldMatch("155_P00") Then
+            Call WorldOffset(465, -979, 500)
+            count = count + 1
+        End If
+        If WorldMatch("155_P29") Then
+            Call WorldTap(210, 65, 0)
+        End If
+        If WorldMatch("155_P30") Then
+            Call WorldTap(210, foundY - 453, 0)
+        End If
+        If WorldMatch("155_P47") Then
+            Call WorldOffset(250, -146, 500)
+            started = TickCount()
+        End If
+        If WorldMatch("155_P48") Then
+            If Not WorldOffset(250, -171, 500) Then
+                Exit Function
+            End If
+            Exit Do
+        End If
+        If count > 10 Or TickCount() - started > 20000 Then
+            Exit Do
+        End If
+    Loop
+    Call WorldWait(500)
+    FinishSnake = ConfirmSnakeExit("原挑战收尾出口", retryLater)
+End Function
+Function RunSnake()
+    Dim result
+    RunSnake = RESULT_TIMEOUT
+    Call WorldStage("蛇道逐关挑战")
+    snakeActionAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        result = SnakeMapStep()
+        If result = RESULT_TIMEOUT Then
+            Exit Function
+        End If
+        If result = 5 Then
+            RunSnake = ConfirmSnakeExit("扫荡返回蛇道且非强打模式", False)
+            Exit Function
+        End If
+        Call WorldStage("蛇道逐关挑战")
+        If WorldMatch("155_P27") Then
+            Call WorldOffset(0, 0, 1000)
+        End If
+        If WorldMatch("155_P28") Then
+            Exit Do
+        End If
+        If WorldMatch("155_P29") Then
+            Call WorldTap(210, 65, 0)
+        End If
+        If WorldMatch("155_P30") Then
+            Call WorldTap(210, foundY - 453, 0)
+        End If
+        If WorldMatch("155_P31") Then
+            Call WorldOffset(250, -171, 0)
+        End If
+        If Not SnakeChooseDifficulty() Then
+            Exit Function
+        End If
+        If WorldMatch("155_P36") Then
+            Call WorldOffset(0, 0, 0)
+        End If
+        If WorldMatch("155_P37") Then
+            Call WorldOffset(551, -911, 0)
+        End If
+        If WorldMatch("155_P38") Then
+            If Not WorldTap(210, 65, 0) Then
+                Exit Function
+            End If
+            If snakeMode = 2 Then
+                Exit Do
+            End If
+        End If
+        If WorldMatch("155_P39") Then
+            If Not WorldTap(360, 1150, 0) Then
+                Exit Function
+            End If
+            snakeFailures = snakeFailures + 1
+            If snakeMode = 2 Or snakeFailures >= snakeFailureLimit Then
+                Exit Do
+            End If
+        End If
+        If snakeAnimation = 0 Then
+            If WorldMatch("155_P40") Then
+                Call WorldOffset(52, -22, 200)
+            End If
+        End If
+        If SnakeReady() Then
+            result = StartSnakeBattle()
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            Call WorldStage("蛇道逐关挑战")
+        End If
+        If WorldMatch("155_P44") Then
+            Call WorldTap(560, 760, 1000)
+        End If
+        If SnakeAutoTriple() Then
+            If Not ResetSnakeTimer() Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - snakeActionAt > 600000 Or snakeStarts > 5 Then
+            RunSnake = FinishSnake(True)
+            Exit Function
+        End If
+    Loop
+    RunSnake = FinishSnake(False)
+End Function
+Function ExecuteSnake()
+    Dim result
+    ExecuteSnake = RESULT_TIMEOUT
+    result = EnterSnake()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("蛇道页面确认")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("155_P00") Then
+            Exit Do
+        End If
+        If WorldMatch("155_P01") Then
+            ExecuteSnake = ConfirmSnakeExit("原满通关页面", False)
+            Exit Function
+        End If
+    Loop
+    If Not ResetSnakeTimer() Then
+        Exit Function
+    End If
+    result = HireSnakeWarrior()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    snakeFloor = 1
+    snakeFailures = 0
+    snakeStarts = 0
+    If Not ResetSnakeTimer() Then
+        Exit Function
+    End If
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("155_P06") Then
+            Call WorldOffset(0, 0, 500)
+        End If
+        If WorldMatch("155_P00") Then
+            Exit Do
+        End If
+    Loop
+    ExecuteSnake = RunSnake()
+End Function

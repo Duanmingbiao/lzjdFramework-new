@@ -41,6 +41,14 @@ Function WorldName(taskId)
     WorldName = "世界首领70"
     If taskId = 32 Then
         WorldName = "世界首领_打沙鲁32"
+    ElseIf taskId = 150 Then
+        WorldName = "龙珠大冒险150"
+    ElseIf taskId = 155 Then
+        WorldName = "蛇道155"
+    ElseIf taskId = 154 Then
+        WorldName = "种仙豆154"
+    ElseIf taskId = 153 Then
+        WorldName = "悟空送仙豆153"
     ElseIf taskId = 78 Then
         WorldName = "战士集结78"
     ElseIf taskId = 79 Then
@@ -69,7 +77,15 @@ Sub WorldLog(message)
     Call Note("[" & WorldName(currentTask) & "] " & message)
 End Sub
 Sub WorldStage(value)
-    If currentTask = 78 Then
+    If currentTask = 150 Then
+        advPhase = value
+    ElseIf currentTask = 155 Then
+        snakePhase = value
+    ElseIf currentTask = 154 Then
+        plantPhase = value
+    ElseIf currentTask = 153 Then
+        senzuPhase = value
+    ElseIf currentTask = 78 Then
         gatherPhase = value
     ElseIf currentTask = 79 Then
         universePhase = value

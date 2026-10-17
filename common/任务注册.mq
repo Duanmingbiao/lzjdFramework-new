@@ -1,4 +1,8 @@
 ﻿Sub RegisterTasks()
+    Call Note("注册龙珠大冒险150；原许愿和养成升级，原8小时间隔")
+    Call Note("注册蛇道155；原配置、普通困难列表、雇佣旧OCR兼容")
+    Call Note("注册种仙豆154；原单开关、06:00日程、收取及金币升级")
+    Call Note("注册悟空送仙豆153；专业版协助、运送与一小时日程")
     earthRegisteredTask = 71
     Call Note("注册异时空冒险：强者对决81；刷新、挑战与预言；专业版配置及公共恢复")
     Call Note("注册异时空冒险：弗利萨军团80；旧关、新关、基地；按专业版公共超时与失败上限")
@@ -21,6 +25,22 @@ End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
+    If resumeTask = 150 Then
+        SelectDueTask = 150
+        Exit Function
+    End If
+    If resumeTask = 155 Then
+        SelectDueTask = 155
+        Exit Function
+    End If
+    If resumeTask = 154 Then
+        SelectDueTask = 154
+        Exit Function
+    End If
+    If resumeTask = 153 Then
+        SelectDueTask = 153
+        Exit Function
+    End If
     If resumeTask = 81 Then
         SelectDueTask = 81
         Exit Function
@@ -103,6 +123,26 @@ Function SelectDueTask()
         Exit Function
     End If
     selected = SelectMemory()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectAdventure()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectSenzu()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectPlant()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectSnake()
     If selected <> 0 Then
         SelectDueTask = selected
         Exit Function

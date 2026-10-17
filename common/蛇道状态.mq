@@ -1,0 +1,122 @@
+﻿Sub LoadSnakeSettings()
+    snakeEnabled = WorldBoolean("日常_蛇道")
+    snakeCatchup = WorldNumber("日常_蛇道_补打", 1, 1)
+    snakeHour = WorldNumber("日常_蛇道_时间", 9, 23)
+    snakeMinute = WorldNumber("日常_蛇道_分钟", 10, 59)
+    snakeMode = WorldNumber("日常_蛇道_模式", 0, 2)
+    snakeAnimation = WorldNumber("日常_蛇道_跳过动画", 1, 1)
+    snakeHireRow = WorldNumber("日常_蛇道_雇佣战士_行", 0, 9)
+    snakeHireColumn = WorldNumber("日常_蛇道_雇佣战士_个", 0, 2)
+    snakeHireSlot = WorldNumber("日常_蛇道_雇佣战士_位置", 5, 6)
+    snakeEffect = WorldNumber("日常_蛇道_特殊效果", 0, 13)
+    snakeOrdinary = ReadUIConfig("日常_蛇道_普通关卡", "9,10,11,12,13")
+    snakeHard = ReadUIConfig("日常_蛇道_困难关卡", "1,2,3,4,5,6,7,8")
+    snakeFailureLimit = WorldNumber("日常_蛇道_失败次数", 3, 99)
+End Sub
+Sub NewSnakeSession()
+    snakeDue = WorldDayStart(Time()) + snakeHour * 3600 + snakeMinute * 60
+    snakeDone = False
+    snakeCount = 0
+    snakeRecoveries = 0
+    snakeRestarts = 0
+    snakePhase = "未开始"
+    snakeReason = ""
+    snakeRetry = False
+    snakeFinishedAt = 0
+    snakeFloor = 1
+    snakeFailures = 0
+    snakeStarts = 0
+    snakeActionAt = TickCount()
+    snakeCatchupUsed = False
+End Sub
+Function SelectSnake()
+    Dim seconds
+    SelectSnake = 0
+    seconds = Time() - WorldDayStart(Time())
+    If snakeCatchup = 0 And Not snakeCatchupUsed And seconds > 1800 And seconds < 17400 Then
+        snakeEnabled = True
+        snakeDone = False
+        snakeMode = 1
+        snakeDue = Time()
+        snakeCatchupUsed = True
+        Call WorldLog("原00:30至04:50开区间补打；本会话一次、运行时强打，不改保存配置")
+    End If
+    If snakeEnabled And Not snakeDone And Time() >= snakeDue Then
+        SelectSnake = 155
+    End If
+End Function
+Sub StartSnakeTask()
+    snakeReason = ""
+    snakeRetry = False
+    snakeFinishedAt = 0
+    Call WorldStage("蛇道启动")
+    Call WorldLog("模式=" & snakeMode & " 动画=" & snakeAnimation & "；雇佣旧OCR兼容，不声称识别引擎一致")
+End Sub
+Sub RecoverSnakeTask()
+    snakeReason = ""
+    snakeRetry = False
+    snakeRecoveries = snakeRecoveries + 1
+    Call WorldLog("保存原任务155；未确认出口和大厅，不提交完成或改期")
+End Sub
+Sub RestartSnakeTask()
+    snakeRestarts = snakeRestarts + 1
+    Call WorldLog("重启原任务155 次数=" & snakeRestarts)
+End Sub
+Sub CommitSnakeTask()
+    snakeCount = snakeCount + 1
+    If snakeRetry Then
+        snakeDue = snakeFinishedAt + 3600
+    Else
+        snakeDone = True
+    End If
+    Call WorldLog("公共大厅确认后提交155 出口=" & snakeReason & " 完成=" & CStr(snakeDone) & " 下次Unix=" & snakeDue)
+End Sub
+Function ResetSnakeTimer()
+    ResetSnakeTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetSnakeTimer = True
+End Function
+Function ConfirmSnakeExit(reason, retryLater)
+    ConfirmSnakeExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    snakeReason = reason
+    snakeRetry = retryLater
+    snakeFinishedAt = Time()
+    terminalConfirmed = True
+    Call WorldLog("专业版出口=" & reason & " 延后一小时=" & CStr(retryLater) & "；等待公共大厅确认")
+    ConfirmSnakeExit = RESULT_OK
+End Function
+Function SnakeListContains(raw, stage)
+    Dim text, start, i, item
+    SnakeListContains = False
+    If IsNull(raw) Then
+        Exit Function
+    End If
+    text = CStr(raw) & ","
+    start = 1
+    For i = 1 To Len(text)
+        If Mid(text, i, 1) = "," Then
+            item = Mid(text, start, i - start)
+            If IsNumeric(item) Then
+                If Int(CDbl(item)) = stage Then
+                    SnakeListContains = True
+                    Exit Function
+                End If
+            End If
+            start = i + 1
+        End If
+    Next
+End Function
+Function SnakeDifficulty(stage)
+    SnakeDifficulty = 0
+    If SnakeListContains(snakeOrdinary, stage) Then
+        SnakeDifficulty = 1
+    ElseIf SnakeListContains(snakeHard, stage) Then
+        SnakeDifficulty = 2
+    End If
+End Function

@@ -1,0 +1,9 @@
+{
+  "source": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\mlc-field3-prototypes.json",
+  "sha256": "bbbb6fa14c703138930bd9c4519e17e4adcb11ee01059f96dc097daaafacccf3",
+  "scope": "retained offline prototypes only; no execution",
+  "ssSource": "C:\\Users\\31027\\Documents\\Codex\\2026-10-12\\https-github-com-morluto-rea-https\\outputs\\runtime-private\\mlc-ss-prototypes.json",
+  "ssSha256": "d02d7a4e746440652d0511bd1f3412f56312e3dd55d1b46b4edae5125603896d",
+  "ssBindings": "SS root LOADK 853 / CLOSURE 500 = OCREX找字; LOADK 880 / CLOSURE 527 = 神神_过滤字符串",
+  "hirePagingAudit": "root.723 instructions 138..158: row<4 =>0; 4<=row<7 =>1; row>=7 =>2. Checked VM jumps rather than malformed decompiler else nesting."
+}
