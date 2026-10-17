@@ -39,7 +39,13 @@ Function IsWorldBoss(taskId)
 End Function
 Function WorldName(taskId)
     WorldName = "世界首领70"
-    If taskId = 32 Then
+    If taskId = 17 Then
+        WorldName = "英雄副本17"
+    ElseIf taskId = 18 Then
+        WorldName = "冒险副本18"
+    ElseIf taskId = 19 Then
+        WorldName = "力之大会19"
+    ElseIf taskId = 32 Then
         WorldName = "世界首领_打沙鲁32"
     ElseIf taskId = 13 Then
         WorldName = "经验试炼13"
@@ -89,7 +95,13 @@ Sub WorldLog(message)
     Call Note("[" & WorldName(currentTask) & "] " & message)
 End Sub
 Sub WorldStage(value)
-    If currentTask = 92 Then
+    If currentTask = 17 Then
+        heroDungeonPhase = value
+    ElseIf currentTask = 18 Then
+        normalAdventurePhase = value
+    ElseIf currentTask = 19 Then
+        powerTournamentPhase = value
+    ElseIf currentTask = 92 Then
         yskPhase = value
     ElseIf currentTask = 16 Then
         partnerPhase = value

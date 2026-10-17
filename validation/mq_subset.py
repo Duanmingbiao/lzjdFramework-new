@@ -8,6 +8,7 @@ def expression(s):
  return s
 
 def load(paths, env):
+ env.setdefault('heroDungeonRunning',False)
  for key,value in {'KeepCapture':lambda:None,'FindColor':lambda *a:-1,'GetPixelColor':lambda *a:0,'Int':int}.items():env.setdefault(key,value)
  for key,value in {'SmartOcr':lambda *a:'','trialPublicTimedOutTask':0,'trialPublicRecoveryTask':0,'trialRestartOnTimeout':False,'goldFailures':0,'experienceFailures':0,'soulFailures':0,'partnerFailures':0,'NewTrialPublicSession':lambda:None,'BeginTrialPublicTask':lambda *a:None,'RecoverTrialPublicBoundary':lambda:None,'IsTrialTask':lambda t:t in (12,13,14,15,16,92)}.items():env.setdefault(key,value)
  for key,value in {'experienceEnabled':False,'NewExperienceSession':lambda:None,'LoadExperienceSettings':lambda:None,'SelectExperience':lambda:0}.items():env.setdefault(key,value)
@@ -16,6 +17,9 @@ def load(paths, env):
  for key,value in {'geneEnabled':False,'geneNoRestartPending':False,'NewGeneSession':lambda:None,'LoadGeneSettings':lambda:None,'SelectGene':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'soulEnabled':False,'NewSoulSession':lambda:None,'LoadSoulSettings':lambda:None,'SelectSoul':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'goldEnabled':False,'NewGoldSession':lambda:None,'LoadGoldSettings':lambda:None,'SelectGold':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'heroDungeonEnabled':False,'heroDungeonDone':False,'heroDungeonFailed':False,'StartHeroDungeonTask':lambda:None,'RecoverHeroDungeonTask':lambda:None,'CommitHeroDungeonTask':lambda:None,'RestartHeroDungeonTask':lambda:None}.items():env.setdefault(key,value)
+ for key,value in {'normalAdventureEnabled':False,'normalAdventureDone':False,'normalAdventureFailed':False,'NewNormalAdventureSession':lambda:None,'LoadNormalAdventureSettings':lambda:None,'SelectNormalAdventure':lambda:0,'StartNormalAdventureTask':lambda:None,'RecoverNormalAdventureTask':lambda:None,'CommitNormalAdventureTask':lambda:None,'RestartNormalAdventureTask':lambda:None}.items():env.setdefault(key,value)
+ for key,value in {'powerTournamentEnabled':False,'powerTournamentDone':False,'powerTournamentFailed':False,'NewPowerTournamentSession':lambda:None,'LoadPowerTournamentSettings':lambda:None,'SelectPowerTournament':lambda:0,'StartPowerTournamentTask':lambda:None,'RecoverPowerTournamentTask':lambda:None,'CommitPowerTournamentTask':lambda:None,'RestartPowerTournamentTask':lambda:None}.items():env.setdefault(key,value)
  for key,value in {'advEnabled':False,'NewAdventureSession':lambda:None,'LoadAdventureSettings':lambda:None,'SelectAdventure':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'snakeEnabled':False,'NewSnakeSession':lambda:None,'LoadSnakeSettings':lambda:None,'SelectSnake':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'plantEnabled':False,'NewPlantSession':lambda:None,'LoadPlantSettings':lambda:None,'SelectPlant':lambda:0}.items():env.setdefault(key,value)
@@ -71,6 +75,7 @@ def load(paths, env):
    if s in ('ReleaseCapture','KeepCapture'):s=s+'()'
    if s.startswith('Swipe '):s='Swipe('+s[6:]+')'
    if s.startswith('Tap '):s='Tap('+s[4:]+')'
+   if s.startswith('SnapShot '):s='SnapShot('+s[9:]+')'
    assignment=re.match(r'^(\w+) = (.*)$',s)
    if assignment:
     rhs=assignment[2]

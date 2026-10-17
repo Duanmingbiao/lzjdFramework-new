@@ -3,6 +3,9 @@
   "entry": "app/入口.mq",
   "modules": [
     "common/常量.mq",
+    "common/英雄副本状态.mq",
+    "common/冒险副本状态.mq",
+    "common/力之大会状态.mq",
     "common/前台监控.mq",
     "common/日志.mq",
     "common/地球保卫状态.mq",
@@ -30,12 +33,16 @@
     "common/页面识别.mq",
     "common/游戏控制.mq",
     "common/强敌入口.mq",
+    "common/冒险入口.mq",
     "common/返回大厅.mq",
     "common/任务注册.mq",
     "common/任务分派.mq",
     "common/任务调度.mq",
     "flows/001_游戏重连/QQ登录.mq",
     "flows/001_游戏重连/登录游戏.mq",
+    "flows/017_英雄副本/英雄副本.mq",
+    "flows/018_冒险副本/冒险副本.mq",
+    "flows/019_力之大会/力之大会.mq",
     "flows/168_领邮件奖励/领邮件奖励.mq",
     "flows/169_领任务奖励/领任务奖励.mq",
     "flows/167_日常签到/日常签到.mq",
@@ -81,6 +88,9 @@
   ],
   "ui": "ui/最小配置.uip",
   "registeredTasks": [
+    17,
+    18,
+    19,
     168,
     169,
     167,
@@ -119,5 +129,5 @@
     16,
     92
   ],
-  "stage": "异时空试炼92源码与原配置；3.8多点找色；未构建未同步"
+  "stage": "力之大会19源码与原RcMx2配置；3.8多点找色；未同步助手"
 }

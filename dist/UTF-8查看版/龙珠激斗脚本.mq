@@ -6,6 +6,10 @@ Dim partnerEnabled, partnerDue, partnerDone, partnerCount, partnerAbandoned, par
 Dim geneEnabled, geneDue, geneDone, geneCount, geneAbandoned, geneRecoveries, geneRestarts, genePhase, geneReason, geneExitKind, geneFinishedAt, geneNativeTimeout, genePickIndex, geneClickAt, geneActionAt, geneSpecialExit, geneFailures, geneForcedRecovery, geneNoRestartPending, geneRestartOnTimeout
 Dim soulEnabled, soulDue, soulDone, soulCount, soulAbandoned, soulRecoveries, soulRestarts, soulPhase, soulReason, soulExitKind, soulFinishedAt, soulNativeTimeout
 Dim goldEnabled, goldDue, goldDone, goldCount, goldAbandoned, goldRecoveries, goldRestarts, goldPhase, goldReason, goldExitKind, goldFinishedAt, goldNativeTimeout
+Dim heroDungeonEnabled, heroDungeonDone, heroDungeonFailed, heroDungeonRecoveries, heroDungeonRestarts, heroDungeonPhase, heroDungeonReason
+Dim heroDungeonRunning
+Dim normalAdventureEnabled, normalAdventureDone, normalAdventureFailed, normalAdventureRecoveries, normalAdventureRestarts, normalAdventurePhase, normalAdventureReason, normalAdventureProgressAt, normalAdventurePostBattle
+Dim powerTournamentEnabled, powerTournamentBuy, powerTournamentQuickJoin, powerTournamentBuyRuntime, powerTournamentDone, powerTournamentFailed, powerTournamentRecoveries, powerTournamentRestarts, powerTournamentPhase, powerTournamentReason
 Dim redEnabled, redMap, red84Hour, red84Minute, red85Hour, red85Minute, redReason, redMode, redActionAt, redFirstDone, redRefreshLeft, red84Due, red84Done, red84Failed, red84Count, red84Failures, red84Restarts, red84Recoveries, red84Phase, red84Terminal, red84Reason, red84FinishedAt, red85Due, red85Done, red85Failed, red85Count, red85Failures, red85Restarts, red85Recoveries, red85Phase, red85Terminal, red85Reason, red85FinishedAt
 Dim senzuEnabled, senzuDue, senzuDone, senzuAssist, senzuCount, senzuRecoveries, senzuRestarts, senzuPhase, senzuReason, senzuStop, senzuFinishedAt
 Dim advEnabled, advReward, advDue, advDone, advCount, advRecoveries, advRestarts, advPhase, advReason, advFinishedAt, advFailures, advCloseTen, advDirection
@@ -91,6 +95,139 @@ Sub InitConstants()
     RESULT_TIMEOUT = 4
     GAME_PACKAGE = "com.tencent.tmgp.dragonball"
     QQ_PACKAGE = "com.tencent.mobileqq"
+End Sub
+
+
+// common/英雄副本状态.mq
+Sub LoadHeroDungeonSettings()
+    heroDungeonEnabled = WorldBoolean("日常_英雄副本")
+End Sub
+Sub NewHeroDungeonSession()
+    heroDungeonDone = False
+    heroDungeonFailed = False
+    heroDungeonRecoveries = 0
+    heroDungeonRestarts = 0
+    heroDungeonPhase = "未开始"
+    heroDungeonReason = ""
+End Sub
+Function SelectHeroDungeon()
+    SelectHeroDungeon = 0
+    If heroDungeonEnabled And Not heroDungeonDone Then
+        SelectHeroDungeon = 17
+    End If
+End Function
+Sub StartHeroDungeonTask()
+    heroDungeonRunning = False
+    heroDungeonFailed = False
+    heroDungeonPhase = "启动"
+    heroDungeonReason = ""
+    Call WorldStage("英雄副本启动")
+End Sub
+Sub RecoverHeroDungeonTask()
+    heroDungeonFailed = True
+    heroDungeonRecoveries = heroDungeonRecoveries + 1
+    heroDungeonPhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("英雄副本17保留原任务恢复；未知、失败或超时不完成")
+End Sub
+Sub RestartHeroDungeonTask()
+    heroDungeonRestarts = heroDungeonRestarts + 1
+    Call WorldLog("公共重启恢复英雄副本17 次数=" & heroDungeonRestarts)
+End Sub
+Sub CommitHeroDungeonTask()
+    heroDungeonDone = True
+    heroDungeonFailed = False
+    heroDungeonPhase = "已完成"
+    Call WorldLog("英雄副本17大厅连续确认后提交")
+End Sub
+
+
+// common/冒险副本状态.mq
+Sub LoadNormalAdventureSettings()
+    normalAdventureEnabled = WorldBoolean("RcMx1")
+End Sub
+Sub NewNormalAdventureSession()
+    normalAdventureDone = False
+    normalAdventureFailed = False
+    normalAdventureRecoveries = 0
+    normalAdventureRestarts = 0
+    normalAdventurePhase = "未开始"
+    normalAdventureReason = ""
+End Sub
+Function SelectNormalAdventure()
+    SelectNormalAdventure = 0
+    If normalAdventureEnabled And Not normalAdventureDone Then
+        SelectNormalAdventure = 18
+    End If
+End Function
+Sub StartNormalAdventureTask()
+    normalAdventureFailed = False
+    normalAdventurePhase = "启动"
+    normalAdventureReason = ""
+    Call WorldStage("冒险副本启动")
+End Sub
+Sub RecoverNormalAdventureTask()
+    normalAdventureFailed = True
+    normalAdventureRecoveries = normalAdventureRecoveries + 1
+    normalAdventurePhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("冒险副本18保留原任务恢复；未知、失败或40秒无进展不完成")
+End Sub
+Sub RestartNormalAdventureTask()
+    normalAdventureRestarts = normalAdventureRestarts + 1
+    Call WorldLog("公共重启恢复冒险副本18 次数=" & normalAdventureRestarts)
+End Sub
+Sub CommitNormalAdventureTask()
+    normalAdventureDone = True
+    normalAdventureFailed = False
+    normalAdventurePhase = "已完成"
+    Call WorldLog("冒险副本18大厅连续确认后提交")
+End Sub
+
+
+// common/力之大会状态.mq
+Sub LoadPowerTournamentSettings()
+    powerTournamentEnabled = WorldBoolean("RcMx2")
+    powerTournamentBuy = WorldBoolean("RcMx2买")
+    powerTournamentQuickJoin = WorldBoolean("RcMx2加入")
+End Sub
+Sub NewPowerTournamentSession()
+    powerTournamentDone = False
+    powerTournamentFailed = False
+    powerTournamentRecoveries = 0
+    powerTournamentRestarts = 0
+    powerTournamentPhase = "未开始"
+    powerTournamentReason = ""
+    powerTournamentBuyRuntime = powerTournamentBuy
+End Sub
+Function SelectPowerTournament()
+    SelectPowerTournament = 0
+    If powerTournamentEnabled And Not powerTournamentDone Then
+        SelectPowerTournament = 19
+    End If
+End Function
+Sub StartPowerTournamentTask()
+    powerTournamentFailed = False
+    powerTournamentPhase = "启动"
+    powerTournamentReason = ""
+    Call WorldStage("力之大会启动")
+End Sub
+Sub RecoverPowerTournamentTask()
+    powerTournamentFailed = True
+    powerTournamentRecoveries = powerTournamentRecoveries + 1
+    powerTournamentPhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("力之大会19保留原任务恢复；未知、失败或超时不完成")
+End Sub
+Sub RestartPowerTournamentTask()
+    powerTournamentRestarts = powerTournamentRestarts + 1
+    Call WorldLog("公共重启恢复力之大会19 次数=" & powerTournamentRestarts)
+End Sub
+Sub CommitPowerTournamentTask()
+    powerTournamentDone = True
+    powerTournamentFailed = False
+    powerTournamentPhase = "已完成"
+    Call WorldLog("力之大会19大厅连续确认后提交")
 End Sub
 
 
@@ -227,7 +364,7 @@ Function HandleForegroundRecovery()
         Exit Function
     End If
     Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
-    If currentTask = 92 Or currentTask = 16 Or currentTask = 15 Or currentTask = 14 Or currentTask = 13 Or currentTask = 12 Or currentTask = 150 Or currentTask = 155 Or currentTask = 154 Or currentTask = 153 Or currentTask = 81 Or currentTask = 80 Or currentTask = 82 Or currentTask = 79 Or currentTask = 78 Or currentTask = 71 Or currentTask = 86 Or currentTask = 87 Or currentTask = 88 Or currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Or currentTask = 151 Or currentTask = 152 Or IsWorldBoss(currentTask) Or currentTask = 83 Or IsRedArmy(currentTask) Then
+    If currentTask = 17 Or currentTask = 18 Or currentTask = 19 Or currentTask = 92 Or currentTask = 16 Or currentTask = 15 Or currentTask = 14 Or currentTask = 13 Or currentTask = 12 Or currentTask = 150 Or currentTask = 155 Or currentTask = 154 Or currentTask = 153 Or currentTask = 81 Or currentTask = 80 Or currentTask = 82 Or currentTask = 79 Or currentTask = 78 Or currentTask = 71 Or currentTask = 86 Or currentTask = 87 Or currentTask = 88 Or currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Or currentTask = 151 Or currentTask = 152 Or IsWorldBoss(currentTask) Or currentTask = 83 Or IsRedArmy(currentTask) Then
         Call SaveRecovery()
     End If
     terminalConfirmed = False
@@ -1411,7 +1548,13 @@ Function IsWorldBoss(taskId)
 End Function
 Function WorldName(taskId)
     WorldName = "世界首领70"
-    If taskId = 32 Then
+    If taskId = 17 Then
+        WorldName = "英雄副本17"
+    ElseIf taskId = 18 Then
+        WorldName = "冒险副本18"
+    ElseIf taskId = 19 Then
+        WorldName = "力之大会19"
+    ElseIf taskId = 32 Then
         WorldName = "世界首领_打沙鲁32"
     ElseIf taskId = 13 Then
         WorldName = "经验试炼13"
@@ -1461,7 +1604,13 @@ Sub WorldLog(message)
     Call Note("[" & WorldName(currentTask) & "] " & message)
 End Sub
 Sub WorldStage(value)
-    If currentTask = 92 Then
+    If currentTask = 17 Then
+        heroDungeonPhase = value
+    ElseIf currentTask = 18 Then
+        normalAdventurePhase = value
+    ElseIf currentTask = 19 Then
+        powerTournamentPhase = value
+    ElseIf currentTask = 92 Then
         yskPhase = value
     ElseIf currentTask = 16 Then
         partnerPhase = value
@@ -2171,6 +2320,9 @@ Function PositiveSetting(key, fallback)
 End Function
 Sub LoadSettings()
     trialRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+    heroDungeonEnabled = WorldBoolean("日常_英雄副本")
+    Call LoadNormalAdventureSettings()
+    Call LoadPowerTournamentSettings()
     Call LoadGoldSettings()
     Call LoadSoulSettings()
     Call LoadGeneSettings()
@@ -2221,6 +2373,14 @@ End Sub
 // common/任务状态.mq
 Sub NewSession()
     Call NewTrialPublicSession()
+    heroDungeonDone = False
+    heroDungeonFailed = False
+    heroDungeonRecoveries = 0
+    heroDungeonRestarts = 0
+    heroDungeonPhase = "未开始"
+    heroDungeonReason = ""
+    Call NewNormalAdventureSession()
+    Call NewPowerTournamentSession()
     Call NewGoldSession()
     Call NewSoulSession()
     Call NewGeneSession()
@@ -2316,6 +2476,15 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 17 Then
+        Call StartHeroDungeonTask()
+    End If
+    If taskId = 18 Then
+        Call StartNormalAdventureTask()
+    End If
+    If taskId = 19 Then
+        Call StartPowerTournamentTask()
+    End If
     If taskId = 13 Then
         Call StartExperienceTask()
     End If
@@ -2420,6 +2589,15 @@ Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
     Call RecoverTrialPublicBoundary()
+    If currentTask = 17 Then
+        Call RecoverHeroDungeonTask()
+    End If
+    If currentTask = 18 Then
+        Call RecoverNormalAdventureTask()
+    End If
+    If currentTask = 19 Then
+        Call RecoverPowerTournamentTask()
+    End If
     If currentTask = 13 Then
         Call RecoverExperienceTask()
     End If
@@ -2529,7 +2707,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
+    If currentTask <> 17 And currentTask <> 18 And currentTask <> 19 And currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -2545,7 +2723,13 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 92 Then
+    If currentTask = 17 Then
+        Call CommitHeroDungeonTask()
+    ElseIf currentTask = 18 Then
+        Call CommitNormalAdventureTask()
+    ElseIf currentTask = 19 Then
+        Call CommitPowerTournamentTask()
+    ElseIf currentTask = 92 Then
         Call CommitYskTask()
     ElseIf currentTask = 16 Then
         Call CommitPartnerTask()
@@ -2660,6 +2844,10 @@ Function LoginExpired()
     LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
+    If currentTask = 17 And heroDungeonRunning Then
+        BusinessExpired = ForegroundInterrupted()
+        Exit Function
+    End If
     If currentTask = 92 Then
         BusinessExpired = TrialWatchdogExpired()
         Exit Function
@@ -4970,6 +5158,88 @@ Function MatchPattern(name)
         FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
     Case "092_E34"
         FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
+    Case "017_英雄入口一"
+        FindMultiColor 106,0,420,1279,"181F8C-101010","8|-16|3448E1-101010,7|14|FFFFFF-101010,18|37|BBAAAD-101010,-16|25|7BDB7B-101010,-18|29|7CD97A-101010,-8|27|AD7E2C-101010,6|62|94F3FF-101010",1,0.9,foundX,foundY
+    Case "017_英雄入口二"
+        FindMultiColor 106,0,420,1279,"191C8B-101010","10|-22|3448E1-101010,6|-16|4F405A-101010,6|7|FFFFFF-101010,8|11|FAF8FB-101010,8|10|E1D7E7-101010,-16|19|7BDB7B-101010,-11|55|9CECFF-101010",1,0.9,foundX,foundY
+    Case "017_最新关卡"
+        FindMultiColor 0,0,719,1279,"0A4402-101010","0|2|0A4402-101010,58|-30|E0F9F1-101010,36|-4|00822F-101010,42|4|02F1FF-101010,81|-18|024602-101010,84|-15|02F1FF-101010,11|-31|E0F9F1-101010,76|-9|027D2B-101010,74|-1|02F1FF-101010",1,0.9,foundX,foundY
+    Case "017_英雄选择判断"
+        FindMultiColor 0,0,719,1279,"2DBF85-202020","-34|-5|93BBAE-202020,-76|10|247935-202020,201|-890|020233-202020,267|-858|020233-202020,207|-650|020233-202020,261|-638|020233,19|-346|00A3FD-202020,21|-342|00A3FD-202020,334|-356|00A3FD-202020",1,0.9,foundX,foundY
+    Case "017_点击三个英雄"
+        FindMultiColor 0,0,719,1279,"020233","-8|-287|020233,-5|-228|020233,-187|163|020233,-180|270|020233,-104|-313|020233,-4|-98|020233,13|-315|152670,209|-316|1F2F82,10|-12|1E3391,11|-19|1F3392,-109|676|2CC086,-143|671|96BCB0,-188|686|247935",1,0.9,foundX,foundY
+    Case "017_挑战界面一"
+        FindMultiColor 0,0,719,1279,"8CF7EF-101010","-103|33|189764-101010,44|-8|513222-101010,54|15|5A3826-101010,296|-4|73F3FF-101010,370|-361|49291F-101010,-146|346|3D4442-101010,-160|359|222B28-101010",1,0.9,foundX,foundY
+    Case "017_挑战界面二"
+        FindMultiColor 0,0,719,1279,"8CF7EF-101010","-103|34|189764-101010,38|-7|503221-101010,54|20|5A3826-101010,297|11|42D7FF-101010,370|-360|49291F-101010,-146|347|3D4442-101010,-160|360|222B28-101010",1,0.9,foundX,foundY
+    Case "017_购买体力"
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","-78|33|0682FD-101010,37|-8|623726-101010,-88|9|45443F-101010,245|-243|70AAAA-101010,223|-342|50EDED-101010,-66|-330|50EDED-101010,90|-182|331212-101010,131|-250|331212-101010,217|-225|758E8E-101010",1,0.9,foundX,foundY
+    Case "017_需要购买"
+        FindMultiColor 0,0,719,1279,"FFDFA3-101010","-482|133|18BEFF-101010,-200|133|C7F0FF-101010,-65|123|28DBFF-101010,-62|110|42271E-101010,-52|122|44261D-101010,-549|788|3D4442-101010,-563|801|202A27-101010",1,0.9,foundX,foundY
+    Case "017_扫荡结果"
+        FindMultiColor 0,0,719,1279,"F9E0AF-101010","-470|-30|080808-101010,-499|-63|080808-101010,-457|862|89F4E3-101010,-632|852|C06B39-101010,-125|862|75F1FF-101010,-28|878|96543B-101010,-320|934|8A502F-101010,-69|34|502D18-101010,-630|71|7C4927-101010",1,0.9,foundX,foundY
+    Case "017_开战界面一"
+        FindMultiColor 0,0,719,1279,"73F2FF-101010","-255|2|C8C8C8-101010,-286|3|E7E7E7-101010,-258|-4|523123-101010,-245|10|5D3726-101010,77|-354|49291F-101010,-445|350|3D4442-101010,-459|363|222B28-101010",1,0.9,foundX,foundY
+    Case "017_开战界面二"
+        FindMultiColor 0,0,719,1279,"71F3FF-101010","-256|5|C4C4C4-101010,-256|-5|533123-101010,-249|4|603927-101010,42|-357|49291F-101010,-435|354|193F35-101010,-449|349|3D4442-101010,-463|362|222B28-101010",1,0.9,foundX,foundY
+    Case "017_战斗结束一"
+        FindMultiColor 0,0,719,1279,"73F3FF-101010","-53|18|21BEFF-101010,-177|-878|29FBFF-101010,-186|-882|000042-101010,206|-859|1FDDFF-101010,205|-848|000042-101010,203|-838|089EFF-101010,137|-885|000042-101010",1,0.9,foundX,foundY
+    Case "017_战斗结束二"
+        FindMultiColor 0,0,719,1279,"109EFF-101010","94|-4|16ADFF-101010,-120|-888|21DBFF-101010,-107|-884|000042-101010,8|-887|1EDAFF-101010,257|-876|000042-101010,257|-888|1FDAFF-101010,224|-880|000042-101010",1,0.9,foundX,foundY
+    Case "017_关闭窗口"
+        FindMultiColor 0,0,719,1279,"FFDC9D-101010","-6|11|B87843-101010,-9|1|DC8A34-101010,-10|-16|FBF7F1-101010,-15|-17|A26529-101010,14|-19|FFFDF7-101010,25|-15|926630-101010,-2|5|AD6E2A-101010,-11|-17|FAF7EF-101010,19|16|F8BF5B-101010",1,0.9,foundX,foundY
+    Case "017_已经在英雄副本一"
+        FindMultiColor 12,965,197,1270,"2CC086-202020","-34|-5|96BCB0-202020,-76|10|247935-202020,-71|-109|898970-202020,-87|-108|8999A1-202020,-52|-126|827137-202020,-42|-143|8F873D-202020,-2|-146|754C65-202020,-17|-103|704F68-202020,-92|-139|97873D-202020",1,0.9,foundX,foundY
+    Case "017_已经在英雄副本二"
+        FindMultiColor 12,965,197,1270,"2CC086-202020","-34|-5|96BCB0-202020,-76|10|247935-202020,-68|-82|376148-202020,-96|-83|488269-202020,-41|-144|2F6140-202020,-57|-166|447D65-202020,-21|-98|263647-202020,36|-96|3E5780-202020,-93|-99|2F6140-202020",1,0.9,foundX,foundY
+    Case "018_新图入口"
+        FindMultiColor 0,0,719,1279,"021202","-44|-21|9ACCFD,12|67|009AFD,-25|59|FFFFFF,-114|-26|264778,73|78|025C8E,-114|67|A6CDF6,-15|112|F9F0F8,85|-13|DB57BA,-494|0|F5EDED,30|127|3984E7,64|113|185A94,-440|-9|FDFDFD,-509|-56|C85CAF",1,0.9,foundX,foundY
+    Case "018_战斗返回标志"
+        FindMultiColor 0,0,719,1279,"2020A4","9|1|261B97,6|7|21198C,-12|14|E9E9FE,9|23|00009A,26|9|E9E9FA,-26|-45|0ABFFF,-26|-44|0ABFFF,-52|-52|4040ED,-52|-58|4040ED",1,0.9,foundX,foundY
+    Case "018_章节推进"
+        FindMultiColor 0,0,719,1279,"C4EDE4-101010","-14|12|96BCB0-101010,-59|27|247935-101010,91|-113|89F4E3-101010,425|-113|75F1FF-101010,251|-930|080808-101010,233|-839|EDF5ED-101010,46|-701|FFFFFF-101010,143|-673|BBAD9D-101010,152|-689|7586C8-101010",1,0.9,foundX,foundY
+    Case "018_地图进度一"
+        FindMultiColor 0,0,719,1279,"6DF1FF-101010","-78|43|0069FD-101010,-198|45|E29E38-101010,-141|-899|2BF9FF-101010,-144|-911|000040-101010,213|-893|2BF9FF-101010,214|-911|000040-101010,17|21|FFFFFF-101010,-81|3|128EF9-101010,-114|-851|000040-101010",1,0.9,foundX,foundY
+    Case "018_地图进度二"
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","51|35|0A7DFF-101010,-76|43|026DF9-101010,-247|-974|000000-101010,-252|-995|FFFFFF-101010,-129|-932|000000-101010,-131|-909|FFFFFF-101010,70|-928|000000-101010,50|-957|FFFFFF-101010,39|-994|FFFFFF-101010",1,0.9,foundX,foundY
+    Case "018_地图进度三"
+        FindMultiColor 0,0,719,1279,"6DF1FF-101010","42|47|027DFF-101010,-81|-22|96543B-101010,-124|-510|94533B-101010,30|-367|4B2A21-101010,27|-379|5B3328-101010,-192|-531|BF6D3C-101010,55|28|96543B-101010,-557|-89|221510-101010,-566|-52|96543B-101010",1,0.9,foundX,foundY
+    Case "018_黄色光环"
+        FindMultiColor 0,0,719,1279,"8B6218-101010","-7|-3|CB9936-101010,4|17|D8AF33-101010,-13|14|D8AF33-101010,-22|0|FFF9E9-101010,-7|6|AD861F-101010,28|-9|36FFFF-101010,22|-15|4FFFFF-101010,17|-17|6AFFFF-101010,20|-17|56FFFF-101010",1,0.88,foundX,foundY
+    Case "018_小怪"
+        FindMultiColor 0,0,719,1279,"B8872D","-15|0|CA9836,-20|19|D8AF33,-4|17|F7F7E6,-7|-21|F5D476,-12|-21|F5D476,-2|-21|F5D476,-6|-27|B06F02,-30|-27|B47101,-31|-25|663401,13|-25|643302,-12|-109|D89E02,-5|-109|D89E02,37|-40|C3830B,-51|-96|FDEDA3",1,0.88,foundX,foundY
+    Case "018_首领"
+        FindMultiColor 0,0,719,1279,"2020A4","9|1|261B97,6|7|21198C,-12|14|E8E8FD,9|23|000099,-12|14|E8E8FD,5|-23|0A0A6D,20|-19|69FFFF,-11|-18|74FFFF,-17|-19|52FFFF,24|-20|4FFFFF",1,0.88,foundX,foundY
+    Case "018_需要购买体力"
+        FindMultiColor 0,0,719,1279,"75F1FF-101010","-78|33|0682FD-101010,37|-8|623726-101010,-88|9|45443F-101010,245|-243|70AAAA-101010,223|-342|50EDED-101010,-66|-330|50EDED-101010,90|-182|331212-101010,131|-250|331212-101010,217|-225|758E8E-101010",1,0.9,foundX,foundY
+    Case "018_防卡底部一"
+        FindMultiColor 7,1067,709,1276,"2CC086-202020","-34|-5|96BCB0-202020,-76|10|247935-202020,554|-139|44F1FF-202020,553|-108|44F1FF-202020,552|-106|44F1FF-202020,519|-98|1C97E2-202020,519|-95|1C97E2-202020,526|-99|8FC9E2-202020,544|-104|12B7F1-202020",1,0.9,foundX,foundY
+    Case "018_防卡底部二"
+        FindMultiColor 0,0,719,1279,"AB480E-101010","-20|3|96330A-101010,-12|30|7D6D65-101010,30|-11|3B2B1A-101010,-16|-91|483002-101010,-8|59|A0978F-101010,-42|23|655C4C-101010,3|-5|B04B11-101010,35|50|DCD4D4-101010,6|45|5A7C71-101010",1,0.9,foundX,foundY
+    Case "冒险_模式入口"
+        FindMultiColor 1,69,585,1037,"AB480E-101010","-20|3|96330A-101010,-12|30|7D6D65-101010,30|-11|3B2B1A-101010,-16|-91|483002-101010,-8|59|A0978F-101010,-42|23|655C4C-101010,3|-5|B04B11-101010,35|50|DCD4D4-101010,6|45|5A7C71-101010",1,0.9,foundX,foundY
+    Case "019_入口彩色"
+        FindMultiColor 0,0,719,1279,"000000-202020","73|-3|000000-202020,106|47|A30061-202020,40|51|F5C458-202020,53|115|FAFAFE-202020,29|113|747575-202020,-414|3|FCFCFC-202020,-372|60|8CCEDF-202020,-219|4|FDFDFD-202020,-466|-15|8CCEF2-202020",1,0.9,foundX,foundY
+    Case "019_入口灰色"
+        FindMultiColor 0,0,719,1279,"000000-202020","73|-3|000000-202020,106|47|303030-202020,40|51|A9A9A9-202020,53|115|FBFBFB-202020,29|113|757575-202020,-414|3|FCFCFC-202020,-372|60|CCCCCC-202020,-219|4|FDFDFD-202020,-466|-15|D1D1D1-202020",1,0.9,foundX,foundY
+    Case "019_加入界面"
+        FindMultiColor 0,0,719,1279,"2DBF85-202020","-34|-5|93BBAE-202020,-76|10|247935-202020,3|0|32BF85-202020,-64|-126|FFFFFF-202020,-46|-121|FFFFFF-202020,-50|-182|080808-202020,-92|-121|05154F-202020,-84|-114|481616-202020,-58|-109|D0E0FF-202020,414|-107|0072FE-202020,366|-152|72F4FD-202020,183|-106|0071FD-202020,138|-151|75F1FF-202020",1,0.9,foundX,foundY
+    Case "019_等待界面"
+        FindMultiColor 0,0,719,1279,"2CC086-202020","-34|-5|96BCB0-202020,-76|10|247935-202020,-65|-126|FFFFFF-202020,-46|-145|080808-202020,-65|-114|D0E0FF-202020,-92|-121|05154F-202020,437|-63|232B4C-202020,385|-205|FDAB82-202020,425|-206|F8F7AB-202020",1,0.9,foundX,foundY
+    Case "019_购买界面"
+        FindMultiColor 0,0,719,1279,"FDF5DC-101010","-48|54|20110C-101010,-42|49|96543B-101010,-598|-17|68C2FF-101010,-312|408|96543B-101010,-291|426|8A502F-101010,-101|132|3BBFF9-101010,-314|158|0275FF-101010,-626|217|5B3328-101010,-627|248|301C14-101010",1,0.9,foundX,foundY
+    Case "019_可加入"
+        FindMultiColor 0,0,719,1279,"2CC086-202020","-34|-5|96BCB0-202020,-76|10|247935-202020,-65|-126|FFFFFF-202020,-46|-145|080808-202020,-65|-114|D0E0FF-202020,-92|-121|05154F-202020,437|-63|232B4C-202020,385|-205|FDAB82-202020,425|-206|F8F7AB-202020,402|-105|0071FD-202020,292|-105|0061F5-202020",1,0.9,foundX,foundY
+    Case "019_战斗结束"
+        FindMultiColor 29,237,691,628,"2BF9FF-101010","-6|-21|000040-101010,376|48|0B9FFF-101010,376|59|000040-101010,333|68|000040-101010,330|52|0A96FF-101010,216|67|000040-101010,226|33|19C7FE-101010,5|77|000069-101010,167|102|FFFFFF-101010",1,0.9,foundX,foundY
+    Case "019_终态灰色"
+        FindMultiColor 0,0,719,1279,"2CC086-202020","-34|-5|96BCB0-202020,-76|10|247935-202020,-65|-126|FFFFFF-202020,-46|-145|080808-202020,-65|-114|D0E0FF-202020,-92|-121|05154F-202020,437|-63|232B4C-202020,385|-205|FDAB82-202020,425|-206|F8F7AB-202020,402|-105|8E8E8E-202020,292|-105|828282-202020",1,0.9,foundX,foundY
+    Case "017_点击两个英雄"
+        FindMultiColor 0,0,719,1279,"020233","-7|-247|020233,-138|-276|020233,-269|-188|020233,-241|136|020233,4|145|020233,4|166|020233,-264|-125|020233,30|-47|1F3771,-5|-288|18297B,30|-22|2B447D,-205|693|2CC086,-239|688|96BCB0,-284|703|247935",1,0.9,foundX,foundY
+    Case "017_战斗准备一"
+        FindMultiColor 0,0,719,1279,"1EB5FF-101010","96|2|16ADFF-101010,-202|-978|000000-101010,-177|-991|FFFFFF-101010,115|-960|000000-101010,-3|-998|FFFFFF-101010,-69|-1001|000000-101010,-108|-969|FFFFFF-101010",1,0.9,foundX,foundY
+    Case "017_战斗准备二"
+        FindMultiColor 0,0,719,1279,"18AEFF-101010","92|-2|20B6FF-101010,111|-961|000000-101010,92|-968|FFFFFF-101010,-1|-989|000000-101010,-3|-1000|FFFFFF-101010,-218|-958|000000-101010,-178|-992|FFFFFF-101010",1,0.9,foundX,foundY
     End Select
     MatchPattern = foundX >= 0 And foundY >= 0
 End Function
@@ -5223,6 +5493,15 @@ Sub StartGame()
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If currentTask = 17 Then
+        Call RestartHeroDungeonTask()
+    End If
+    If currentTask = 18 Then
+        Call RestartNormalAdventureTask()
+    End If
+    If currentTask = 19 Then
+        Call RestartPowerTournamentTask()
+    End If
     If currentTask = 13 Then
         Call RestartExperienceTask()
     End If
@@ -5687,6 +5966,87 @@ Function TrialZeroKnown(x1, y1, x2, y2)
 End Function
 
 
+// common/冒险入口.mq
+Function AdventureModeKnown()
+    AdventureModeKnown = True
+    If WorldMatch("018_防卡底部一") Then
+        Exit Function
+    End If
+    AdventureModeKnown = WorldMatch("018_新图入口")
+End Function
+Function AdventureHallReady()
+    AdventureHallReady = True
+    If WorldMatch("012_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P31") Then
+        Exit Function
+    End If
+    AdventureHallReady = WorldMatch("012_P32")
+End Function
+Function EnterAdventureMode()
+    Dim enteredAt, searchCount, hallResult
+    EnterAdventureMode = RESULT_TIMEOUT
+    Call WorldStage("冒险模式入口")
+    enteredAt = TickCount()
+    searchCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If AdventureModeKnown() Then
+            Call WorldLog("原冒险模式目标页已确认")
+            businessStarted = TickCount()
+            EnterAdventureMode = RESULT_OK
+            Exit Function
+        End If
+        hallResult = ReturnToHall()
+        If hallResult <> RESULT_OK Then
+            Exit Function
+        End If
+        If AdventureHallReady() Then
+            If WorldMatch("冒险_模式入口") Then
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+                If currentTask = 19 Then
+                    Call WorldWait(3000)
+                    If BusinessExpired() Then
+                        Exit Function
+                    End If
+                End If
+            Else
+                searchCount = searchCount + 1
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Then
+                    Exit Function
+                End If
+                If searchCount <= 5 Then
+                    Call WorldLog("冒险大厅搜索：滑左")
+                    Swipe 150, 545, 500, 545, 300
+                Else
+                    Call WorldLog("冒险大厅搜索：滑右")
+                    Swipe 500, 545, 150, 545, 300
+                End If
+                If searchCount = 10 Then
+                    searchCount = 0
+                End If
+            End If
+        End If
+        If TickCount() - enteredAt > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("原冒险模式入口60秒边界；恢复，不标完成")
+            Exit Function
+        End If
+        Call WorldWait(20)
+    Loop
+End Function
+
+
 // common/返回大厅.mq
 Function ReturnToHall()
     Dim returnStarted, acted, callerStage
@@ -5718,6 +6078,9 @@ End Function
 
 // common/任务注册.mq
 Sub RegisterTasks()
+    Call Note("注册英雄副本17；专业版root.691；原日常_英雄副本单开关")
+    Call Note("注册冒险副本18；专业版root.697；原RcMx1冒险新图单开关")
+    Call Note("注册力之大会19；专业版root.698；原RcMx2、买5次、快速加入配置")
     Call Note("注册异时空试炼92；原SlYsk时长与间隔配置；原多点找色")
     Call Note("注册伙伴试炼16；原SlHb配置；3.8旧OCR兼容，非同引擎")
     Call Note("注册基因试炼15；原SlJyin配置；3.8旧OCR兼容，非同引擎")
@@ -5750,6 +6113,18 @@ End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
+    If resumeTask = 17 Then
+        SelectDueTask = 17
+        Exit Function
+    End If
+    If resumeTask = 18 Then
+        SelectDueTask = 18
+        Exit Function
+    End If
+    If resumeTask = 19 Then
+        SelectDueTask = 19
+        Exit Function
+    End If
     If resumeTask = 13 Then
         SelectDueTask = 13
         Exit Function
@@ -5815,6 +6190,18 @@ Function SelectDueTask()
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    If heroDungeonEnabled And Not heroDungeonDone Then
+        SelectDueTask = 17
+        Exit Function
+    End If
+    If normalAdventureEnabled And Not normalAdventureDone Then
+        SelectDueTask = 18
+        Exit Function
+    End If
+    If powerTournamentEnabled And Not powerTournamentDone Then
+        SelectDueTask = 19
+        Exit Function
     End If
     selected = SelectGold()
     If selected <> 0 Then
@@ -6055,7 +6442,16 @@ End Function
 Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 92 Then
+    If taskId = 17 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteHeroDungeon()
+    ElseIf taskId = 18 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteNormalAdventureDungeon()
+    ElseIf taskId = 19 Then
+        terminalConfirmed = False
+        DispatchTask = ExecutePowerTournament()
+    ElseIf taskId = 92 Then
         terminalConfirmed = False
         DispatchTask = ExecuteYskTrial()
     ElseIf taskId = 16 Then
@@ -6518,6 +6914,750 @@ Function EnsureGameHall()
         End If
     Loop
     Call Note("[流程] 出口 EnsureGameHall 到达函数末尾（不代表任务已提交）")
+End Function
+
+
+// flows/017_英雄副本/英雄副本.mq
+Function HeroWait(waitMs)
+    HeroWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    HeroWait = Not BusinessExpired()
+End Function
+Function HeroMatchEither(firstName, secondName)
+    HeroMatchEither = True
+    If WorldMatch(firstName) Then
+        Exit Function
+    End If
+    HeroMatchEither = WorldMatch(secondName)
+End Function
+Function HeroEnter()
+    Dim started, searchCount, hallResult
+    HeroEnter = RESULT_TIMEOUT
+    Call WorldStage("英雄副本入口")
+    started = TickCount()
+    searchCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If HeroMatchEither("017_已经在英雄副本一", "017_已经在英雄副本二") Then
+            HeroEnter = RESULT_OK
+            Exit Function
+        End If
+        // root.787 uses the same two hall-page readiness patterns as the trials.
+        If Not HeroMatchEither("012_P30", "012_P31") Then
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Exit Function
+            End If
+        End If
+        If HeroMatchEither("017_英雄入口一", "017_英雄入口二") Then
+            If Not WorldOffset(0, 0, 2500) Then
+                Exit Function
+            End If
+        Else
+            searchCount = searchCount + 1
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Exit Function
+            End If
+            If searchCount <= 5 Then
+                Swipe 150, 545, 500, 545, 300
+            Else
+                Swipe 500, 545, 150, 545, 300
+            End If
+            If searchCount = 10 Then
+                searchCount = 0
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call HeroWait(2000)
+            Exit Function
+        End If
+        If Not HeroWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function HeroAutoTriple()
+    HeroAutoTriple = False
+    If WorldMatch("012_AutoReady") Then
+        HeroAutoTriple = True
+    ElseIf WorldMatch("012_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("012_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("012_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function ExecuteHeroDungeon()
+    heroDungeonRunning = True
+    ExecuteHeroDungeon = RunHeroDungeon()
+    heroDungeonRunning = False
+End Function
+Function RunHeroDungeon()
+    Dim started, heroAt, pageReady, settled
+    RunHeroDungeon = RESULT_TIMEOUT
+    If HeroEnter() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("英雄副本执行")
+    started = TickCount()
+    heroAt = TickCount()
+    settled = False
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("017_最新关卡") Then
+            If Not WorldOffset(2, 3, 200) Then
+                Exit Function
+            End If
+        End If
+        pageReady = WorldMatch("017_英雄选择判断")
+        If TickCount() - heroAt > 5000 Or pageReady Then
+            If WorldMatch("017_点击两个英雄") Then
+                Call WorldLog("原两英雄识别点击")
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                businessStarted = TickCount()
+            End If
+            If WorldMatch("017_点击三个英雄") Then
+                Call WorldLog("原三英雄识别点击")
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                businessStarted = TickCount()
+            End If
+        End If
+        If HeroMatchEither("017_挑战界面一", "017_挑战界面二") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("017_购买体力") Then
+            heroDungeonReason = "原需要购买体力"
+            terminalConfirmed = True
+            RunHeroDungeon = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("017_需要购买") Then
+            heroDungeonReason = "原出现购买提示"
+            terminalConfirmed = True
+            RunHeroDungeon = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("017_扫荡结果") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            settled = True
+        End If
+        If HeroMatchEither("017_战斗准备一", "017_战斗准备二") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If HeroMatchEither("017_开战界面一", "017_开战界面二") Then
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("032_少人提示") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        If HeroAutoTriple() Then
+            If Not HeroWait(500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If HeroMatchEither("017_战斗结束一", "017_战斗结束二") Then
+            If Not HeroWait(500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            heroAt = TickCount()
+            started = TickCount()
+            settled = True
+        End If
+        If TickCount() - started > 240000 Then
+            heroDungeonReason = "原240秒超时；按项目边界恢复，不标完成"
+            Call WorldLog(heroDungeonReason)
+            Exit Function
+        End If
+        businessStarted = TickCount()
+        If WorldMatch("017_关闭窗口") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("017_扫荡结果") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        If HeroMatchEither("017_战斗准备一", "017_战斗准备二") Then
+            If Not HeroWait(500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        If settled And HeroMatchEither("017_已经在英雄副本一", "017_已经在英雄副本二") Then
+            heroDungeonReason = "原返回英雄副本界面"
+            terminalConfirmed = True
+            RunHeroDungeon = RESULT_OK
+            Exit Function
+        End If
+        If Not HeroWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// flows/018_冒险副本/冒险副本.mq
+Function NormalAdventureWait(waitMs)
+    NormalAdventureWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    NormalAdventureWait = Not BusinessExpired()
+End Function
+Sub NormalAdventureResetProgress()
+    normalAdventureProgressAt = TickCount()
+    normalAdventurePostBattle = False
+End Sub
+Sub NormalAdventureReturnSnapshot(hitNumber, antiStuckCount, repeatedMapCount, settled)
+    Dim hitX, hitY, hitAt, path, created, bytes
+    hitX = foundX
+    hitY = foundY
+    hitAt = TickCount()
+    path = "/sdcard/Pictures/dragonball-adventure-return-" & hitAt & "-" & hitNumber & ".png"
+    If Not Dir.Exist("/sdcard/Pictures") Then
+        created = Dir.Create("/sdcard/Pictures")
+    End If
+    // Basic SnapShot is present in the installed 3.8 command catalogue.
+    // No clicks, waits, recognition retries, capture-mode or business-state changes.
+    SnapShot path
+    bytes = 0
+    If Dir.Exist(path) Then
+        bytes = File.Bytes(path)
+    End If
+    Call WorldLog("[冒险诊断] 返回标志命中序号=" & hitNumber & " 命中tick=" & hitAt & " 锚点=" & hitX & "," & hitY & " 防卡累计=" & antiStuckCount & " 地图重复=" & repeatedMapCount)
+    Call WorldLog("[冒险诊断] 模板=018_战斗返回标志 区域=0,0,719,1279 方向=1 相似度=0.9 基色=2020A4；命中不等于战斗完成")
+    If settled Then
+        Call WorldLog("[冒险诊断] settled=true")
+    Else
+        Call WorldLog("[冒险诊断] settled=false")
+    End If
+    Call WorldLog("[冒险诊断] 进展间隔毫秒=" & (hitAt - normalAdventureProgressAt) & " 截图路径=" & path & " 文件字节=" & bytes & " 截图结束tick=" & TickCount())
+    If bytes <= 0 Then
+        Call WorldLog("[冒险诊断] 截图未确认写入；继续原业务，不重试、不重置计时")
+    End If
+    foundX = hitX
+    foundY = hitY
+End Sub
+Function NormalAdventureRecognize(name, diagnostic)
+    Dim matched
+    matched = WorldMatch(name)
+    NormalAdventureRecognize = matched
+    If diagnostic Then
+        If matched Then
+            Call WorldLog("[冒险诊断] 原顺序识别=" & name & " 结果=命中 锚点=" & foundX & "," & foundY)
+        Else
+            Call WorldLog("[冒险诊断] 原顺序识别=" & name & " 结果=未命中")
+        End If
+    End If
+End Function
+Function NormalAdventureAutoTriple()
+    NormalAdventureAutoTriple = False
+    If WorldMatch("012_AutoReady") Then
+        NormalAdventureAutoTriple = True
+    ElseIf WorldMatch("012_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("012_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("012_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function NormalAdventureAntiStuck()
+    Dim armed
+    NormalAdventureAntiStuck = -1
+    armed = False
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not WorldTap(150, 50, 2000) Then
+            Exit Function
+        End If
+        If HeroMatchEither("018_防卡底部一", "018_新图入口") Then
+            If armed Then
+                Call WorldLog("[冒险诊断] 防卡第一组命中且armed=true；原返回值=0")
+                NormalAdventureAntiStuck = 0
+                Exit Function
+            End If
+            If Not WorldTap(100, 1200, 2000) Then
+                Exit Function
+            End If
+        End If
+        If HeroMatchEither("018_防卡底部二", "018_新图入口") Then
+            If Not armed Then
+                armed = True
+                Call WorldLog("[冒险诊断] 防卡第二组命中；armed=false变为true")
+            Else
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+            End If
+        End If
+    Loop
+End Function
+Function ExecuteNormalAdventureDungeon()
+    Dim antiStuckCount, repeatedMapCount, doubleTapAt, antiStuckResult, settled, diagnosticHit, returnHits
+    ExecuteNormalAdventureDungeon = RESULT_TIMEOUT
+    If EnterAdventureMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("冒险副本执行")
+    antiStuckCount = 0
+    repeatedMapCount = 0
+    normalAdventureProgressAt = TickCount()
+    doubleTapAt = TickCount()
+    normalAdventurePostBattle = False
+    settled = False
+    returnHits = 0
+    Do
+        diagnosticHit = False
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+
+        // root.697 uses independent recognition checks in this exact order.
+        If normalAdventurePostBattle Then
+            Call WorldLog("[冒险诊断] 开始防卡；当前累计=" & antiStuckCount)
+            antiStuckResult = NormalAdventureAntiStuck()
+            Call WorldLog("[冒险诊断] 防卡返回值=" & antiStuckResult)
+            If antiStuckResult <> 0 Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            normalAdventurePostBattle = False
+            businessStarted = TickCount()
+            settled = True
+            antiStuckCount = antiStuckCount + 1
+            Call WorldLog("[冒险诊断] 防卡累计=" & antiStuckCount & "；仅返回0累计，四次边界不变")
+        End If
+        If WorldMatch("018_新图入口") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("018_战斗返回标志") Then
+            normalAdventurePostBattle = True
+            diagnosticHit = True
+            returnHits = returnHits + 1
+            Call NormalAdventureReturnSnapshot(returnHits, antiStuckCount, repeatedMapCount, settled)
+        End If
+        If NormalAdventureRecognize("018_章节推进", diagnosticHit) Then
+            If Not WorldOffset(85, -90, 1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_地图进度一", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            repeatedMapCount = 0
+            businessStarted = TickCount()
+        End If
+        If NormalAdventureRecognize("018_地图进度二", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            repeatedMapCount = repeatedMapCount + 1
+            businessStarted = TickCount()
+        End If
+        If NormalAdventureRecognize("018_地图进度三", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            doubleTapAt = TickCount()
+            antiStuckCount = 0
+            Call WorldLog("[冒险诊断] 地图进度三命中；防卡累计清零")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_黄色光环", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1500) Then
+                Exit Function
+            End If
+            normalAdventurePostBattle = False
+            settled = False
+            doubleTapAt = TickCount()
+            Call WorldLog("点击光环 带黄")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_小怪", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventurePostBattle = False
+            settled = False
+            doubleTapAt = TickCount()
+            Call WorldLog("点击小怪")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_首领", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventurePostBattle = False
+            settled = False
+            doubleTapAt = TickCount()
+            Call WorldLog("点击首领")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_需要购买体力", diagnosticHit) Then
+            normalAdventureReason = "原需要购买体力，任务结束"
+            Call WorldLog(normalAdventureReason)
+            Call WorldOffset(299, -406, 1000)
+            terminalConfirmed = True
+            ExecuteNormalAdventureDungeon = RESULT_OK
+            Exit Function
+        End If
+        If HeroMatchEither("017_开战界面一", "017_开战界面二") Then
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原顺序识别=开战界面两候选 结果=命中")
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            Call WorldLog("点击开战")
+            businessStarted = TickCount()
+        Else
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原顺序识别=开战界面两候选 结果=未命中")
+            End If
+        End If
+        If NormalAdventureRecognize("032_少人提示", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            Call WorldLog("开战少人")
+            businessStarted = TickCount()
+        End If
+        If NormalAdventureAutoTriple() Then
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原自动三倍分支返回=true")
+            End If
+            businessStarted = TickCount()
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            If Not NormalAdventureWait(500) Then
+                Exit Function
+            End If
+            Call WorldResourcePrompt()
+        Else
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原自动三倍分支返回=false；可能未命中或仅执行原切换动作")
+            End If
+        End If
+
+        If TickCount() - doubleTapAt > 2000 Then
+            doubleTapAt = TickCount()
+            If Not WorldTap(150, 50, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(150, 50, 0) Then
+                Exit Function
+            End If
+        End If
+        If antiStuckCount >= 4 Then
+            normalAdventureReason = "原防卡累计4次结束"
+            Call WorldLog("[冒险诊断] 出口=" & normalAdventureReason & " 返回标志命中总数=" & returnHits)
+            terminalConfirmed = True
+            ExecuteNormalAdventureDungeon = RESULT_OK
+            Exit Function
+        End If
+        If settled Then
+            If TickCount() - normalAdventureProgressAt > 15000 Then
+                normalAdventureReason = "原战斗返回后15秒结束"
+                terminalConfirmed = True
+                ExecuteNormalAdventureDungeon = RESULT_OK
+                Exit Function
+            End If
+        ElseIf TickCount() - normalAdventureProgressAt > 40000 Then
+            normalAdventureReason = "原40秒无进展边界；按项目规则恢复，不标完成"
+            Call WorldLog(normalAdventureReason)
+            Exit Function
+        End If
+        If repeatedMapCount > 5 Then
+            normalAdventureReason = "原地图进度二累计超过5次结束"
+            terminalConfirmed = True
+            ExecuteNormalAdventureDungeon = RESULT_OK
+            Exit Function
+        End If
+        If Not NormalAdventureWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// flows/019_力之大会/力之大会.mq
+Function PowerTournamentWait(waitMs)
+    PowerTournamentWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    PowerTournamentWait = Not BusinessExpired()
+End Function
+Function PowerTournamentEnter()
+    Dim enteredAt
+    PowerTournamentEnter = RESULT_TIMEOUT
+    enteredAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("019_入口彩色") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("019_入口灰色") Then
+            powerTournamentReason = "原入口灰态，今日次数结束"
+            Call WorldLog(powerTournamentReason)
+            terminalConfirmed = True
+            PowerTournamentEnter = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("019_加入界面") Then
+            If Not powerTournamentQuickJoin Then
+                powerTournamentReason = "原未开启快速加入，识别加入界面后结束"
+                Call WorldLog(powerTournamentReason)
+                terminalConfirmed = True
+                PowerTournamentEnter = RESULT_OK
+                Exit Function
+            End If
+            Call WorldLog("加入")
+            If Not WorldTap(478, 1100, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("019_等待界面") Then
+            PowerTournamentEnter = RESULT_WAIT
+            Exit Function
+        End If
+        If TickCount() - enteredAt > 10000 Then
+            powerTournamentReason = "原进入阶段10秒边界；按项目规则恢复，不标完成"
+            Call WorldLog(powerTournamentReason)
+            Exit Function
+        End If
+        If Not PowerTournamentWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function PowerTournamentPurchase()
+    Dim purchaseAt, openCount, initialized, buyCount
+    PowerTournamentPurchase = RESULT_TIMEOUT
+    If Not powerTournamentBuyRuntime Then
+        PowerTournamentPurchase = RESULT_WAIT
+        Exit Function
+    End If
+    purchaseAt = TickCount()
+    openCount = 0
+    initialized = False
+    buyCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("019_等待界面") Then
+            If initialized Then
+                PowerTournamentPurchase = RESULT_WAIT
+                Exit Function
+            End If
+            If openCount < 3 Then
+                If Not WorldTap(570, 1157, 1000) Then
+                    Exit Function
+                End If
+                openCount = openCount + 1
+            ElseIf openCount >= 3 Then
+                powerTournamentReason = "原购买入口尝试3次未出现购买面板；恢复，不标完成"
+                Exit Function
+            End If
+        End If
+        If WorldMatch("019_购买界面") Then
+            If Not initialized Then
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                initialized = True
+            Else
+                If buyCount = 0 Then
+                    // Consume the per-session permission before a potentially interrupted purchase.
+                    powerTournamentBuyRuntime = False
+                    If Not WorldOffset(-310, 324, 1000) Then
+                        Exit Function
+                    End If
+                    Call WorldLog("★冒险_力之大会 购买5次")
+                Else
+                    If Not WorldOffset(-11, 17, 1000) Then
+                        Exit Function
+                    End If
+                    Call WorldLog("关闭购买")
+                    powerTournamentBuyRuntime = False
+                    PowerTournamentPurchase = RESULT_WAIT
+                    Exit Function
+                End If
+                buyCount = buyCount + 1
+            End If
+        End If
+        If TickCount() - purchaseAt > 10000 Then
+            powerTournamentReason = "原购买阶段10秒边界；按项目规则恢复，不标完成"
+            Call WorldLog(powerTournamentReason)
+            Exit Function
+        End If
+        If Not PowerTournamentWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function PowerTournamentBattle()
+    Dim progressAt
+    PowerTournamentBattle = RESULT_TIMEOUT
+    progressAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("019_可加入") Then
+            If Not WorldTap(478, 1100, 500) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If HeroMatchEither("017_开战界面一", "017_开战界面二") Then
+            If Not WorldTap(587, 982, 2000) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("032_少人提示") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        // root.725 点击跳过: original BattleBase recognition, anchor(-310,+93).
+        If WorldMatch("012_BattleBase") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            If Not PowerTournamentWait(1000) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("019_战斗结束") Then
+            Call WorldLog("战斗结束")
+            If Not WorldTap(150, 50, 200) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("019_终态灰色") Then
+            powerTournamentReason = "原灰态终止边界"
+            Call WorldLog(powerTournamentReason)
+            terminalConfirmed = True
+            PowerTournamentBattle = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - progressAt > 60000 Then
+            powerTournamentReason = "原战斗60秒无进展边界；按项目规则恢复，不标完成"
+            Call WorldLog(powerTournamentReason)
+            Exit Function
+        End If
+        If Not PowerTournamentWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecutePowerTournament()
+    Dim result
+    ExecutePowerTournament = RESULT_TIMEOUT
+    If EnterAdventureMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("力之大会进入")
+    result = PowerTournamentEnter()
+    If result = RESULT_OK Then
+        ExecutePowerTournament = result
+        Exit Function
+    End If
+    If result <> RESULT_WAIT Then
+        Exit Function
+    End If
+    Call WorldResourcePrompt()
+    Call WorldStage("力之大会购买")
+    result = PowerTournamentPurchase()
+    If result <> RESULT_WAIT Then
+        Exit Function
+    End If
+    Call WorldResourcePrompt()
+    Call WorldStage("力之大会战斗")
+    ExecutePowerTournament = PowerTournamentBattle()
 End Function
 
 

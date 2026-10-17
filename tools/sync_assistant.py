@@ -139,10 +139,61 @@ def sync_code_only():
  (backup/'验证.json').write_text(json.dumps({'target':str(target),'hashes':cfg['lastSynced'],'preserved':{str(p):hashlib.sha256(b).hexdigest() for p,b in preserved.items()},'officialCompilationVerified':False},ensure_ascii=False,indent=2),encoding='utf8')
  print('Code-only sync verified: '+str(target));print('Backup: '+str(backup))
 
+def sync_unchecked():
+ """Explicit user-requested file sync; preserve identity and compiled caches."""
+ import re,time
+ config=ROOT/'assistant-sync.json';journal_path=ROOT/'reports/授权同步边界.json'
+ cfg=json.loads(config.read_text('utf8'));target=Path(cfg['target'])
+ if cfg['name']!='龙珠激斗' or target.parent!=TARGET_DIR or target.name!=cfg['name']+'('+cfg['id']+').mq':raise RuntimeError('Unexpected existing project')
+ prop=json.loads(target.with_suffix('.prop').read_bytes().decode('gbk'))
+ if prop['Name']!=cfg['name'] or prop['id']!=cfg['id']:raise RuntimeError('Project identity mismatch')
+ for ext in ['.mq','.uip','.prop']:
+  if not matches_saved(target.with_suffix(ext),cfg['lastSynced'][ext]):raise RuntimeError('Assistant-side changes detected: '+ext)
+ ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig')
+ from check_ui import check
+ check()
+ # A missing comma after a layout can hide every following configuration entry.
+ unquoted=re.sub(r'"(?:[^"\\]|\\.)*"','""',ui)
+ if re.search(r'}\s*[^\s,}\]]',unquoted):raise RuntimeError('UI missing separator after a control/layout')
+ previous_ui=target.with_suffix('.uip').read_bytes().decode('gbk')
+ names=lambda text:set(re.findall(r'名称\s*:\s*"([^"]+)"',text))
+ missing=names(previous_ui)-names(ui)
+ if missing:raise RuntimeError('Existing UI controls missing: '+repr(sorted(missing)))
+ boxes=re.findall(r'多选框\s*:\s*\{[^{}]*\}',ui)
+ if not boxes or any(not re.search(r'选中\s*:\s*false\b',b) for b in boxes):raise RuntimeError('Checkbox defaults must all be false')
+ journal=json.loads(journal_path.read_text('utf8'));old_boundary=journal[-1]['after']
+ before={p:digest(Path(p)) for p in old_boundary}
+ preserved={p:p.read_bytes() for p in TARGET_DIR.glob(target.stem+'.*') if p.suffix not in ['.mq','.uip']}
+ backup=ROOT/'reports/同步备份'/('全不勾选-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S-%f'));backup.mkdir(parents=True)
+ for p in [config,journal_path,target,target.with_suffix('.uip'),*preserved]:shutil.copy2(p,backup/p.name)
+ build()
+ sources={ext:(ROOT/'dist/手机助手3.8导入版'/('龙珠激斗脚本'+ext)).read_bytes() for ext in ['.mq','.uip']}
+ for data in sources.values():data.decode('gbk',errors='strict')
+ for ext,data in sources.items():
+  p=target.with_suffix(ext)
+  if digest(p)!=before[str(p)]:raise RuntimeError('Target changed concurrently')
+  tmp=p.with_suffix(ext+'.new')
+  with tmp.open('xb') as f:f.write(data)
+  tmp.replace(p)
+ time.sleep(2)
+ if any(target.with_suffix(ext).read_bytes()!=data for ext,data in sources.items()):raise RuntimeError('Delayed sync mismatch')
+ if any(p.read_bytes()!=data for p,data in preserved.items()):raise RuntimeError('Metadata/cache changed')
+ cfg['lastSynced']={ext:digest(target.with_suffix(ext)) for ext in ['.mq','.uip','.prop']}
+ cfg['validation']='MQ/UI SHA256 verified after delay; all checkbox defaults false; existing identity, metadata and caches preserved; user will package and test.'
+ config.write_text(json.dumps(cfg,ensure_ascii=False,indent=2),encoding='utf8')
+ after={p:digest(Path(p)) for p in before}
+ report={'target':str(target),'id':cfg['id'],'checkboxCount':len(boxes),'allUnchecked':True,'hashes':cfg['lastSynced'],'preserved':{str(p):digest(p) for p in preserved},'assistantOperated':False,'deviceConnected':False}
+ report_path=backup/'同步后验证.json';report_path.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
+ journal.append({'authorizedByUser':True,'projectId':cfg['id'],'request':'同步到既有龙珠激斗脚本，取消所有勾选配置；不连接模拟器、不操作助手、不提交Git','before':old_boundary,'after':after,'verification':str(report_path)})
+ journal_path.write_text(json.dumps(journal,ensure_ascii=False,indent=2),encoding='utf8')
+ print(json.dumps(report,ensure_ascii=False,indent=2));print('Backup: '+str(backup))
+
 if __name__=='__main__':
  parser=argparse.ArgumentParser();parser.add_argument('--restore-deleted',action='store_true');parser.add_argument('--name',default='龙珠激斗')
  parser.add_argument('--code-only',action='store_true')
+ parser.add_argument('--all-unchecked',action='store_true')
  args=parser.parse_args()
- if args.code_only:sync_code_only()
+ if args.all_unchecked:sync_unchecked()
+ elif args.code_only:sync_code_only()
  elif args.restore_deleted:restore_deleted(args.name)
  else:sync()

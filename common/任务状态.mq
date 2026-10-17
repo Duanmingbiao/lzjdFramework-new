@@ -1,5 +1,13 @@
 ﻿Sub NewSession()
     Call NewTrialPublicSession()
+    heroDungeonDone = False
+    heroDungeonFailed = False
+    heroDungeonRecoveries = 0
+    heroDungeonRestarts = 0
+    heroDungeonPhase = "未开始"
+    heroDungeonReason = ""
+    Call NewNormalAdventureSession()
+    Call NewPowerTournamentSession()
     Call NewGoldSession()
     Call NewSoulSession()
     Call NewGeneSession()
@@ -95,6 +103,15 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 17 Then
+        Call StartHeroDungeonTask()
+    End If
+    If taskId = 18 Then
+        Call StartNormalAdventureTask()
+    End If
+    If taskId = 19 Then
+        Call StartPowerTournamentTask()
+    End If
     If taskId = 13 Then
         Call StartExperienceTask()
     End If
@@ -199,6 +216,15 @@ Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
     Call RecoverTrialPublicBoundary()
+    If currentTask = 17 Then
+        Call RecoverHeroDungeonTask()
+    End If
+    If currentTask = 18 Then
+        Call RecoverNormalAdventureTask()
+    End If
+    If currentTask = 19 Then
+        Call RecoverPowerTournamentTask()
+    End If
     If currentTask = 13 Then
         Call RecoverExperienceTask()
     End If
@@ -308,7 +334,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
+    If currentTask <> 17 And currentTask <> 18 And currentTask <> 19 And currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -324,7 +350,13 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 92 Then
+    If currentTask = 17 Then
+        Call CommitHeroDungeonTask()
+    ElseIf currentTask = 18 Then
+        Call CommitNormalAdventureTask()
+    ElseIf currentTask = 19 Then
+        Call CommitPowerTournamentTask()
+    ElseIf currentTask = 92 Then
         Call CommitYskTask()
     ElseIf currentTask = 16 Then
         Call CommitPartnerTask()

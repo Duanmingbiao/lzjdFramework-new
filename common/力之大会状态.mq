@@ -1,0 +1,43 @@
+﻿Sub LoadPowerTournamentSettings()
+    powerTournamentEnabled = WorldBoolean("RcMx2")
+    powerTournamentBuy = WorldBoolean("RcMx2买")
+    powerTournamentQuickJoin = WorldBoolean("RcMx2加入")
+End Sub
+Sub NewPowerTournamentSession()
+    powerTournamentDone = False
+    powerTournamentFailed = False
+    powerTournamentRecoveries = 0
+    powerTournamentRestarts = 0
+    powerTournamentPhase = "未开始"
+    powerTournamentReason = ""
+    powerTournamentBuyRuntime = powerTournamentBuy
+End Sub
+Function SelectPowerTournament()
+    SelectPowerTournament = 0
+    If powerTournamentEnabled And Not powerTournamentDone Then
+        SelectPowerTournament = 19
+    End If
+End Function
+Sub StartPowerTournamentTask()
+    powerTournamentFailed = False
+    powerTournamentPhase = "启动"
+    powerTournamentReason = ""
+    Call WorldStage("力之大会启动")
+End Sub
+Sub RecoverPowerTournamentTask()
+    powerTournamentFailed = True
+    powerTournamentRecoveries = powerTournamentRecoveries + 1
+    powerTournamentPhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("力之大会19保留原任务恢复；未知、失败或超时不完成")
+End Sub
+Sub RestartPowerTournamentTask()
+    powerTournamentRestarts = powerTournamentRestarts + 1
+    Call WorldLog("公共重启恢复力之大会19 次数=" & powerTournamentRestarts)
+End Sub
+Sub CommitPowerTournamentTask()
+    powerTournamentDone = True
+    powerTournamentFailed = False
+    powerTournamentPhase = "已完成"
+    Call WorldLog("力之大会19大厅连续确认后提交")
+End Sub

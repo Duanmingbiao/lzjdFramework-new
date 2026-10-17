@@ -1,0 +1,40 @@
+﻿Sub LoadNormalAdventureSettings()
+    normalAdventureEnabled = WorldBoolean("RcMx1")
+End Sub
+Sub NewNormalAdventureSession()
+    normalAdventureDone = False
+    normalAdventureFailed = False
+    normalAdventureRecoveries = 0
+    normalAdventureRestarts = 0
+    normalAdventurePhase = "未开始"
+    normalAdventureReason = ""
+End Sub
+Function SelectNormalAdventure()
+    SelectNormalAdventure = 0
+    If normalAdventureEnabled And Not normalAdventureDone Then
+        SelectNormalAdventure = 18
+    End If
+End Function
+Sub StartNormalAdventureTask()
+    normalAdventureFailed = False
+    normalAdventurePhase = "启动"
+    normalAdventureReason = ""
+    Call WorldStage("冒险副本启动")
+End Sub
+Sub RecoverNormalAdventureTask()
+    normalAdventureFailed = True
+    normalAdventureRecoveries = normalAdventureRecoveries + 1
+    normalAdventurePhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("冒险副本18保留原任务恢复；未知、失败或40秒无进展不完成")
+End Sub
+Sub RestartNormalAdventureTask()
+    normalAdventureRestarts = normalAdventureRestarts + 1
+    Call WorldLog("公共重启恢复冒险副本18 次数=" & normalAdventureRestarts)
+End Sub
+Sub CommitNormalAdventureTask()
+    normalAdventureDone = True
+    normalAdventureFailed = False
+    normalAdventurePhase = "已完成"
+    Call WorldLog("冒险副本18大厅连续确认后提交")
+End Sub

@@ -1,4 +1,7 @@
 ﻿Sub RegisterTasks()
+    Call Note("注册英雄副本17；专业版root.691；原日常_英雄副本单开关")
+    Call Note("注册冒险副本18；专业版root.697；原RcMx1冒险新图单开关")
+    Call Note("注册力之大会19；专业版root.698；原RcMx2、买5次、快速加入配置")
     Call Note("注册异时空试炼92；原SlYsk时长与间隔配置；原多点找色")
     Call Note("注册伙伴试炼16；原SlHb配置；3.8旧OCR兼容，非同引擎")
     Call Note("注册基因试炼15；原SlJyin配置；3.8旧OCR兼容，非同引擎")
@@ -31,6 +34,18 @@ End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
+    If resumeTask = 17 Then
+        SelectDueTask = 17
+        Exit Function
+    End If
+    If resumeTask = 18 Then
+        SelectDueTask = 18
+        Exit Function
+    End If
+    If resumeTask = 19 Then
+        SelectDueTask = 19
+        Exit Function
+    End If
     If resumeTask = 13 Then
         SelectDueTask = 13
         Exit Function
@@ -96,6 +111,18 @@ Function SelectDueTask()
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    If heroDungeonEnabled And Not heroDungeonDone Then
+        SelectDueTask = 17
+        Exit Function
+    End If
+    If normalAdventureEnabled And Not normalAdventureDone Then
+        SelectDueTask = 18
+        Exit Function
+    End If
+    If powerTournamentEnabled And Not powerTournamentDone Then
+        SelectDueTask = 19
+        Exit Function
     End If
     selected = SelectGold()
     If selected <> 0 Then

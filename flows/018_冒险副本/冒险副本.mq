@@ -1,0 +1,303 @@
+﻿Function NormalAdventureWait(waitMs)
+    NormalAdventureWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    NormalAdventureWait = Not BusinessExpired()
+End Function
+Sub NormalAdventureResetProgress()
+    normalAdventureProgressAt = TickCount()
+    normalAdventurePostBattle = False
+End Sub
+Sub NormalAdventureReturnSnapshot(hitNumber, antiStuckCount, repeatedMapCount, settled)
+    Dim hitX, hitY, hitAt, path, created, bytes
+    hitX = foundX
+    hitY = foundY
+    hitAt = TickCount()
+    path = "/sdcard/Pictures/dragonball-adventure-return-" & hitAt & "-" & hitNumber & ".png"
+    If Not Dir.Exist("/sdcard/Pictures") Then
+        created = Dir.Create("/sdcard/Pictures")
+    End If
+    // Basic SnapShot is present in the installed 3.8 command catalogue.
+    // No clicks, waits, recognition retries, capture-mode or business-state changes.
+    SnapShot path
+    bytes = 0
+    If Dir.Exist(path) Then
+        bytes = File.Bytes(path)
+    End If
+    Call WorldLog("[冒险诊断] 返回标志命中序号=" & hitNumber & " 命中tick=" & hitAt & " 锚点=" & hitX & "," & hitY & " 防卡累计=" & antiStuckCount & " 地图重复=" & repeatedMapCount)
+    Call WorldLog("[冒险诊断] 模板=018_战斗返回标志 区域=0,0,719,1279 方向=1 相似度=0.9 基色=2020A4；命中不等于战斗完成")
+    If settled Then
+        Call WorldLog("[冒险诊断] settled=true")
+    Else
+        Call WorldLog("[冒险诊断] settled=false")
+    End If
+    Call WorldLog("[冒险诊断] 进展间隔毫秒=" & (hitAt - normalAdventureProgressAt) & " 截图路径=" & path & " 文件字节=" & bytes & " 截图结束tick=" & TickCount())
+    If bytes <= 0 Then
+        Call WorldLog("[冒险诊断] 截图未确认写入；继续原业务，不重试、不重置计时")
+    End If
+    foundX = hitX
+    foundY = hitY
+End Sub
+Function NormalAdventureRecognize(name, diagnostic)
+    Dim matched
+    matched = WorldMatch(name)
+    NormalAdventureRecognize = matched
+    If diagnostic Then
+        If matched Then
+            Call WorldLog("[冒险诊断] 原顺序识别=" & name & " 结果=命中 锚点=" & foundX & "," & foundY)
+        Else
+            Call WorldLog("[冒险诊断] 原顺序识别=" & name & " 结果=未命中")
+        End If
+    End If
+End Function
+Function NormalAdventureAutoTriple()
+    NormalAdventureAutoTriple = False
+    If WorldMatch("012_AutoReady") Then
+        NormalAdventureAutoTriple = True
+    ElseIf WorldMatch("012_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("012_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("012_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function NormalAdventureAntiStuck()
+    Dim armed
+    NormalAdventureAntiStuck = -1
+    armed = False
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not WorldTap(150, 50, 2000) Then
+            Exit Function
+        End If
+        If HeroMatchEither("018_防卡底部一", "018_新图入口") Then
+            If armed Then
+                Call WorldLog("[冒险诊断] 防卡第一组命中且armed=true；原返回值=0")
+                NormalAdventureAntiStuck = 0
+                Exit Function
+            End If
+            If Not WorldTap(100, 1200, 2000) Then
+                Exit Function
+            End If
+        End If
+        If HeroMatchEither("018_防卡底部二", "018_新图入口") Then
+            If Not armed Then
+                armed = True
+                Call WorldLog("[冒险诊断] 防卡第二组命中；armed=false变为true")
+            Else
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+            End If
+        End If
+    Loop
+End Function
+Function ExecuteNormalAdventureDungeon()
+    Dim antiStuckCount, repeatedMapCount, doubleTapAt, antiStuckResult, settled, diagnosticHit, returnHits
+    ExecuteNormalAdventureDungeon = RESULT_TIMEOUT
+    If EnterAdventureMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("冒险副本执行")
+    antiStuckCount = 0
+    repeatedMapCount = 0
+    normalAdventureProgressAt = TickCount()
+    doubleTapAt = TickCount()
+    normalAdventurePostBattle = False
+    settled = False
+    returnHits = 0
+    Do
+        diagnosticHit = False
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+
+        // root.697 uses independent recognition checks in this exact order.
+        If normalAdventurePostBattle Then
+            Call WorldLog("[冒险诊断] 开始防卡；当前累计=" & antiStuckCount)
+            antiStuckResult = NormalAdventureAntiStuck()
+            Call WorldLog("[冒险诊断] 防卡返回值=" & antiStuckResult)
+            If antiStuckResult <> 0 Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            normalAdventurePostBattle = False
+            businessStarted = TickCount()
+            settled = True
+            antiStuckCount = antiStuckCount + 1
+            Call WorldLog("[冒险诊断] 防卡累计=" & antiStuckCount & "；仅返回0累计，四次边界不变")
+        End If
+        If WorldMatch("018_新图入口") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("018_战斗返回标志") Then
+            normalAdventurePostBattle = True
+            diagnosticHit = True
+            returnHits = returnHits + 1
+            Call NormalAdventureReturnSnapshot(returnHits, antiStuckCount, repeatedMapCount, settled)
+        End If
+        If NormalAdventureRecognize("018_章节推进", diagnosticHit) Then
+            If Not WorldOffset(85, -90, 1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_地图进度一", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            repeatedMapCount = 0
+            businessStarted = TickCount()
+        End If
+        If NormalAdventureRecognize("018_地图进度二", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            repeatedMapCount = repeatedMapCount + 1
+            businessStarted = TickCount()
+        End If
+        If NormalAdventureRecognize("018_地图进度三", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            doubleTapAt = TickCount()
+            antiStuckCount = 0
+            Call WorldLog("[冒险诊断] 地图进度三命中；防卡累计清零")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_黄色光环", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1500) Then
+                Exit Function
+            End If
+            normalAdventurePostBattle = False
+            settled = False
+            doubleTapAt = TickCount()
+            Call WorldLog("点击光环 带黄")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_小怪", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventurePostBattle = False
+            settled = False
+            doubleTapAt = TickCount()
+            Call WorldLog("点击小怪")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_首领", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            normalAdventurePostBattle = False
+            settled = False
+            doubleTapAt = TickCount()
+            Call WorldLog("点击首领")
+            businessStarted = TickCount()
+            Call WorldResourcePrompt()
+        End If
+        If NormalAdventureRecognize("018_需要购买体力", diagnosticHit) Then
+            normalAdventureReason = "原需要购买体力，任务结束"
+            Call WorldLog(normalAdventureReason)
+            Call WorldOffset(299, -406, 1000)
+            terminalConfirmed = True
+            ExecuteNormalAdventureDungeon = RESULT_OK
+            Exit Function
+        End If
+        If HeroMatchEither("017_开战界面一", "017_开战界面二") Then
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原顺序识别=开战界面两候选 结果=命中")
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            Call WorldLog("点击开战")
+            businessStarted = TickCount()
+        Else
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原顺序识别=开战界面两候选 结果=未命中")
+            End If
+        End If
+        If NormalAdventureRecognize("032_少人提示", diagnosticHit) Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            Call WorldLog("开战少人")
+            businessStarted = TickCount()
+        End If
+        If NormalAdventureAutoTriple() Then
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原自动三倍分支返回=true")
+            End If
+            businessStarted = TickCount()
+            normalAdventureProgressAt = TickCount()
+            doubleTapAt = TickCount()
+            If Not NormalAdventureWait(500) Then
+                Exit Function
+            End If
+            Call WorldResourcePrompt()
+        Else
+            If diagnosticHit Then
+                Call WorldLog("[冒险诊断] 原自动三倍分支返回=false；可能未命中或仅执行原切换动作")
+            End If
+        End If
+
+        If TickCount() - doubleTapAt > 2000 Then
+            doubleTapAt = TickCount()
+            If Not WorldTap(150, 50, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(150, 50, 0) Then
+                Exit Function
+            End If
+        End If
+        If antiStuckCount >= 4 Then
+            normalAdventureReason = "原防卡累计4次结束"
+            Call WorldLog("[冒险诊断] 出口=" & normalAdventureReason & " 返回标志命中总数=" & returnHits)
+            terminalConfirmed = True
+            ExecuteNormalAdventureDungeon = RESULT_OK
+            Exit Function
+        End If
+        If settled Then
+            If TickCount() - normalAdventureProgressAt > 15000 Then
+                normalAdventureReason = "原战斗返回后15秒结束"
+                terminalConfirmed = True
+                ExecuteNormalAdventureDungeon = RESULT_OK
+                Exit Function
+            End If
+        ElseIf TickCount() - normalAdventureProgressAt > 40000 Then
+            normalAdventureReason = "原40秒无进展边界；按项目规则恢复，不标完成"
+            Call WorldLog(normalAdventureReason)
+            Exit Function
+        End If
+        If repeatedMapCount > 5 Then
+            normalAdventureReason = "原地图进度二累计超过5次结束"
+            terminalConfirmed = True
+            ExecuteNormalAdventureDungeon = RESULT_OK
+            Exit Function
+        End If
+        If Not NormalAdventureWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function

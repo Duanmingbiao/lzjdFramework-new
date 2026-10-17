@@ -5,6 +5,10 @@ Dim partnerEnabled, partnerDue, partnerDone, partnerCount, partnerAbandoned, par
 Dim geneEnabled, geneDue, geneDone, geneCount, geneAbandoned, geneRecoveries, geneRestarts, genePhase, geneReason, geneExitKind, geneFinishedAt, geneNativeTimeout, genePickIndex, geneClickAt, geneActionAt, geneSpecialExit, geneFailures, geneForcedRecovery, geneNoRestartPending, geneRestartOnTimeout
 Dim soulEnabled, soulDue, soulDone, soulCount, soulAbandoned, soulRecoveries, soulRestarts, soulPhase, soulReason, soulExitKind, soulFinishedAt, soulNativeTimeout
 Dim goldEnabled, goldDue, goldDone, goldCount, goldAbandoned, goldRecoveries, goldRestarts, goldPhase, goldReason, goldExitKind, goldFinishedAt, goldNativeTimeout
+Dim heroDungeonEnabled, heroDungeonDone, heroDungeonFailed, heroDungeonRecoveries, heroDungeonRestarts, heroDungeonPhase, heroDungeonReason
+Dim heroDungeonRunning
+Dim normalAdventureEnabled, normalAdventureDone, normalAdventureFailed, normalAdventureRecoveries, normalAdventureRestarts, normalAdventurePhase, normalAdventureReason, normalAdventureProgressAt, normalAdventurePostBattle
+Dim powerTournamentEnabled, powerTournamentBuy, powerTournamentQuickJoin, powerTournamentBuyRuntime, powerTournamentDone, powerTournamentFailed, powerTournamentRecoveries, powerTournamentRestarts, powerTournamentPhase, powerTournamentReason
 Dim redEnabled, redMap, red84Hour, red84Minute, red85Hour, red85Minute, redReason, redMode, redActionAt, redFirstDone, redRefreshLeft, red84Due, red84Done, red84Failed, red84Count, red84Failures, red84Restarts, red84Recoveries, red84Phase, red84Terminal, red84Reason, red84FinishedAt, red85Due, red85Done, red85Failed, red85Count, red85Failures, red85Restarts, red85Recoveries, red85Phase, red85Terminal, red85Reason, red85FinishedAt
 Dim senzuEnabled, senzuDue, senzuDone, senzuAssist, senzuCount, senzuRecoveries, senzuRestarts, senzuPhase, senzuReason, senzuStop, senzuFinishedAt
 Dim advEnabled, advReward, advDue, advDone, advCount, advRecoveries, advRestarts, advPhase, advReason, advFinishedAt, advFailures, advCloseTen, advDirection

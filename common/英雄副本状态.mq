@@ -1,0 +1,41 @@
+﻿Sub LoadHeroDungeonSettings()
+    heroDungeonEnabled = WorldBoolean("日常_英雄副本")
+End Sub
+Sub NewHeroDungeonSession()
+    heroDungeonDone = False
+    heroDungeonFailed = False
+    heroDungeonRecoveries = 0
+    heroDungeonRestarts = 0
+    heroDungeonPhase = "未开始"
+    heroDungeonReason = ""
+End Sub
+Function SelectHeroDungeon()
+    SelectHeroDungeon = 0
+    If heroDungeonEnabled And Not heroDungeonDone Then
+        SelectHeroDungeon = 17
+    End If
+End Function
+Sub StartHeroDungeonTask()
+    heroDungeonRunning = False
+    heroDungeonFailed = False
+    heroDungeonPhase = "启动"
+    heroDungeonReason = ""
+    Call WorldStage("英雄副本启动")
+End Sub
+Sub RecoverHeroDungeonTask()
+    heroDungeonFailed = True
+    heroDungeonRecoveries = heroDungeonRecoveries + 1
+    heroDungeonPhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("英雄副本17保留原任务恢复；未知、失败或超时不完成")
+End Sub
+Sub RestartHeroDungeonTask()
+    heroDungeonRestarts = heroDungeonRestarts + 1
+    Call WorldLog("公共重启恢复英雄副本17 次数=" & heroDungeonRestarts)
+End Sub
+Sub CommitHeroDungeonTask()
+    heroDungeonDone = True
+    heroDungeonFailed = False
+    heroDungeonPhase = "已完成"
+    Call WorldLog("英雄副本17大厅连续确认后提交")
+End Sub

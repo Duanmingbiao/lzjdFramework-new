@@ -1,7 +1,16 @@
 ﻿Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 92 Then
+    If taskId = 17 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteHeroDungeon()
+    ElseIf taskId = 18 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteNormalAdventureDungeon()
+    ElseIf taskId = 19 Then
+        terminalConfirmed = False
+        DispatchTask = ExecutePowerTournament()
+    ElseIf taskId = 92 Then
         terminalConfirmed = False
         DispatchTask = ExecuteYskTrial()
     ElseIf taskId = 16 Then

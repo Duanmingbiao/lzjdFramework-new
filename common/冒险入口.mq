@@ -1,0 +1,78 @@
+﻿Function AdventureModeKnown()
+    AdventureModeKnown = True
+    If WorldMatch("018_防卡底部一") Then
+        Exit Function
+    End If
+    AdventureModeKnown = WorldMatch("018_新图入口")
+End Function
+Function AdventureHallReady()
+    AdventureHallReady = True
+    If WorldMatch("012_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P31") Then
+        Exit Function
+    End If
+    AdventureHallReady = WorldMatch("012_P32")
+End Function
+Function EnterAdventureMode()
+    Dim enteredAt, searchCount, hallResult
+    EnterAdventureMode = RESULT_TIMEOUT
+    Call WorldStage("冒险模式入口")
+    enteredAt = TickCount()
+    searchCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If AdventureModeKnown() Then
+            Call WorldLog("原冒险模式目标页已确认")
+            businessStarted = TickCount()
+            EnterAdventureMode = RESULT_OK
+            Exit Function
+        End If
+        hallResult = ReturnToHall()
+        If hallResult <> RESULT_OK Then
+            Exit Function
+        End If
+        If AdventureHallReady() Then
+            If WorldMatch("冒险_模式入口") Then
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+                If currentTask = 19 Then
+                    Call WorldWait(3000)
+                    If BusinessExpired() Then
+                        Exit Function
+                    End If
+                End If
+            Else
+                searchCount = searchCount + 1
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Then
+                    Exit Function
+                End If
+                If searchCount <= 5 Then
+                    Call WorldLog("冒险大厅搜索：滑左")
+                    Swipe 150, 545, 500, 545, 300
+                Else
+                    Call WorldLog("冒险大厅搜索：滑右")
+                    Swipe 500, 545, 150, 545, 300
+                End If
+                If searchCount = 10 Then
+                    searchCount = 0
+                End If
+            End If
+        End If
+        If TickCount() - enteredAt > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("原冒险模式入口60秒边界；恢复，不标完成")
+            Exit Function
+        End If
+        Call WorldWait(20)
+    Loop
+End Function

@@ -1,0 +1,209 @@
+﻿Function HeroWait(waitMs)
+    HeroWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    HeroWait = Not BusinessExpired()
+End Function
+Function HeroMatchEither(firstName, secondName)
+    HeroMatchEither = True
+    If WorldMatch(firstName) Then
+        Exit Function
+    End If
+    HeroMatchEither = WorldMatch(secondName)
+End Function
+Function HeroEnter()
+    Dim started, searchCount, hallResult
+    HeroEnter = RESULT_TIMEOUT
+    Call WorldStage("英雄副本入口")
+    started = TickCount()
+    searchCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If HeroMatchEither("017_已经在英雄副本一", "017_已经在英雄副本二") Then
+            HeroEnter = RESULT_OK
+            Exit Function
+        End If
+        // root.787 uses the same two hall-page readiness patterns as the trials.
+        If Not HeroMatchEither("012_P30", "012_P31") Then
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Exit Function
+            End If
+        End If
+        If HeroMatchEither("017_英雄入口一", "017_英雄入口二") Then
+            If Not WorldOffset(0, 0, 2500) Then
+                Exit Function
+            End If
+        Else
+            searchCount = searchCount + 1
+            hallResult = ReturnToHall()
+            If hallResult <> RESULT_OK Then
+                Exit Function
+            End If
+            If searchCount <= 5 Then
+                Swipe 150, 545, 500, 545, 300
+            Else
+                Swipe 500, 545, 150, 545, 300
+            End If
+            If searchCount = 10 Then
+                searchCount = 0
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call HeroWait(2000)
+            Exit Function
+        End If
+        If Not HeroWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function HeroAutoTriple()
+    HeroAutoTriple = False
+    If WorldMatch("012_AutoReady") Then
+        HeroAutoTriple = True
+    ElseIf WorldMatch("012_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("012_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("012_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function ExecuteHeroDungeon()
+    heroDungeonRunning = True
+    ExecuteHeroDungeon = RunHeroDungeon()
+    heroDungeonRunning = False
+End Function
+Function RunHeroDungeon()
+    Dim started, heroAt, pageReady, settled
+    RunHeroDungeon = RESULT_TIMEOUT
+    If HeroEnter() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("英雄副本执行")
+    started = TickCount()
+    heroAt = TickCount()
+    settled = False
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("017_最新关卡") Then
+            If Not WorldOffset(2, 3, 200) Then
+                Exit Function
+            End If
+        End If
+        pageReady = WorldMatch("017_英雄选择判断")
+        If TickCount() - heroAt > 5000 Or pageReady Then
+            If WorldMatch("017_点击两个英雄") Then
+                Call WorldLog("原两英雄识别点击")
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                businessStarted = TickCount()
+            End If
+            If WorldMatch("017_点击三个英雄") Then
+                Call WorldLog("原三英雄识别点击")
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                businessStarted = TickCount()
+            End If
+        End If
+        If HeroMatchEither("017_挑战界面一", "017_挑战界面二") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("017_购买体力") Then
+            heroDungeonReason = "原需要购买体力"
+            terminalConfirmed = True
+            RunHeroDungeon = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("017_需要购买") Then
+            heroDungeonReason = "原出现购买提示"
+            terminalConfirmed = True
+            RunHeroDungeon = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("017_扫荡结果") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            settled = True
+        End If
+        If HeroMatchEither("017_战斗准备一", "017_战斗准备二") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If HeroMatchEither("017_开战界面一", "017_开战界面二") Then
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("032_少人提示") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        If HeroAutoTriple() Then
+            If Not HeroWait(500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If HeroMatchEither("017_战斗结束一", "017_战斗结束二") Then
+            If Not HeroWait(500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            heroAt = TickCount()
+            started = TickCount()
+            settled = True
+        End If
+        If TickCount() - started > 240000 Then
+            heroDungeonReason = "原240秒超时；按项目边界恢复，不标完成"
+            Call WorldLog(heroDungeonReason)
+            Exit Function
+        End If
+        businessStarted = TickCount()
+        If WorldMatch("017_关闭窗口") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("017_扫荡结果") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        If HeroMatchEither("017_战斗准备一", "017_战斗准备二") Then
+            If Not HeroWait(500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        If settled And HeroMatchEither("017_已经在英雄副本一", "017_已经在英雄副本二") Then
+            heroDungeonReason = "原返回英雄副本界面"
+            terminalConfirmed = True
+            RunHeroDungeon = RESULT_OK
+            Exit Function
+        End If
+        If Not HeroWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function

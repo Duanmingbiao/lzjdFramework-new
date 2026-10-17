@@ -14,6 +14,15 @@
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If currentTask = 17 Then
+        Call RestartHeroDungeonTask()
+    End If
+    If currentTask = 18 Then
+        Call RestartNormalAdventureTask()
+    End If
+    If currentTask = 19 Then
+        Call RestartPowerTournamentTask()
+    End If
     If currentTask = 13 Then
         Call RestartExperienceTask()
     End If

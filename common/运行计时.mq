@@ -2,6 +2,10 @@
     LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
+    If currentTask = 17 And heroDungeonRunning Then
+        BusinessExpired = ForegroundInterrupted()
+        Exit Function
+    End If
     If currentTask = 92 Then
         BusinessExpired = TrialWatchdogExpired()
         Exit Function

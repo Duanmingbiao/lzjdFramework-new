@@ -1,0 +1,223 @@
+﻿Function PowerTournamentWait(waitMs)
+    PowerTournamentWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    PowerTournamentWait = Not BusinessExpired()
+End Function
+Function PowerTournamentEnter()
+    Dim enteredAt
+    PowerTournamentEnter = RESULT_TIMEOUT
+    enteredAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("019_入口彩色") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("019_入口灰色") Then
+            powerTournamentReason = "原入口灰态，今日次数结束"
+            Call WorldLog(powerTournamentReason)
+            terminalConfirmed = True
+            PowerTournamentEnter = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("019_加入界面") Then
+            If Not powerTournamentQuickJoin Then
+                powerTournamentReason = "原未开启快速加入，识别加入界面后结束"
+                Call WorldLog(powerTournamentReason)
+                terminalConfirmed = True
+                PowerTournamentEnter = RESULT_OK
+                Exit Function
+            End If
+            Call WorldLog("加入")
+            If Not WorldTap(478, 1100, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("019_等待界面") Then
+            PowerTournamentEnter = RESULT_WAIT
+            Exit Function
+        End If
+        If TickCount() - enteredAt > 10000 Then
+            powerTournamentReason = "原进入阶段10秒边界；按项目规则恢复，不标完成"
+            Call WorldLog(powerTournamentReason)
+            Exit Function
+        End If
+        If Not PowerTournamentWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function PowerTournamentPurchase()
+    Dim purchaseAt, openCount, initialized, buyCount
+    PowerTournamentPurchase = RESULT_TIMEOUT
+    If Not powerTournamentBuyRuntime Then
+        PowerTournamentPurchase = RESULT_WAIT
+        Exit Function
+    End If
+    purchaseAt = TickCount()
+    openCount = 0
+    initialized = False
+    buyCount = 0
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("019_等待界面") Then
+            If initialized Then
+                PowerTournamentPurchase = RESULT_WAIT
+                Exit Function
+            End If
+            If openCount < 3 Then
+                If Not WorldTap(570, 1157, 1000) Then
+                    Exit Function
+                End If
+                openCount = openCount + 1
+            ElseIf openCount >= 3 Then
+                powerTournamentReason = "原购买入口尝试3次未出现购买面板；恢复，不标完成"
+                Exit Function
+            End If
+        End If
+        If WorldMatch("019_购买界面") Then
+            If Not initialized Then
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-285, 145, 200) Then
+                    Exit Function
+                End If
+                initialized = True
+            Else
+                If buyCount = 0 Then
+                    // Consume the per-session permission before a potentially interrupted purchase.
+                    powerTournamentBuyRuntime = False
+                    If Not WorldOffset(-310, 324, 1000) Then
+                        Exit Function
+                    End If
+                    Call WorldLog("★冒险_力之大会 购买5次")
+                Else
+                    If Not WorldOffset(-11, 17, 1000) Then
+                        Exit Function
+                    End If
+                    Call WorldLog("关闭购买")
+                    powerTournamentBuyRuntime = False
+                    PowerTournamentPurchase = RESULT_WAIT
+                    Exit Function
+                End If
+                buyCount = buyCount + 1
+            End If
+        End If
+        If TickCount() - purchaseAt > 10000 Then
+            powerTournamentReason = "原购买阶段10秒边界；按项目规则恢复，不标完成"
+            Call WorldLog(powerTournamentReason)
+            Exit Function
+        End If
+        If Not PowerTournamentWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function PowerTournamentBattle()
+    Dim progressAt
+    PowerTournamentBattle = RESULT_TIMEOUT
+    progressAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("019_可加入") Then
+            If Not WorldTap(478, 1100, 500) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If HeroMatchEither("017_开战界面一", "017_开战界面二") Then
+            If Not WorldTap(587, 982, 2000) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("032_少人提示") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        // root.725 点击跳过: original BattleBase recognition, anchor(-310,+93).
+        If WorldMatch("012_BattleBase") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            If Not PowerTournamentWait(1000) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("019_战斗结束") Then
+            Call WorldLog("战斗结束")
+            If Not WorldTap(150, 50, 200) Then
+                Exit Function
+            End If
+            progressAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("019_终态灰色") Then
+            powerTournamentReason = "原灰态终止边界"
+            Call WorldLog(powerTournamentReason)
+            terminalConfirmed = True
+            PowerTournamentBattle = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - progressAt > 60000 Then
+            powerTournamentReason = "原战斗60秒无进展边界；按项目规则恢复，不标完成"
+            Call WorldLog(powerTournamentReason)
+            Exit Function
+        End If
+        If Not PowerTournamentWait(100) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecutePowerTournament()
+    Dim result
+    ExecutePowerTournament = RESULT_TIMEOUT
+    If EnterAdventureMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("力之大会进入")
+    result = PowerTournamentEnter()
+    If result = RESULT_OK Then
+        ExecutePowerTournament = result
+        Exit Function
+    End If
+    If result <> RESULT_WAIT Then
+        Exit Function
+    End If
+    Call WorldResourcePrompt()
+    Call WorldStage("力之大会购买")
+    result = PowerTournamentPurchase()
+    If result <> RESULT_WAIT Then
+        Exit Function
+    End If
+    Call WorldResourcePrompt()
+    Call WorldStage("力之大会战斗")
+    ExecutePowerTournament = PowerTournamentBattle()
+End Function
