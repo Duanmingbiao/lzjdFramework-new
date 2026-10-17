@@ -34,6 +34,12 @@
     businessStarted = TickCount()
     result = DispatchTask(selected)
     Call Note("[流程] DispatchTask(selected) 返回=" & result)
+    If currentTask = 22 Then
+        Call StageForestPublicTimeout()
+        If forestDeferred Then
+            result = RESULT_WAIT
+        End If
+    End If
     If currentTask = 82 And result = RESULT_WAIT Then
         If memoryUncompleted Then
             hallResult = ReturnToHall()
@@ -41,6 +47,52 @@
                 Exit Sub
             End If
             If ReleaseMemoryUncompleted(hallResult = RESULT_OK) Then
+                Exit Sub
+            End If
+            result = RESULT_TIMEOUT
+        End If
+    End If
+    If currentTask = 21 And result = RESULT_WAIT Then
+        If galaxyDeferred Then
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If ScheduleGalaxyRetry(hallResult = RESULT_OK) Then
+                Call Note("[跨银河21] 原服务器异常一小时后重试；非完成；执行原重启请求")
+                Call RestartGame()
+                Exit Sub
+            End If
+            result = RESULT_TIMEOUT
+        End If
+    End If
+    If currentTask = 22 And result = RESULT_WAIT Then
+        If forestDeferred Then
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If ScheduleForestRetry(hallResult = RESULT_OK) Then
+                If forestTimeoutPending Then
+                    forestTimeoutPending = False
+                    If Sys.IsRunning(GAME_PACKAGE) And Not forestRestartOnTimeout Then
+                        Call WorldWait(1000)
+                    Else
+                        Call RestartGame()
+                    End If
+                End If
+                Exit Sub
+            End If
+            result = RESULT_TIMEOUT
+        End If
+    End If
+    If currentTask = 23 And result = RESULT_WAIT Then
+        If allianceDeferred Then
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If ReleaseAllianceRetry(hallResult = RESULT_OK) Then
                 Exit Sub
             End If
             result = RESULT_TIMEOUT
@@ -137,6 +189,19 @@
         End If
     End If
     Call SaveRecovery()
+    If currentTask = 23 And allianceTimeoutRecovery Then
+        allianceTimeoutRecovery = False
+        businessStarted = TickCount()
+        If Sys.IsRunning(GAME_PACKAGE) And Not allianceRestartOnTimeout Then
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            Call WorldLog("原公共超时不重启；大厅结果=" & hallResult & "；非成功")
+            Call WorldWait(1000)
+            Exit Sub
+        End If
+    End If
     If trialPublicRecoveryTask = currentTask And IsTrialTask(currentTask) Then
         trialPublicRecoveryTask = 0
         businessStarted = TickCount()

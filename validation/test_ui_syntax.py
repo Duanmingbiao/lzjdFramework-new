@@ -11,7 +11,15 @@ SPEC.loader.exec_module(UI)
 class UiSyntaxTests(unittest.TestCase):
     def test_complete_configuration(self):
         controls = UI.check()
-        self.assertEqual(len(controls), 196)
+        self.assertEqual(len(controls), 225)
+        self.assertFalse(controls['日常_联盟组队战'][1]['选中'])
+        self.assertFalse(controls['日常_联盟组队战_参赛'][1]['选中'])
+        for key in ['日常_恐惧森林','日常_恐惧森林_武道家之心','日常_恐惧森林_武道家背包']:
+            self.assertEqual(controls[key][1]['选中'], False)
+        self.assertIn('日常_无名星之战', controls)
+        self.assertEqual(controls['日常_无名星之战'][1]['选中'], False)
+        self.assertEqual(controls['日常_跨银河大赛'][1]['选中'], False)
+        self.assertEqual(controls['日常_跨银河大赛_报名'][1]['选中'], False)
 
     def test_missing_layout_separator_is_rejected(self):
         text = '界面:{日常功能:{水平布局:{文字框:{名称:"前"}},文字框:{名称:"后"}}}'

@@ -1,0 +1,205 @@
+{
+  "date": "2026-10-17",
+  "scope": "user-authorized existing 龙珠激斗 MQ/UI file synchronization only",
+  "verification": {
+    "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+    "id": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+    "sourceUnits": 92,
+    "modules": [
+      "日常_无名星之战",
+      "日常_跨银河大赛",
+      "日常_恐惧森林",
+      "日常_联盟组队战"
+    ],
+    "controls": 225,
+    "oldControlsPreserved": 196,
+    "checkboxes": 55,
+    "allUnchecked": true,
+    "sourceHashesUnchanged": true,
+    "sourceBuildTargetMQAndUIExact": true,
+    "hashes": {
+      ".mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      ".uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e"
+    },
+    "preserved": {
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).lc": "0d527d78f5e139ae7c2ad9f4ff9c51fef180de8c9d6095e1c528109886c8fdfa",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "assistantOperated": false,
+    "deviceConnected": false,
+    "officialCompilationVerified": false
+  },
+  "targetedBefore": {
+    "tests": 187,
+    "passed": 187
+  },
+  "static": {
+    "scope": "static structure and encoding only; not official MQ compilation",
+    "issues": [],
+    "moduleCount": 92,
+    "pass": true
+  },
+  "fullSuiteBefore": {
+    "tests": 1437,
+    "failures": 41,
+    "errors": 0,
+    "failedTests": [
+      "test_adventure.AdventureTests.test_catalog_append_only58_and_mqexact",
+      "test_adventure.AdventureTests.test_ui_original2controls_all_previous_unchanged",
+      "test_coop.CoopTests.test_append_only_exact_parameters",
+      "test_crossboss.CrossBossTests.test_all_raw_recognition_records_exact_and_append_only",
+      "test_duel.DuelTests.test_build_and_assistant_protected_files_unchanged",
+      "test_experience.ExperienceTests.test_catalog_append_only22_and_exact_mq",
+      "test_experience.ExperienceTests.test_no_other_trial_task_registered",
+      "test_experience.ExperienceTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_friend.FriendFlow.test_catalog_append_only_exact_conversion",
+      "test_frieza.FriezaTests.test_protected_build_and_assistant_unchanged",
+      "test_gene.GeneTests.test_catalog_append_only30_and_exact_mq",
+      "test_gene.GeneTests.test_only_gene15_added_to_existing_modules",
+      "test_gene.GeneTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_gold.GoldTests.test_catalog_append_only22_and_exact_mq",
+      "test_gold.GoldTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_memory.MemoryTests.test_no_build_or_sync_artifact_changed",
+      "test_monthly.MonthlyEvidence.test_twenty_patterns_preserve_colors_regions_and_direction",
+      "test_partner.PartnerTests.test_catalog_append_only23_and_exact_mq",
+      "test_partner.PartnerTests.test_only_partner16_added_no_future_trial",
+      "test_partner.PartnerTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_plant.PlantTests.test_raw_colors_append_only_and_coin_similarity095",
+      "test_plant.PlantTests.test_ui_only_original_checkbox_added_default_off",
+      "test_qfriend.QFriendFlow.test_catalog_append_and_exact_parameters",
+      "test_qq_screenshots.QQScreenshotPixels.test_prior_professional_and_hall_profile_records_unchanged",
+      "test_redarmy.RedArmyTests.test_append_only_exact_33_profiles_and123_calls",
+      "test_senzu.SenzuTests.test_business_integration_and_built_artifacts_unchanged",
+      "test_senzu.SenzuTests.test_catalog_append_only_and_original_raw_colors",
+      "test_senzu.SenzuTests.test_config_keys_options_and_all_previous_controls_unchanged",
+      "test_signin.SignEvidence.test_exact_raw_conversion_and_append_only_catalog",
+      "test_snake.SnakeTests.test_catalog_append_only_and_all_actual_definitions",
+      "test_snake.SnakeTests.test_original_ui13_no_changes_to_previous_controls",
+      "test_soul.SoulTests.test_catalog_append_only22_and_exact_mq",
+      "test_soul.SoulTests.test_only_soul14_added_to_existing_registration",
+      "test_soul.SoulTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_stamina.StaminaTests.test_exact_catalog_conversion_append_only",
+      "test_stamina.StaminaTests.test_only_expected_integration_sources_changed",
+      "test_task169.RewardEvidence.test_existing_editable_ui_contracts_preserved",
+      "test_task169.RewardEvidence.test_existing_profiles_unchanged",
+      "test_worldboss.WorldBossTests.test_append_only_catalog_and_ui_layout",
+      "test_wukong.WukongTests.test_append_only_exact_profiles",
+      "test_ysk.YskTests.test_registration_only92_after_partner"
+    ],
+    "errorDetails": []
+  },
+  "fullSuiteAfter": {
+    "tests": 1437,
+    "failures": 42,
+    "errors": 0,
+    "failedTests": [
+      "test_adventure.AdventureTests.test_catalog_append_only58_and_mqexact",
+      "test_adventure.AdventureTests.test_ui_original2controls_all_previous_unchanged",
+      "test_alliance.AllianceTests.test_protected_artifacts_unchanged",
+      "test_coop.CoopTests.test_append_only_exact_parameters",
+      "test_crossboss.CrossBossTests.test_all_raw_recognition_records_exact_and_append_only",
+      "test_experience.ExperienceTests.test_catalog_append_only22_and_exact_mq",
+      "test_experience.ExperienceTests.test_no_other_trial_task_registered",
+      "test_experience.ExperienceTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_forest.ForestTests.test_protected_dist_and_assistant_artifacts_unchanged",
+      "test_friend.FriendFlow.test_catalog_append_only_exact_conversion",
+      "test_galaxy.GalaxyTests.test_no_assistant_build_or_sync_record_mutation",
+      "test_gene.GeneTests.test_catalog_append_only30_and_exact_mq",
+      "test_gene.GeneTests.test_only_gene15_added_to_existing_modules",
+      "test_gene.GeneTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_gold.GoldTests.test_catalog_append_only22_and_exact_mq",
+      "test_gold.GoldTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_monthly.MonthlyEvidence.test_twenty_patterns_preserve_colors_regions_and_direction",
+      "test_nameless.NamelessTests.test_existing_build_assistant_and_sync_records_unchanged",
+      "test_partner.PartnerTests.test_catalog_append_only23_and_exact_mq",
+      "test_partner.PartnerTests.test_only_partner16_added_no_future_trial",
+      "test_partner.PartnerTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_plant.PlantTests.test_raw_colors_append_only_and_coin_similarity095",
+      "test_plant.PlantTests.test_ui_only_original_checkbox_added_default_off",
+      "test_qfriend.QFriendFlow.test_catalog_append_and_exact_parameters",
+      "test_qq_screenshots.QQScreenshotPixels.test_prior_professional_and_hall_profile_records_unchanged",
+      "test_redarmy.RedArmyTests.test_append_only_exact_33_profiles_and123_calls",
+      "test_senzu.SenzuTests.test_business_integration_and_built_artifacts_unchanged",
+      "test_senzu.SenzuTests.test_catalog_append_only_and_original_raw_colors",
+      "test_senzu.SenzuTests.test_config_keys_options_and_all_previous_controls_unchanged",
+      "test_signin.SignEvidence.test_exact_raw_conversion_and_append_only_catalog",
+      "test_snake.SnakeTests.test_catalog_append_only_and_all_actual_definitions",
+      "test_snake.SnakeTests.test_original_ui13_no_changes_to_previous_controls",
+      "test_soul.SoulTests.test_catalog_append_only22_and_exact_mq",
+      "test_soul.SoulTests.test_only_soul14_added_to_existing_registration",
+      "test_soul.SoulTests.test_ui_only_original_checkbox_and_all_defaults_false",
+      "test_stamina.StaminaTests.test_exact_catalog_conversion_append_only",
+      "test_stamina.StaminaTests.test_only_expected_integration_sources_changed",
+      "test_task169.RewardEvidence.test_existing_editable_ui_contracts_preserved",
+      "test_task169.RewardEvidence.test_existing_profiles_unchanged",
+      "test_worldboss.WorldBossTests.test_append_only_catalog_and_ui_layout",
+      "test_wukong.WukongTests.test_append_only_exact_profiles",
+      "test_ysk.YskTests.test_registration_only92_after_partner"
+    ],
+    "errorDetails": []
+  },
+  "regressionDiff": {
+    "added": [
+      "test_alliance.AllianceTests.test_protected_artifacts_unchanged",
+      "test_forest.ForestTests.test_protected_dist_and_assistant_artifacts_unchanged",
+      "test_galaxy.GalaxyTests.test_no_assistant_build_or_sync_record_mutation",
+      "test_nameless.NamelessTests.test_existing_build_assistant_and_sync_records_unchanged"
+    ],
+    "removed": [
+      "test_duel.DuelTests.test_build_and_assistant_protected_files_unchanged",
+      "test_frieza.FriezaTests.test_protected_build_and_assistant_unchanged",
+      "test_memory.MemoryTests.test_no_build_or_sync_artifact_changed"
+    ]
+  },
+  "newFailureClassification": "Four historical no-sync hash guards now fail on the explicitly authorized assistant-sync.json mutation; no business source change.",
+  "newFailureDetails": {
+    "failures": [
+      [
+        "test_alliance.AllianceTests.test_protected_artifacts_unchanged",
+        "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_alliance.py\", line 344, in test_protected_artifacts_unchanged\n    self.assertEqual(hashlib.sha256(Path(f).read_bytes()).hexdigest(),h,f)\nAssertionError: '6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549' != '408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb'\n- 6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549\n+ 408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb\n : D:\\game\\anjian-new\\assistant-sync.json\n"
+      ],
+      [
+        "test_forest.ForestTests.test_protected_dist_and_assistant_artifacts_unchanged",
+        "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_forest.py\", line 239, in test_protected_dist_and_assistant_artifacts_unchanged\n    self.assertEqual(hashlib.sha256(Path(filename).read_bytes()).hexdigest(),digest,filename)\nAssertionError: '6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549' != '408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb'\n- 6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549\n+ 408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb\n : D:\\game\\anjian-new\\assistant-sync.json\n"
+      ],
+      [
+        "test_galaxy.GalaxyTests.test_no_assistant_build_or_sync_record_mutation",
+        "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_galaxy.py\", line 342, in test_no_assistant_build_or_sync_record_mutation\n    self.assertEqual(hashlib.sha256(Path(name).read_bytes()).hexdigest(),digest,name)\nAssertionError: '6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549' != '408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb'\n- 6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549\n+ 408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb\n : D:\\game\\anjian-new\\assistant-sync.json\n"
+      ],
+      [
+        "test_nameless.NamelessTests.test_existing_build_assistant_and_sync_records_unchanged",
+        "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_nameless.py\", line 278, in test_existing_build_assistant_and_sync_records_unchanged\n    self.assertEqual(hashlib.sha256(Path(name).read_bytes()).hexdigest(), expected, name)\nAssertionError: '6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549' != '408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb'\n- 6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549\n+ 408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb\n : D:\\game\\anjian-new\\assistant-sync.json\n"
+      ]
+    ],
+    "errors": []
+  },
+  "preBuildBackup": "D:\\game\\anjian-new\\reports\\同步备份\\超次元四模块-同步前-20261017-211219-006808",
+  "syncBackup": "D:\\game\\anjian-new\\reports\\同步备份\\全不勾选-20261017-211421-535741\\同步后验证.json",
+  "syncRecord": {
+    "authorizedByUser": true,
+    "projectId": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+    "request": "同步到既有龙珠激斗脚本，取消所有勾选配置；不连接模拟器、不操作助手、不提交Git",
+    "before": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "03bb444803a119065d2eb63a099dd811034c1ae1f4f514f2541b68a3a508a7a7",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "712793a9938119ee8956ac953f483e5f02125240b6ce4b0eb4fe07d4989bc28e",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "f2821433e09652878b4bb412259baa602613f71336bb0e2f5f6139a6bdeb0451",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "033b7a69f58cf6dbd36f10db0f6fff6371ce296a6f866f8b785e8c0c190eb6cf",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "f2821433e09652878b4bb412259baa602613f71336bb0e2f5f6139a6bdeb0451",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "033b7a69f58cf6dbd36f10db0f6fff6371ce296a6f866f8b785e8c0c190eb6cf",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "after": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "7402030e3f6ad65d185f7900c1440916c9a5400a780652730eac8e815054bcf2",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "30880603ad7715bb948b09bacea06f5ab55cba23616b943ccd00cdc2572f8f04",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "verification": "D:\\game\\anjian-new\\reports\\同步备份\\全不勾选-20261017-211421-535741\\同步后验证.json"
+  },
+  "gitCommitted": false
+}

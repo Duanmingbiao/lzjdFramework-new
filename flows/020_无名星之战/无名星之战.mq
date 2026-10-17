@@ -1,0 +1,403 @@
+﻿Function NamelessWait(ms)
+    NamelessWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(ms)
+    NamelessWait = Not BusinessExpired()
+End Function
+Sub NamelessOcrEmptyDiagnostic(raw)
+    Dim hitAt, rawKind, rawText, nullText, path, created, bytes, hitX, hitY
+    // Observe the single original OCR result before Null normalization.
+    rawKind = "null"
+    rawText = "<null>"
+    nullText = "true"
+    If Not IsNull(raw) Then
+        If raw <> "" Then
+            Exit Sub
+        End If
+        rawKind = "string"
+        rawText = raw
+        nullText = "false"
+    End If
+    If BusinessExpired() Then
+        Exit Sub
+    End If
+    hitAt = TickCount()
+    If namelessOcrDiagnosticSeen Then
+        If hitAt - namelessOcrDiagnosticAt < 10000 Then
+            Exit Sub
+        End If
+    End If
+    namelessOcrDiagnosticSeen = True
+    namelessOcrDiagnosticAt = hitAt
+    namelessOcrDiagnosticCount = namelessOcrDiagnosticCount + 1
+    hitX = foundX
+    hitY = foundY
+    path = "/sdcard/Pictures/dragonball-nameless-ocr-empty-" & hitAt & "-" & namelessOcrDiagnosticCount & ".png"
+    Call WorldLog("[无名星OCR诊断] 原区域=301,1108,417,1158 引擎=Image.OcrText 参数=0,0 原始返回类型=" & rawKind & " IsNull=" & nullText & " 原始返回内容=[" & rawText & "] tick=" & hitAt)
+    If Not Dir.Exist("/sdcard/Pictures") Then
+        created = Dir.Create("/sdcard/Pictures")
+    End If
+    SnapShot path
+    bytes = 0
+    If Dir.Exist(path) Then
+        bytes = File.Bytes(path)
+    End If
+    Call WorldLog("[无名星OCR诊断] 序号=" & namelessOcrDiagnosticCount & " 截图路径=" & path & " 文件字节=" & bytes & " 结束tick=" & TickCount() & "；仅诊断，不重试OCR、不点击、不重置业务计时")
+    If bytes <= 0 Then
+        Call WorldLog("[无名星OCR诊断] 截图未确认写入；不重试，保留原业务边界")
+    End If
+    foundX = hitX
+    foundY = hitY
+End Sub
+Function NamelessFinish(reason)
+    NamelessFinish = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    namelessReason = reason
+    Call WorldLog("原识别终态=" & reason & "；待公共返回大厅确认，不直接提交")
+    terminalConfirmed = True
+    NamelessFinish = RESULT_OK
+End Function
+Function NamelessEnterMode()
+    Dim enteredAt, searchCount, hallResult, hallReady
+    NamelessEnterMode = RESULT_TIMEOUT
+    enteredAt = TickCount()
+    searchCount = 0
+    Call WorldStage("超次元战场入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If HeroMatchEither("020_入口", "020_模式灰色") Then
+            Call WorldLog("原超次元战场目标页已确认")
+            businessStarted = TickCount()
+            NamelessEnterMode = RESULT_OK
+            Exit Function
+        End If
+        hallResult = ReturnToHall()
+        If hallResult <> RESULT_OK Then
+            Exit Function
+        End If
+        hallReady = WorldMatch("012_P30")
+        If Not hallReady Then
+            hallReady = WorldMatch("012_P31")
+        End If
+        If Not hallReady Then
+            hallReady = WorldMatch("020_大厅返回")
+        End If
+        If hallReady Then
+            If WorldPair("020_模式入口") Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                searchCount = searchCount + 1
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Then
+                    Exit Function
+                End If
+                If searchCount <= 5 Then
+                    Call WorldLog("原超次元大厅搜索：滑左")
+                    Swipe 150, 545, 500, 545, 300
+                Else
+                    Call WorldLog("原超次元大厅搜索：滑右")
+                    Swipe 500, 545, 150, 545, 300
+                End If
+                If searchCount = 10 Then
+                    searchCount = 0
+                End If
+            End If
+        End If
+        If TickCount() - enteredAt > 60000 Then
+            Call NamelessWait(2000)
+            Call WorldLog("原模式入口60秒边界；恢复，不沿用原入口超时写完成")
+            Exit Function
+        End If
+    Loop
+End Function
+Function NamelessBattleColorFallback()
+    NamelessBattleColorFallback = RESULT_WAIT
+    If BusinessExpired() Then
+        NamelessBattleColorFallback = RESULT_TIMEOUT
+        Exit Function
+    End If
+    If Not namelessBattleOcrWaiting Then
+        namelessBattleOcrWaiting = True
+        namelessBattleOcrWaitAt = TickCount()
+        Exit Function
+    End If
+    If TickCount() - namelessBattleOcrWaitAt < 30000 Then
+        Exit Function
+    End If
+    // User-authorized compatibility fallback; never a professional template.
+    If Not HeroMatchEither("020_报名界面一", "020_报名界面二") Then
+        Exit Function
+    End If
+    ReleaseCapture
+    foundX = -1
+    foundY = -1
+    FindMultiColor 301,1108,417,1158,"FFFFFF-101010","12|0|FFFFFF-101010,36|0|FFFFFF-101010,45|0|FFFFFF-101010,3|12|FFFFFF-101010,18|24|FFFFFF-101010,45|24|FFFFFF-101010,55|16|215593-101010,-5|0|58E5FD-101010,24|0|5BE8FF-101010,28|10|32C7FF-101010,25|36|02AEFF-101010,-30|-8|3DBEF9-101010,78|-8|53ECFD-101010",1,1.0,foundX,foundY
+    If BusinessExpired() Then
+        NamelessBattleColorFallback = RESULT_TIMEOUT
+        Exit Function
+    End If
+    If foundX < 333 Or foundX > 337 Or foundY < 1118 Or foundY > 1122 Then
+        Exit Function
+    End If
+    Call WorldLog("[无名星战斗兜底] OCR未知持续至少30秒；原页面及原区域战斗字形/按钮颜色命中；仅尝试进入，不代表完成")
+    If Not WorldTap(360, 1140, 1000) Then
+        NamelessBattleColorFallback = RESULT_TIMEOUT
+        Exit Function
+    End If
+    namelessBattleOcrWaiting = False
+End Function
+Function NamelessRegistration(registeredTerminal)
+    Dim text
+    NamelessRegistration = RESULT_WAIT
+    If BusinessExpired() Then
+        NamelessRegistration = RESULT_TIMEOUT
+        Exit Function
+    End If
+    // Original OCR region and exact comparisons remain primary; no trimming.
+    text = WorldText(301, 1108, 417, 1158)
+    If BusinessExpired() Then
+        NamelessRegistration = RESULT_TIMEOUT
+        Exit Function
+    End If
+    Call WorldLog("原报名区域OCR=[" & text & "]；3.8引擎兼容，精确比较")
+    If text = "报名" Or text = "已报名" Or text = "未报名" Or text = "战斗" Then
+        namelessBattleOcrWaiting = False
+    End If
+    If text = "报名" Then
+        If Not WorldTap(360, 1140, 0) Then
+            NamelessRegistration = RESULT_TIMEOUT
+        End If
+    ElseIf registeredTerminal And text = "已报名" Then
+        NamelessRegistration = NamelessFinish("原报名界面二：已报名")
+    ElseIf text = "未报名" Then
+        NamelessRegistration = NamelessFinish("原报名界面：未报名")
+    ElseIf text = "战斗" Then
+        If Not WorldTap(360, 1140, 1000) Then
+            NamelessRegistration = RESULT_TIMEOUT
+        End If
+    Else
+        Call WorldLog("报名文字空值或未知；本OCR分支不点击、不标完成；30秒后仅允许原区域战斗图色兜底")
+        NamelessRegistration = NamelessBattleColorFallback()
+    End If
+End Function
+Function NamelessEnableAuto()
+    NamelessEnableAuto = RESULT_TIMEOUT
+    Call WorldStage("无名星之战勾选自动")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldPair("020_自动未选") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            If Not NamelessWait(1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("020_自动已选") Then
+            businessStarted = TickCount()
+            NamelessEnableAuto = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function NamelessOpponents()
+    Dim switches, actionSeen, actionAt
+    NamelessOpponents = RESULT_TIMEOUT
+    switches = 0
+    actionSeen = False
+    actionAt = TickCount()
+    Call WorldStage("无名星之战挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        // root.639 PC822..1112: independent checks, never an ElseIf chain.
+        If WorldPair("020_可挑战") Then
+            If Not NamelessWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            actionSeen = True
+        End If
+        If WorldPair("020_挑战过") Then
+            If Not NamelessWait(1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            actionSeen = True
+        End If
+        If Not NamelessWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("020_需要石头") Then
+            // Original branch waits/skips; it never buys an extra challenge.
+            If Not NamelessWait(1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            actionSeen = True
+        End If
+        If Not NamelessWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("020_挑战失败") Then
+            If Not NamelessWait(500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionSeen = True
+        End If
+        If Not NamelessWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("020_挑战成功") Then
+            If Not NamelessWait(500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            actionSeen = True
+        End If
+        If actionSeen Or TickCount() - actionAt > 15000 Then
+            If WorldPair("020_切换对手") Then
+                If Not WorldOffset(0, 0, 2000) Then
+                    Exit Function
+                End If
+                actionSeen = False
+                actionAt = TickCount()
+                switches = switches + 1
+                Call WorldLog("原切换对手累计=" & switches & "/15；只有识别并点击才累计")
+            End If
+        End If
+        If switches >= 15 Then
+            NamelessOpponents = NamelessRewards(actionAt)
+            Exit Function
+        End If
+    Loop
+End Function
+Function NamelessRewards(startedAt)
+    NamelessRewards = RESULT_TIMEOUT
+    Call WorldStage("无名星之战奖励")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("020_无奖励红点") Then
+            businessStarted = TickCount()
+            NamelessRewards = NamelessFinish("原没有红点")
+            Exit Function
+        End If
+        If WorldMatch("020_打开奖励") Then
+            If Not WorldOffset(360, -1074, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("020_可领取") Then
+            If Not WorldOffset(252, -141, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("020_恭喜获得") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("020_已领取") Then
+            businessStarted = TickCount()
+            NamelessRewards = NamelessFinish("原奖励已领取")
+            Exit Function
+        End If
+        If TickCount() - startedAt > 15000 Then
+            Call WorldLog("原领奖15秒边界；未知页按项目规则恢复，不标完成")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteNamelessBattle()
+    Dim registrationResult
+    ExecuteNamelessBattle = RESULT_TIMEOUT
+    If NamelessEnterMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("无名星之战入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("020_入口") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("020_活动未开") Then
+            ExecuteNamelessBattle = NamelessFinish("原活动未开")
+            Exit Function
+        End If
+        If WorldMatch("020_初赛结束") Then
+            ExecuteNamelessBattle = NamelessFinish("原初赛结束")
+            Exit Function
+        End If
+        If WorldMatch("020_非赛期") Then
+            ExecuteNamelessBattle = NamelessFinish("原不是赛期")
+            Exit Function
+        End If
+        If WorldMatch("020_报名界面一") Then
+            registrationResult = NamelessRegistration(False)
+            If registrationResult <> RESULT_WAIT Then
+                ExecuteNamelessBattle = registrationResult
+                Exit Function
+            End If
+        End If
+        If WorldMatch("020_报名界面二") Then
+            registrationResult = NamelessRegistration(True)
+            If registrationResult <> RESULT_WAIT Then
+                ExecuteNamelessBattle = registrationResult
+                Exit Function
+            End If
+        End If
+        If WorldPair("020_赛季结束") Then
+            businessStarted = TickCount()
+            ExecuteNamelessBattle = NamelessFinish("原赛季结束")
+            Exit Function
+        End If
+        If WorldPair("020_赛季未开") Then
+            businessStarted = TickCount()
+            ExecuteNamelessBattle = NamelessFinish("原已报名但还没开赛")
+            Exit Function
+        End If
+        If WorldPair("020_战斗准备") Then
+            If NamelessEnableAuto() <> RESULT_OK Then
+                Exit Function
+            End If
+            ExecuteNamelessBattle = NamelessOpponents()
+            Exit Function
+        End If
+    Loop
+End Function

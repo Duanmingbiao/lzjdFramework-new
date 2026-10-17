@@ -1,0 +1,67 @@
+﻿Sub LoadGalaxySettings()
+    galaxyEnabled = WorldBoolean("日常_跨银河大赛")
+    galaxyEnroll = WorldBoolean("日常_跨银河大赛_报名")
+    galaxyRegion = WorldNumber("日常_跨银河大赛_报名赛区", 0, 3)
+End Sub
+Sub NewGalaxySession()
+    galaxyDone = False
+    galaxyFailed = False
+    galaxyRecoveries = 0
+    galaxyRestarts = 0
+    galaxyDue = 0
+    galaxyDeferred = False
+    galaxyRetryAt = 0
+    galaxyActionAt = 0
+    galaxyPhase = "未开始"
+    galaxyReason = ""
+End Sub
+Function SelectGalaxy()
+    SelectGalaxy = 0
+    If galaxyEnabled And Not galaxyDone Then
+        If Time() >= galaxyDue Then
+            SelectGalaxy = 21
+        End If
+    End If
+End Function
+Sub StartGalaxyTask()
+    galaxyFailed = False
+    // Do not erase a deferred event while its hall/foreground cleanup is pending.
+    galaxyPhase = "启动"
+    Call WorldStage("跨银河大赛启动")
+End Sub
+Sub RecoverGalaxyTask()
+    galaxyFailed = True
+    galaxyRecoveries = galaxyRecoveries + 1
+    galaxyPhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("保留跨银河21及待延期事件；未知、前台中断、超时不完成")
+End Sub
+Sub RestartGalaxyTask()
+    galaxyRestarts = galaxyRestarts + 1
+    Call WorldLog("公共重启恢复跨银河21 次数=" & galaxyRestarts)
+End Sub
+Sub CommitGalaxyTask()
+    galaxyDone = True
+    galaxyFailed = False
+    galaxyPhase = "已完成"
+    Call WorldLog("跨银河21大厅连续确认后提交；出口=" & galaxyReason)
+End Sub
+Function ScheduleGalaxyRetry(hallConfirmed)
+    ScheduleGalaxyRetry = False
+    If currentTask <> 21 Or Not galaxyDeferred Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    galaxyDue = galaxyRetryAt
+    galaxyDeferred = False
+    galaxyFailed = True
+    galaxyPhase = "原服务器异常，一小时后重试"
+    Call WorldLog("原一小时待重试，非完成；下一次Unix=" & galaxyDue)
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    ScheduleGalaxyRetry = True
+    Call EndForegroundCommit()
+End Function

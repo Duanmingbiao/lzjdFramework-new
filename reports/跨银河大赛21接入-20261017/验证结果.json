@@ -1,0 +1,134 @@
+{
+  "date": "2026-10-17",
+  "module": "跨银河大赛",
+  "task": 21,
+  "scope": "Source/validation only; no dist build or assistant/device/Git operation",
+  "professionalEvidence": {
+    "prototype": "root.640",
+    "instructions": 1914,
+    "mode": "Existing root.787 dimensional navigation",
+    "patterns": 36
+  },
+  "configuration": {
+    "keys": [
+      "日常_跨银河大赛",
+      "日常_跨银河大赛_报名",
+      "日常_跨银河大赛_报名赛区"
+    ],
+    "checkboxDefaults": [
+      false,
+      false
+    ],
+    "regionOptions": [
+      "东赛区",
+      "南赛区",
+      "西赛区",
+      "北赛区"
+    ],
+    "regionDefault": 0,
+    "totalControls": 201,
+    "existingControlsPreserved": 198,
+    "totalCheckboxes": 50,
+    "allUnchecked": true
+  },
+  "boundaries": {
+    "prepareMs": 15000,
+    "battleIdleMs": 8000,
+    "returnInheritedMs": 5000,
+    "serverRetryCondition": "playerActions > 15",
+    "serverRetrySeconds": 3600,
+    "unknownIsSuccess": false,
+    "mailUsesFirstVariantsOnly": true,
+    "leftPlayerROI": [
+      0,
+      238,
+      172,
+      1053
+    ],
+    "rightPlayerROI": [
+      550,
+      246,
+      717,
+      1024
+    ]
+  },
+  "verification": {
+    "targetedTests": 30,
+    "targetedPass": true,
+    "oldNamelessTests": 26,
+    "controlTests": 24,
+    "foregroundTests": 25,
+    "uiSyntaxTests": 4,
+    "sourceModules": 88,
+    "sourceIssues": [],
+    "inMemoryGBKStrictEncoding": "pass",
+    "fullSuite": {
+      "tests": 1362,
+      "passed": 1321,
+      "failures": 41,
+      "errors": 0,
+      "failureNamesUnchangedFromPrior": true,
+      "failureBaseline": "reports/无名星之战20接入-20261017/验证结果.json",
+      "failedTests": [
+        "test_adventure.AdventureTests.test_catalog_append_only58_and_mqexact",
+        "test_adventure.AdventureTests.test_ui_original2controls_all_previous_unchanged",
+        "test_coop.CoopTests.test_append_only_exact_parameters",
+        "test_crossboss.CrossBossTests.test_all_raw_recognition_records_exact_and_append_only",
+        "test_duel.DuelTests.test_build_and_assistant_protected_files_unchanged",
+        "test_experience.ExperienceTests.test_catalog_append_only22_and_exact_mq",
+        "test_experience.ExperienceTests.test_no_other_trial_task_registered",
+        "test_experience.ExperienceTests.test_ui_only_original_checkbox_and_all_defaults_false",
+        "test_friend.FriendFlow.test_catalog_append_only_exact_conversion",
+        "test_frieza.FriezaTests.test_protected_build_and_assistant_unchanged",
+        "test_gene.GeneTests.test_catalog_append_only30_and_exact_mq",
+        "test_gene.GeneTests.test_only_gene15_added_to_existing_modules",
+        "test_gene.GeneTests.test_ui_only_original_checkbox_and_all_defaults_false",
+        "test_gold.GoldTests.test_catalog_append_only22_and_exact_mq",
+        "test_gold.GoldTests.test_ui_only_original_checkbox_and_all_defaults_false",
+        "test_memory.MemoryTests.test_no_build_or_sync_artifact_changed",
+        "test_monthly.MonthlyEvidence.test_twenty_patterns_preserve_colors_regions_and_direction",
+        "test_partner.PartnerTests.test_catalog_append_only23_and_exact_mq",
+        "test_partner.PartnerTests.test_only_partner16_added_no_future_trial",
+        "test_partner.PartnerTests.test_ui_only_original_checkbox_and_all_defaults_false",
+        "test_plant.PlantTests.test_raw_colors_append_only_and_coin_similarity095",
+        "test_plant.PlantTests.test_ui_only_original_checkbox_added_default_off",
+        "test_qfriend.QFriendFlow.test_catalog_append_and_exact_parameters",
+        "test_qq_screenshots.QQScreenshotPixels.test_prior_professional_and_hall_profile_records_unchanged",
+        "test_redarmy.RedArmyTests.test_append_only_exact_33_profiles_and123_calls",
+        "test_senzu.SenzuTests.test_business_integration_and_built_artifacts_unchanged",
+        "test_senzu.SenzuTests.test_catalog_append_only_and_original_raw_colors",
+        "test_senzu.SenzuTests.test_config_keys_options_and_all_previous_controls_unchanged",
+        "test_signin.SignEvidence.test_exact_raw_conversion_and_append_only_catalog",
+        "test_snake.SnakeTests.test_catalog_append_only_and_all_actual_definitions",
+        "test_snake.SnakeTests.test_original_ui13_no_changes_to_previous_controls",
+        "test_soul.SoulTests.test_catalog_append_only22_and_exact_mq",
+        "test_soul.SoulTests.test_only_soul14_added_to_existing_registration",
+        "test_soul.SoulTests.test_ui_only_original_checkbox_and_all_defaults_false",
+        "test_stamina.StaminaTests.test_exact_catalog_conversion_append_only",
+        "test_stamina.StaminaTests.test_only_expected_integration_sources_changed",
+        "test_task169.RewardEvidence.test_existing_editable_ui_contracts_preserved",
+        "test_task169.RewardEvidence.test_existing_profiles_unchanged",
+        "test_worldboss.WorldBossTests.test_append_only_catalog_and_ui_layout",
+        "test_wukong.WukongTests.test_append_only_exact_profiles",
+        "test_ysk.YskTests.test_registration_only92_after_partner"
+      ]
+    }
+  },
+  "protection": {
+    "baseline": "flows/021_跨银河大赛/evidence/未同步基线.json",
+    "protectedFiles": 9,
+    "allHashesUnchanged": true,
+    "distWritten": false,
+    "assistantSynced": false,
+    "emulatorConnected": false,
+    "gitCommitted": false
+  },
+  "versionDifferences": {
+    "newUnresolved": [],
+    "businessOCRAdded": false
+  },
+  "pending": [
+    "Official assistant 3.8 compilation",
+    "Actual game recognition, region enrollment, battle/mail and foreground recovery"
+  ]
+}

@@ -1,0 +1,340 @@
+﻿Function GalaxyWait(ms)
+    GalaxyWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(ms)
+    GalaxyWait = Not BusinessExpired()
+End Function
+Function GalaxyFinish(reason)
+    GalaxyFinish = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    galaxyReason = reason
+    Call WorldLog("原识别终态=" & reason & "；待公共大厅连续确认")
+    terminalConfirmed = True
+    GalaxyFinish = RESULT_OK
+End Function
+Function GalaxyPrepare()
+    Dim preparedAt
+    GalaxyPrepare = RESULT_TIMEOUT
+    preparedAt = TickCount()
+    Call WorldStage("跨银河准备/报名判断")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldPair("021_挑战按钮") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldPair("021_自动未选") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            If Not GalaxyWait(1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("021_自动已选") Then
+            businessStarted = TickCount()
+            GalaxyPrepare = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("021_报名阶段") Then
+            businessStarted = TickCount()
+            If galaxyEnroll Then
+                GalaxyPrepare = RESULT_WAIT
+            Else
+                GalaxyPrepare = GalaxyFinish("原报名阶段未选择自动报名")
+            End If
+            Exit Function
+        End If
+        If WorldPair("021_已报名") Then
+            businessStarted = TickCount()
+            GalaxyPrepare = GalaxyFinish("原已报名但未开赛")
+            Exit Function
+        End If
+        If WorldPair("021_决赛阶段") Then
+            businessStarted = TickCount()
+            GalaxyPrepare = GalaxyFinish("原准备阶段：您没有报名")
+            Exit Function
+        End If
+        If WorldPair("021_本届结束") Then
+            businessStarted = TickCount()
+            GalaxyPrepare = GalaxyFinish("原本届已经结束")
+            Exit Function
+        End If
+        If TickCount() - preparedAt > 15000 Then
+            Call WorldLog("原准备15秒边界；未知不写完成，保留21恢复")
+            Exit Function
+        End If
+    Loop
+End Function
+Function GalaxyFight()
+    Dim playerActions
+    GalaxyFight = RESULT_TIMEOUT
+    playerActions = 0
+    galaxyActionAt = TickCount()
+    Call WorldStage("跨银河查看玩家与挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        // root.640 PC1058..1282: all five checks remain independent and ordered.
+        If WorldMatch("021_玩家列表") Then
+            If Not WorldTap(655, 415, 1000) Then
+                Exit Function
+            End If
+            galaxyActionAt = TickCount()
+            playerActions = playerActions + 1
+        End If
+        If WorldMatch("021_玩家挑战左") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            galaxyActionAt = TickCount()
+            playerActions = playerActions + 1
+        End If
+        If WorldMatch("021_玩家挑战右") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            galaxyActionAt = TickCount()
+            playerActions = playerActions + 1
+        End If
+        If WorldMatch("021_挑战失败") Then
+            If Not GalaxyWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            galaxyActionAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If WorldPair("021_挑战成功") Then
+            If Not GalaxyWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            galaxyActionAt = TickCount()
+            businessStarted = TickCount()
+        End If
+        If playerActions > 15 Then
+            galaxyReason = "原查看玩家/挑战累计超过15次，服务器异常"
+            galaxyRetryAt = Time() + 3600
+            galaxyDeferred = True
+            terminalConfirmed = False
+            Call WorldLog(galaxyReason & "；一小时后再试，非成功")
+            GalaxyFight = RESULT_WAIT
+            Exit Function
+        End If
+        If TickCount() - galaxyActionAt > 8000 Then
+            // This is a phase exit only, never proof that the task is complete.
+            GalaxyFight = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function GalaxyReturnAndMail()
+    GalaxyReturnAndMail = RESULT_TIMEOUT
+    Call WorldStage("跨银河返回与邮件奖励")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        // Original return/home checks use ONLY variant one, not either variant.
+        If WorldMatch("021_自动已选一") Then
+            If Not WorldOffset(-138, 68, 1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("021_挑战按钮一") Then
+            Exit Do
+        End If
+        // root.640 R5 is inherited from the final battle action, not reset here.
+        If TickCount() - galaxyActionAt > 5000 Then
+            Exit Do
+        End If
+    Loop
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("021_挑战按钮一") Then
+            If Not WorldOffset(166, -1021, 500) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("021_邮件可领取") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("021_邮件已领取") Then
+            If Not WorldOffset(293, -840, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            GalaxyReturnAndMail = GalaxyFinish("原邮件已经领取过")
+            Exit Function
+        End If
+        If WorldMatch("021_恭喜获得") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+    Loop
+End Function
+Function GalaxySignup()
+    GalaxySignup = RESULT_TIMEOUT
+    If Not galaxyEnroll Then
+        Exit Function
+    End If
+    Call WorldStage("跨银河自动报名")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldPair("021_报名阶段") Then
+            If galaxyRegion = 0 Then
+                If Not WorldOffset(270, -210, 0) Then
+                    Exit Function
+                End If
+            ElseIf galaxyRegion = 1 Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+            ElseIf galaxyRegion = 2 Then
+                If Not WorldOffset(-150, -210, 0) Then
+                    Exit Function
+                End If
+            ElseIf galaxyRegion = 3 Then
+                If Not WorldOffset(70, -480, 0) Then
+                    Exit Function
+                End If
+            End If
+            If Not GalaxyWait(2000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If Not GalaxyWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("021_报名按钮") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If Not GalaxyWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("021_报名确认") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If Not GalaxyWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("021_已报名") Then
+            If Not GalaxyWait(1000) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+            GalaxySignup = GalaxyFinish("原已经为您报名")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteGalaxyBattle()
+    Dim ready, prepared, fought
+    ExecuteGalaxyBattle = RESULT_TIMEOUT
+    If galaxyDeferred Then
+        ExecuteGalaxyBattle = RESULT_WAIT
+        Exit Function
+    End If
+    // Reuse the existing root.787 dimensional-mode navigation; no task20 state writes.
+    If NamelessEnterMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("跨银河大赛入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("021_活动未开") Then
+            ExecuteGalaxyBattle = GalaxyFinish("原跨银河大赛未开")
+            Exit Function
+        End If
+        If WorldPair("021_入口") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("021_未报名") Then
+            businessStarted = TickCount()
+            ExecuteGalaxyBattle = GalaxyFinish("原您没有报名")
+            Exit Function
+        End If
+        If WorldPair("021_决赛阶段") Then
+            businessStarted = TickCount()
+            ExecuteGalaxyBattle = GalaxyFinish("原决赛阶段")
+            Exit Function
+        End If
+        If WorldPair("021_未开赛") Then
+            businessStarted = TickCount()
+            ExecuteGalaxyBattle = GalaxyFinish("原当前未开赛")
+            Exit Function
+        End If
+        If Not GalaxyWait(50) Then
+            Exit Function
+        End If
+        If WorldPair("021_挑战按钮") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        ready = WorldPair("021_战斗准备")
+        If Not ready Then
+            ready = WorldPair("021_报名阶段")
+        End If
+        If ready Then
+            prepared = GalaxyPrepare()
+            If terminalConfirmed Then
+                ExecuteGalaxyBattle = prepared
+                Exit Function
+            End If
+            If prepared = RESULT_WAIT Then
+                ExecuteGalaxyBattle = GalaxySignup()
+                Exit Function
+            End If
+            If prepared <> RESULT_OK Then
+                Exit Function
+            End If
+            fought = GalaxyFight()
+            If fought <> RESULT_OK Then
+                ExecuteGalaxyBattle = fought
+                Exit Function
+            End If
+            ExecuteGalaxyBattle = GalaxyReturnAndMail()
+            Exit Function
+        End If
+    Loop
+End Function

@@ -8,6 +8,10 @@
     heroDungeonReason = ""
     Call NewNormalAdventureSession()
     Call NewPowerTournamentSession()
+    Call NewNamelessSession()
+    Call NewGalaxySession()
+    Call NewAllianceSession()
+    Call NewForestSession()
     Call NewGoldSession()
     Call NewSoulSession()
     Call NewGeneSession()
@@ -111,6 +115,18 @@ Sub SaveCurrentTask(taskId)
     End If
     If taskId = 19 Then
         Call StartPowerTournamentTask()
+    End If
+    If taskId = 20 Then
+        Call StartNamelessTask()
+    End If
+    If taskId = 21 Then
+        Call StartGalaxyTask()
+    End If
+    If taskId = 22 Then
+        Call StartForestTask()
+    End If
+    If taskId = 23 Then
+        Call StartAllianceTask()
     End If
     If taskId = 13 Then
         Call StartExperienceTask()
@@ -225,6 +241,18 @@ Sub SaveRecovery()
     If currentTask = 19 Then
         Call RecoverPowerTournamentTask()
     End If
+    If currentTask = 20 Then
+        Call RecoverNamelessTask()
+    End If
+    If currentTask = 21 Then
+        Call RecoverGalaxyTask()
+    End If
+    If currentTask = 22 Then
+        Call RecoverForestTask()
+    End If
+    If currentTask = 23 Then
+        Call RecoverAllianceTask()
+    End If
     If currentTask = 13 Then
         Call RecoverExperienceTask()
     End If
@@ -334,12 +362,16 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 17 And currentTask <> 18 And currentTask <> 19 And currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
+    If currentTask <> 17 And currentTask <> 18 And currentTask <> 19 And currentTask <> 20 And currentTask <> 21 And currentTask <> 23 And currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
     If Not terminalConfirmed Then
         Call Note("[流程] 出口 CommitTask 分支2 路径条件 Not terminalConfirmed")
+        Exit Function
+    End If
+    If currentTask = 23 And Not allianceExitPending Then
+        Call Note("[流程] 出口 CommitTask 联盟23没有明确业务出口，拒绝提交")
         Exit Function
     End If
     If Not hallConfirmed Then
@@ -356,6 +388,12 @@ Function CommitTask(hallConfirmed)
         Call CommitNormalAdventureTask()
     ElseIf currentTask = 19 Then
         Call CommitPowerTournamentTask()
+    ElseIf currentTask = 20 Then
+        Call CommitNamelessTask()
+    ElseIf currentTask = 21 Then
+        Call CommitGalaxyTask()
+    ElseIf currentTask = 23 Then
+        Call CommitAllianceTask()
     ElseIf currentTask = 92 Then
         Call CommitYskTask()
     ElseIf currentTask = 16 Then

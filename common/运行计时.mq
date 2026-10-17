@@ -2,6 +2,30 @@
     LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
+    If currentTask = 22 Then
+        BusinessExpired = False
+        If ForegroundInterrupted() Then
+            BusinessExpired = True
+            Exit Function
+        End If
+        If TickCount() - businessStarted > businessLimit Then
+            forestPublicTimedOut = True
+            BusinessExpired = True
+        End If
+        Exit Function
+    End If
+    If currentTask = 23 Then
+        BusinessExpired = False
+        If ForegroundInterrupted() Then
+            BusinessExpired = True
+            Exit Function
+        End If
+        If TickCount() - businessStarted > businessLimit Then
+            alliancePublicTimedOut = True
+            BusinessExpired = True
+        End If
+        Exit Function
+    End If
     If currentTask = 17 And heroDungeonRunning Then
         BusinessExpired = ForegroundInterrupted()
         Exit Function

@@ -1,0 +1,81 @@
+﻿Sub LoadForestSettings()
+    forestEnabled = WorldBoolean("日常_恐惧森林")
+    forestHeart = WorldBoolean("日常_恐惧森林_武道家之心")
+    forestBag = WorldBoolean("日常_恐惧森林_武道家背包")
+    forestFrequency = WorldNumber("日常_恐惧森林_分解升级频率", 60, 999)
+    forestMode = WorldNumber("日常_恐惧森林_战斗模式", 0, 1)
+    forestMinutes = WorldNumber("日常_恐惧森林_挑战时间", 2, 9999)
+    forestFailureLimit = WorldNumber("日常_恐惧森林_失败次数", 3, 9999)
+    forestInterval = WorldNumber("日常_恐惧森林_间隔时间", 30, 9999)
+    forestRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+End Sub
+Sub NewForestSession()
+    forestDue = 0
+    forestAttackStarted = False
+    forestAttackAt = 0
+    forestDeferred = False
+    forestRetryAt = 0
+    forestFailed = False
+    forestRecoveries = 0
+    forestRestarts = 0
+    forestPublicTimedOut = False
+    forestTimeoutPending = False
+    forestPhase = "未开始"
+    forestReason = ""
+End Sub
+Function SelectForest()
+    SelectForest = 0
+    If forestEnabled And Time() >= forestDue Then
+        SelectForest = 22
+    End If
+End Function
+Sub StartForestTask()
+    forestFailed = False
+    Call WorldStage("恐惧森林启动")
+End Sub
+Sub RecoverForestTask()
+    forestFailed = True
+    forestRecoveries = forestRecoveries + 1
+    terminalConfirmed = False
+    Call WorldLog("保留恐惧森林22、原攻打时间及待改期事件；不提交完成")
+End Sub
+Sub StageForestPublicTimeout()
+    If currentTask <> 22 Or Not forestPublicTimedOut Or ForegroundInterrupted() Then
+        Exit Sub
+    End If
+    forestPublicTimedOut = False
+    If Not forestDeferred Then
+        forestReason = "原公共超时，一小时后重试"
+        forestRetryAt = Time() + 3600
+        forestDeferred = True
+        forestTimeoutPending = True
+        forestFailed = True
+    End If
+    // Allow guarded hall cleanup; never turn public timeout into task success.
+    businessStarted = TickCount()
+    terminalConfirmed = False
+End Sub
+Sub RestartForestTask()
+    forestRestarts = forestRestarts + 1
+    Call WorldLog("恐惧森林公共恢复次数=" & forestRestarts)
+End Sub
+Function ScheduleForestRetry(hallConfirmed)
+    ScheduleForestRetry = False
+    If currentTask <> 22 Or Not forestDeferred Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    forestDue = forestRetryAt
+    forestAttackStarted = False
+    forestAttackAt = 0
+    forestDeferred = False
+    forestPhase = "等待下次执行"
+    terminalConfirmed = False
+    Call WorldLog("原本轮退出/改期=" & forestReason & " 下次Unix=" & forestDue & "；非永久完成")
+    currentTask = 0
+    resumeTask = 0
+    ScheduleForestRetry = True
+    Call EndForegroundCommit()
+End Function

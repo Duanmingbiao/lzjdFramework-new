@@ -7,6 +7,17 @@ Dim soulEnabled, soulDue, soulDone, soulCount, soulAbandoned, soulRecoveries, so
 Dim goldEnabled, goldDue, goldDone, goldCount, goldAbandoned, goldRecoveries, goldRestarts, goldPhase, goldReason, goldExitKind, goldFinishedAt, goldNativeTimeout
 Dim heroDungeonEnabled, heroDungeonDone, heroDungeonFailed, heroDungeonRecoveries, heroDungeonRestarts, heroDungeonPhase, heroDungeonReason
 Dim heroDungeonRunning
+Dim allianceEnabled, allianceEnroll, allianceTimeChoice, allianceProcessChoice, allianceFailureLimit, allianceRestartOnTimeout
+Dim allianceDone, allianceAbandoned, allianceFailed, allianceCount, allianceFailures, allianceRecoveries, allianceRestarts, allianceDue, alliancePhase, allianceReason
+Dim allianceDeferred, allianceRetryAt, allianceExitPending, alliancePendingPermanent, alliancePendingRound, alliancePendingDue, alliancePublicTimedOut, allianceTimeoutRecovery
+Dim allianceMode, allianceActionAt, allianceScanStage, allianceCanChallenge, allianceCell1, allianceCell2, allianceCell3, allianceCell4, allianceCell5, allianceCell6, allianceCell7, allianceCell8, allianceCell9
+Dim forestEnabled, forestHeart, forestBag, forestFrequency, forestMode, forestMinutes, forestFailureLimit, forestInterval
+Dim forestDue, forestAttackStarted, forestAttackAt, forestDeferred, forestRetryAt, forestFailed, forestRecoveries, forestRestarts, forestPhase, forestReason, forestPublicTimedOut, forestTimeoutPending, forestRestartOnTimeout
+Dim forestAttempts, forestFailures, forestHeartVisits, forestBagVisits, forestPopupVisits, forestHeartAt, forestHeartDelay, forestBagAt, forestBagDelay, forestChallengeAt, forestDisplayAt, forestEndAt, forestRuntimeFailureLimit, forestSeconds, forestFrequencySeconds
+Dim galaxyEnabled, galaxyEnroll, galaxyRegion, galaxyDone, galaxyFailed, galaxyRecoveries, galaxyRestarts, galaxyPhase, galaxyReason, galaxyDue, galaxyDeferred, galaxyRetryAt, galaxyActionAt
+Dim namelessEnabled, namelessDone, namelessFailed, namelessRecoveries, namelessRestarts, namelessPhase, namelessReason
+Dim namelessOcrDiagnosticSeen, namelessOcrDiagnosticAt, namelessOcrDiagnosticCount
+Dim namelessBattleOcrWaiting, namelessBattleOcrWaitAt
 Dim normalAdventureEnabled, normalAdventureDone, normalAdventureFailed, normalAdventureRecoveries, normalAdventureRestarts, normalAdventurePhase, normalAdventureReason, normalAdventureProgressAt, normalAdventurePostBattle
 Dim powerTournamentEnabled, powerTournamentBuy, powerTournamentQuickJoin, powerTournamentBuyRuntime, powerTournamentDone, powerTournamentFailed, powerTournamentRecoveries, powerTournamentRestarts, powerTournamentPhase, powerTournamentReason
 Dim redEnabled, redMap, red84Hour, red84Minute, red85Hour, red85Minute, redReason, redMode, redActionAt, redFirstDone, redRefreshLeft, red84Due, red84Done, red84Failed, red84Count, red84Failures, red84Restarts, red84Recoveries, red84Phase, red84Terminal, red84Reason, red84FinishedAt, red85Due, red85Done, red85Failed, red85Count, red85Failures, red85Restarts, red85Recoveries, red85Phase, red85Terminal, red85Reason, red85FinishedAt

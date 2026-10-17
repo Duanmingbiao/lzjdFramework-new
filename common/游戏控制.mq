@@ -23,6 +23,18 @@ Sub RestartGame()
     If currentTask = 19 Then
         Call RestartPowerTournamentTask()
     End If
+    If currentTask = 20 Then
+        Call RestartNamelessTask()
+    End If
+    If currentTask = 21 Then
+        Call RestartGalaxyTask()
+    End If
+    If currentTask = 22 Then
+        Call RestartForestTask()
+    End If
+    If currentTask = 23 Then
+        Call RestartAllianceTask()
+    End If
     If currentTask = 13 Then
         Call RestartExperienceTask()
     End If

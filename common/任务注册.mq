@@ -2,6 +2,10 @@
     Call Note("注册英雄副本17；专业版root.691；原日常_英雄副本单开关")
     Call Note("注册冒险副本18；专业版root.697；原RcMx1冒险新图单开关")
     Call Note("注册力之大会19；专业版root.698；原RcMx2、买5次、快速加入配置")
+    Call Note("注册无名星之战20；专业版root.639；原日常_无名星之战配置；3.8 OCR兼容")
+    Call Note("注册跨银河大赛21；专业版root.640；主开关、自动报名和四赛区配置")
+    Call Note("注册恐惧森林22；专业版root.643；原念力/分解、战斗模式和间隔配置")
+    Call Note("注册联盟组队战23；用户确认root.641；原配置入口，过程不增加执行效果")
     Call Note("注册异时空试炼92；原SlYsk时长与间隔配置；原多点找色")
     Call Note("注册伙伴试炼16；原SlHb配置；3.8旧OCR兼容，非同引擎")
     Call Note("注册基因试炼15；原SlJyin配置；3.8旧OCR兼容，非同引擎")
@@ -45,6 +49,24 @@ Function SelectDueTask()
     If resumeTask = 19 Then
         SelectDueTask = 19
         Exit Function
+    End If
+    If resumeTask = 20 Then
+        SelectDueTask = 20
+        Exit Function
+    End If
+    If resumeTask = 21 Then
+        SelectDueTask = 21
+        Exit Function
+    End If
+    If resumeTask = 22 Then
+        SelectDueTask = 22
+        Exit Function
+    End If
+    If resumeTask = 23 Then
+        If Not allianceAbandoned Then
+            SelectDueTask = 23
+            Exit Function
+        End If
     End If
     If resumeTask = 13 Then
         SelectDueTask = 13
@@ -122,6 +144,26 @@ Function SelectDueTask()
     End If
     If powerTournamentEnabled And Not powerTournamentDone Then
         SelectDueTask = 19
+        Exit Function
+    End If
+    selected = SelectNameless()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectGalaxy()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectAlliance()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectForest()
+    If selected <> 0 Then
+        SelectDueTask = selected
         Exit Function
     End If
     selected = SelectGold()

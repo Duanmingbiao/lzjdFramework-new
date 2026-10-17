@@ -1,0 +1,41 @@
+{
+  "id": "root.548",
+  "offset": 1203993,
+  "stack": 3,
+  "line": 30655,
+  "vararg": 0,
+  "lastline": 30659,
+  "params": 1,
+  "constants": [
+    "nil",
+    1000,
+    "LuaAuxLib",
+    "KeepReleaseScreenSnapshot",
+    0,
+    "Sleep"
+  ],
+  "children": [],
+  "upvalues": [
+    [
+      0,
+      0
+    ]
+  ],
+  "code": [
+    4194402,
+    16403,
+    2147483666,
+    16413,
+    4227170,
+    12632163,
+    65693,
+    16793707,
+    4227170,
+    12664931,
+    156,
+    16793707,
+    8388653
+  ],
+  "debugflag": 184,
+  "end": 1204332
+}

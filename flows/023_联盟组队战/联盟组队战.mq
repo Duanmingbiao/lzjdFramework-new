@@ -1,0 +1,506 @@
+﻿Sub AllianceHelp()
+    ShowMessage "按专业版实际调用root.641执行。参赛控制原组队/报名分支；过程选项保留原入口，不改变root.641执行效果。时间初始化按专业版13分支取当前时间。"
+End Sub
+Function AllianceWait(ms)
+    AllianceWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(ms)
+    AllianceWait = Not BusinessExpired()
+End Function
+Function AllianceSwipe(x1, y1, x2, y2, duration, afterWait)
+    AllianceSwipe = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldLog("原滑动=" & x1 & "," & y1 & "->" & x2 & "," & y2 & " 时长=" & duration)
+    Swipe x1, y1, x2, y2, duration
+    AllianceSwipe = AllianceWait(afterWait)
+End Function
+Function AllianceFinish(reason, permanent, roundCounted)
+    AllianceFinish = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    allianceReason = reason
+    alliancePendingPermanent = permanent
+    alliancePendingRound = roundCounted
+    alliancePendingDue = Time() + 3600
+    allianceExitPending = True
+    terminalConfirmed = True
+    Call WorldLog("原业务出口=" & reason & "；等待公共返回大厅连续确认，不直接计次或提交")
+    AllianceFinish = RESULT_OK
+End Function
+Function AllianceDefer(dueStamp, reason)
+    AllianceDefer = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    allianceReason = reason
+    allianceRetryAt = dueStamp
+    allianceDeferred = True
+    terminalConfirmed = False
+    Call WorldLog("原延期/阶段边界=" & reason & "；未知/超时不标完成")
+    AllianceDefer = RESULT_WAIT
+End Function
+Function AllianceEnterIcon()
+    Dim retry
+    AllianceEnterIcon = False
+    // Original FindEX2(table with auto-click=True, 2), not a new entry fallback.
+    If WorldMatch("023_入口") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        For retry = 1 To 2
+            If Not AllianceWait(1000) Then
+                Exit Function
+            End If
+            If WorldMatch("023_入口") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+            Else
+                AllianceEnterIcon = True
+                Exit Function
+            End If
+        Next
+    End If
+End Function
+Function AlliancePrepare()
+    Dim preparedAt, ignored, taskSecond
+    AlliancePrepare = RESULT_TIMEOUT
+    preparedAt = TickCount()
+    allianceMode = 0
+    Call WorldStage("联盟组队战入口及阶段判断")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        ignored = AllianceEnterIcon()
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        // Original branches exit phase immediately; never run later checks after a match.
+        If WorldMatch("023_未参加") Then
+            allianceMode = 0
+            AlliancePrepare = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("023_决赛排行") Then
+            If Not AllianceWait(1000) Then
+                Exit Function
+            End If
+            allianceMode = 0
+            AlliancePrepare = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("023_准备挑战") Then
+            allianceMode = 1
+            AlliancePrepare = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("023_已组队等报名") Then
+            If Not AllianceWait(1000) Then
+                Exit Function
+            End If
+            allianceMode = 0
+            AlliancePrepare = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("023_组队阶段") Then
+            allianceMode = 2
+            If DateTime.WeekDay() = 2 Then
+                // Native compares TASK scheduled time, not current wall-clock time.
+                taskSecond = allianceDue - WorldDayStart(allianceDue)
+                If taskSecond < 57600 Then
+                    AlliancePrepare = AllianceDefer(WorldDayStart(Time()) + 57600, "原WeekDay=2且任务时间早于16点，改期16点")
+                    Exit Function
+                End If
+                AlliancePrepare = RESULT_OK
+            Else
+                AlliancePrepare = AllianceFinish("原组队阶段非WeekDay=2", True, False)
+            End If
+            Exit Function
+        End If
+        If WorldMatch("023_报名阶段") Then
+            allianceMode = 3
+            If DateTime.WeekDay() = 3 Then
+                AlliancePrepare = RESULT_OK
+            Else
+                AlliancePrepare = AllianceFinish("原报名阶段非WeekDay=3", True, False)
+            End If
+            Exit Function
+        End If
+        If TickCount() - preparedAt > 30000 Then
+            Call WorldLog("原入口30秒边界；未知不复制原完成标记，保留23恢复")
+            Exit Function
+        End If
+    Loop
+End Function
+Function AllianceEnableAuto()
+    Dim autoAt, autoClicks
+    AllianceEnableAuto = RESULT_TIMEOUT
+    autoAt = TickCount()
+    autoClicks = 0
+    Call WorldStage("联盟组队战原自动勾选")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("023_准备挑战") Then
+            If Not WorldTap(438, 1020, 1000) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("023_自动未选") Then
+            If Not WorldTap(358, 1230, 500) Then
+                Exit Function
+            End If
+            autoClicks = autoClicks + 1
+        End If
+        If WorldMatch("023_自动已选") Then
+            AllianceEnableAuto = RESULT_OK
+            Exit Function
+        End If
+        If autoClicks > 5 Then
+            AllianceEnableAuto = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - autoAt > 30000 Then
+            Call WorldLog("原自动勾选30秒边界；不复制原超时完成标记")
+            Exit Function
+        End If
+    Loop
+End Function
+Sub AllianceClearCells()
+    allianceCell1 = False
+    allianceCell2 = False
+    allianceCell3 = False
+    allianceCell4 = False
+    allianceCell5 = False
+    allianceCell6 = False
+    allianceCell7 = False
+    allianceCell8 = False
+    allianceCell9 = False
+End Sub
+Sub AllianceSetCell(slot, value)
+    If slot = 1 Then
+        allianceCell1 = value
+    ElseIf slot = 2 Then
+        allianceCell2 = value
+    ElseIf slot = 3 Then
+        allianceCell3 = value
+    ElseIf slot = 4 Then
+        allianceCell4 = value
+    ElseIf slot = 5 Then
+        allianceCell5 = value
+    ElseIf slot = 6 Then
+        allianceCell6 = value
+    ElseIf slot = 7 Then
+        allianceCell7 = value
+    ElseIf slot = 8 Then
+        allianceCell8 = value
+    ElseIf slot = 9 Then
+        allianceCell9 = value
+    End If
+End Sub
+Function AllianceHasCell(slot)
+    AllianceHasCell = False
+    If slot = 1 Then
+        AllianceHasCell = allianceCell1
+    ElseIf slot = 2 Then
+        AllianceHasCell = allianceCell2
+    ElseIf slot = 3 Then
+        AllianceHasCell = allianceCell3
+    ElseIf slot = 4 Then
+        AllianceHasCell = allianceCell4
+    ElseIf slot = 5 Then
+        AllianceHasCell = allianceCell5
+    ElseIf slot = 6 Then
+        AllianceHasCell = allianceCell6
+    ElseIf slot = 7 Then
+        AllianceHasCell = allianceCell7
+    ElseIf slot = 8 Then
+        AllianceHasCell = allianceCell8
+    ElseIf slot = 9 Then
+        AllianceHasCell = allianceCell9
+    End If
+End Function
+Function AllianceCellMatch(slot)
+    AllianceCellMatch = False
+    If slot = 1 Then
+        AllianceCellMatch = WorldMatch("023_玩家格1")
+    ElseIf slot = 2 Then
+        AllianceCellMatch = WorldMatch("023_玩家格2")
+    ElseIf slot = 3 Then
+        AllianceCellMatch = WorldMatch("023_玩家格3")
+    ElseIf slot = 4 Then
+        AllianceCellMatch = WorldMatch("023_玩家格4")
+    ElseIf slot = 5 Then
+        AllianceCellMatch = WorldMatch("023_玩家格5")
+    ElseIf slot = 6 Then
+        AllianceCellMatch = WorldMatch("023_玩家格6")
+    ElseIf slot = 7 Then
+        AllianceCellMatch = WorldMatch("023_玩家格7")
+    ElseIf slot = 8 Then
+        AllianceCellMatch = WorldMatch("023_玩家格8")
+    ElseIf slot = 9 Then
+        AllianceCellMatch = WorldMatch("023_玩家格9")
+    End If
+End Function
+Function AllianceBattleChecks()
+    AllianceBattleChecks = False
+    // root.641 PC742..945; duplicate settlement-one recognition is intentional.
+    If WorldMatch("023_结算一") Then
+        If Not WorldOffset(0, 0, 3000) Then
+            Exit Function
+        End If
+        allianceActionAt = TickCount()
+        businessStarted = TickCount()
+    End If
+    If WorldMatch("023_结算二") Then
+        If Not WorldOffset(0, 0, 3000) Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("023_结算一") Then
+        If Not WorldOffset(0, 0, 1000) Then
+            Exit Function
+        End If
+        allianceActionAt = TickCount()
+        businessStarted = TickCount()
+    End If
+    If WorldMatch("023_图标6") Then
+        If Not WorldTap(587, 982, 2000) Then
+            Exit Function
+        End If
+        allianceActionAt = TickCount()
+        allianceCanChallenge = False
+    End If
+    If WorldMatch("023_暂停战斗") Then
+        If Not WorldOffset(-311, 10, 200) Then
+            Exit Function
+        End If
+        allianceActionAt = TickCount()
+    End If
+    If WorldMatch("023_退出战斗") Then
+        If Not WorldOffset(0, 0, 200) Then
+            Exit Function
+        End If
+        allianceActionAt = TickCount()
+    End If
+    AllianceBattleChecks = Not BusinessExpired()
+End Function
+Function AllianceFight()
+    Dim fightAt, burst, slot, seen, remaining
+    AllianceFight = RESULT_TIMEOUT
+    fightAt = TickCount()
+    allianceActionAt = TickCount()
+    allianceScanStage = 0
+    allianceCanChallenge = True
+    Call AllianceClearCells()
+    Call WorldStage("联盟组队战原九区域挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If allianceScanStage = 0 Then
+            If WorldMatch("023_挑战主界面") Then
+                For burst = 1 To 4
+                    If Not AllianceSwipe(245, 980, 245, 680, 1000, 1000) Then
+                        Exit Function
+                    End If
+                Next
+                If Not AllianceWait(1000) Then
+                    Exit Function
+                End If
+                allianceScanStage = 1
+            End If
+        ElseIf allianceScanStage = 1 Then
+            If WorldMatch("023_挑战主界面") Then
+                seen = False
+                For slot = 1 To 9
+                    If AllianceCellMatch(slot) Then
+                        Call AllianceSetCell(slot, True)
+                        seen = True
+                    End If
+                    If Not AllianceWait(200) Then
+                        Exit Function
+                    End If
+                Next
+                allianceScanStage = 2
+                allianceCanChallenge = True
+                If Not seen Then
+                    AllianceFight = AllianceFinish("原九区域扫描无可挑战目标", True, False)
+                    Exit Function
+                End If
+            End If
+        ElseIf allianceScanStage = 2 Then
+            If allianceCanChallenge Then
+                If WorldMatch("023_挑战主界面") Then
+                    remaining = False
+                    For slot = 1 To 9
+                        If AllianceHasCell(slot) Then
+                            remaining = True
+                            If AllianceCellMatch(slot) Then
+                                If Not WorldOffset(0, 0, 200) Then
+                                    Exit Function
+                                End If
+                                Call AllianceSetCell(slot, False)
+                                allianceActionAt = TickCount()
+                                allianceCanChallenge = False
+                                Exit For
+                            End If
+                            If Not AllianceWait(200) Then
+                                Exit Function
+                            End If
+                        End If
+                    Next
+                    If Not remaining Then
+                        AllianceFight = AllianceFinish("原九区域已依次处理完毕", False, True)
+                        Exit Function
+                    End If
+                End If
+            End If
+        End If
+        If Not AllianceBattleChecks() Then
+            Exit Function
+        End If
+        If TickCount() - allianceActionAt > 13000 Then
+            allianceCanChallenge = True
+            businessStarted = TickCount()
+        End If
+        If TickCount() - allianceActionAt > 25000 Then
+            AllianceFight = AllianceDefer(Time() + 3600, "原挑战25秒无进展收尾，非成功")
+            Exit Function
+        End If
+        If TickCount() - fightAt > 180000 Then
+            AllianceFight = AllianceDefer(Time() + 3600, "原挑战180秒运行边界，非成功")
+            Exit Function
+        End If
+    Loop
+End Function
+Function AllianceFormTeam()
+    Dim formAt, actionAt, clicks
+    AllianceFormTeam = RESULT_TIMEOUT
+    formAt = TickCount()
+    actionAt = TickCount()
+    clicks = 0
+    Call WorldStage("联盟组队战原组队")
+    If Not allianceEnroll Then
+        AllianceFormTeam = AllianceFinish("原参赛关闭，组队阶段本轮结束", False, True)
+        Exit Function
+    End If
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("023_组队阶段") Then
+            If Not WorldOffset(107, -145, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If WorldMatch("023_组队确认") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+            clicks = clicks + 1
+            actionAt = TickCount()
+        End If
+        If clicks > 10 Then
+            AllianceFormTeam = AllianceFinish("原组队确认超过10次收尾，非组队成功证明", False, True)
+            Exit Function
+        End If
+        If TickCount() - actionAt > 10000 Or TickCount() - formAt > 100000 Then
+            AllianceFormTeam = AllianceDefer(Time() + 3600, "原组队10秒/100秒边界，非成功")
+            Exit Function
+        End If
+    Loop
+End Function
+Function AllianceSignup()
+    Dim signupAt, actionAt, clicks
+    AllianceSignup = RESULT_TIMEOUT
+    signupAt = TickCount()
+    actionAt = TickCount()
+    clicks = 0
+    Call WorldStage("联盟组队战原报名")
+    If Not allianceEnroll Then
+        AllianceSignup = AllianceFinish("原参赛关闭，报名阶段本轮结束", False, True)
+        Exit Function
+    End If
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("023_已报名") Then
+            If Not AllianceWait(1000) Then
+                Exit Function
+            End If
+            AllianceSignup = AllianceFinish("原已报名等待开赛", False, True)
+            Exit Function
+        End If
+        If WorldMatch("023_报名阶段") Then
+            If Not WorldOffset(420, -190, 500) Then
+                Exit Function
+            End If
+            clicks = clicks + 1
+            actionAt = TickCount()
+        End If
+        If clicks > 5 Then
+            AllianceSignup = AllianceFinish("原报名点击超过5次收尾，非报名成功证明", False, True)
+            Exit Function
+        End If
+        If TickCount() - actionAt > 10000 Or TickCount() - signupAt > 100000 Then
+            AllianceSignup = AllianceDefer(Time() + 3600, "原报名10秒/100秒边界，非成功")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteAllianceBattle()
+    Dim prepared
+    ExecuteAllianceBattle = RESULT_TIMEOUT
+    If allianceAbandoned Then
+        Exit Function
+    End If
+    If allianceDeferred Then
+        ExecuteAllianceBattle = RESULT_WAIT
+        Exit Function
+    End If
+    If allianceExitPending Then
+        If Not BusinessExpired() Then
+            terminalConfirmed = True
+            ExecuteAllianceBattle = RESULT_OK
+        End If
+        Exit Function
+    End If
+    If NamelessEnterMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    prepared = AlliancePrepare()
+    If prepared <> RESULT_OK Or allianceExitPending Then
+        ExecuteAllianceBattle = prepared
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    If allianceMode = 1 Then
+        If AllianceEnableAuto() <> RESULT_OK Then
+            Exit Function
+        End If
+        ExecuteAllianceBattle = AllianceFight()
+    ElseIf allianceMode = 2 Then
+        ExecuteAllianceBattle = AllianceFormTeam()
+    ElseIf allianceMode = 3 Then
+        ExecuteAllianceBattle = AllianceSignup()
+    Else
+        ExecuteAllianceBattle = AllianceFinish("原未参加/决赛排行/已组队等报名页面本轮结束", False, True)
+    End If
+End Function

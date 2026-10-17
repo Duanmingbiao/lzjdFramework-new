@@ -8,6 +8,28 @@ def expression(s):
  return s
 
 def load(paths, env):
+ for key in ['LoadAllianceSettings','NewAllianceSession','StartAllianceTask','RecoverAllianceTask','RestartAllianceTask','CommitAllianceTask']:
+  env.setdefault(key,lambda:None)
+ env.setdefault('SelectAlliance',lambda:0)
+ env.setdefault('allianceEnabled',False)
+ env.setdefault('allianceAbandoned',False)
+ env.setdefault('allianceDeferred',False)
+ env.setdefault('allianceTimeoutRecovery',False)
+ for key in ['LoadForestSettings','NewForestSession','StartForestTask','RecoverForestTask','RestartForestTask','StageForestPublicTimeout']:
+  env.setdefault(key,lambda:None)
+ env.setdefault('SelectForest',lambda:0)
+ env.setdefault('forestEnabled',False)
+ env.setdefault('forestDeferred',False)
+ for key in ['LoadGalaxySettings','NewGalaxySession','StartGalaxyTask','RecoverGalaxyTask','RestartGalaxyTask','CommitGalaxyTask']:
+  env.setdefault(key,lambda:None)
+ env.setdefault('SelectGalaxy',lambda:0)
+ env.setdefault('galaxyEnabled',False)
+ env.setdefault('galaxyDeferred',False)
+ env.setdefault('namelessEnabled',False)
+ env.setdefault('namelessDone',False)
+ for key in ['LoadNamelessSettings','NewNamelessSession','StartNamelessTask','RecoverNamelessTask','RestartNamelessTask','CommitNamelessTask']:
+  env.setdefault(key,lambda:None)
+ env.setdefault('SelectNameless',lambda:0)
  env.setdefault('heroDungeonRunning',False)
  for key,value in {'KeepCapture':lambda:None,'FindColor':lambda *a:-1,'GetPixelColor':lambda *a:0,'Int':int}.items():env.setdefault(key,value)
  for key,value in {'SmartOcr':lambda *a:'','trialPublicTimedOutTask':0,'trialPublicRecoveryTask':0,'trialRestartOnTimeout':False,'goldFailures':0,'experienceFailures':0,'soulFailures':0,'partnerFailures':0,'NewTrialPublicSession':lambda:None,'BeginTrialPublicTask':lambda *a:None,'RecoverTrialPublicBoundary':lambda:None,'IsTrialTask':lambda t:t in (12,13,14,15,16,92)}.items():env.setdefault(key,value)
@@ -72,10 +94,12 @@ def load(paths, env):
    elif s.startswith('KillApp '):s='KillApp('+s[8:]+')'
    elif s.startswith(fn+' ='):s='mq_result'+s[len(fn):]
    if s.startswith('TracePrint '):s='TracePrint('+s[11:]+')'
+   if s.startswith('ShowMessage '):s='ShowMessage('+s[12:]+')'
    if s in ('ReleaseCapture','KeepCapture'):s=s+'()'
    if s.startswith('Swipe '):s='Swipe('+s[6:]+')'
    if s.startswith('Tap '):s='Tap('+s[4:]+')'
    if s.startswith('SnapShot '):s='SnapShot('+s[9:]+')'
+   if s.startswith('FindMultiColor '):s='FindMultiColor('+s[15:]+')'
    assignment=re.match(r'^(\w+) = (.*)$',s)
    if assignment:
     rhs=assignment[2]

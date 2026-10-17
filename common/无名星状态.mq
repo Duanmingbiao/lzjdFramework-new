@@ -1,0 +1,47 @@
+﻿Sub LoadNamelessSettings()
+    namelessEnabled = WorldBoolean("日常_无名星之战")
+End Sub
+Sub NewNamelessSession()
+    namelessDone = False
+    namelessFailed = False
+    namelessRecoveries = 0
+    namelessRestarts = 0
+    namelessPhase = "未开始"
+    namelessReason = ""
+    namelessOcrDiagnosticSeen = False
+    namelessOcrDiagnosticAt = 0
+    namelessOcrDiagnosticCount = 0
+    namelessBattleOcrWaiting = False
+    namelessBattleOcrWaitAt = 0
+End Sub
+Function SelectNameless()
+    SelectNameless = 0
+    If namelessEnabled And Not namelessDone Then
+        SelectNameless = 20
+    End If
+End Function
+Sub StartNamelessTask()
+    namelessFailed = False
+    namelessBattleOcrWaiting = False
+    namelessBattleOcrWaitAt = 0
+    namelessPhase = "启动"
+    namelessReason = ""
+    Call WorldStage("无名星之战启动")
+End Sub
+Sub RecoverNamelessTask()
+    namelessFailed = True
+    namelessRecoveries = namelessRecoveries + 1
+    namelessPhase = "等待恢复"
+    terminalConfirmed = False
+    Call WorldLog("保留无名星之战20恢复；未知、前台中断或超时不完成")
+End Sub
+Sub RestartNamelessTask()
+    namelessRestarts = namelessRestarts + 1
+    Call WorldLog("公共重启恢复无名星之战20 次数=" & namelessRestarts)
+End Sub
+Sub CommitNamelessTask()
+    namelessDone = True
+    namelessFailed = False
+    namelessPhase = "已完成"
+    Call WorldLog("无名星之战20大厅连续确认后提交；出口=" & namelessReason)
+End Sub

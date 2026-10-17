@@ -47,6 +47,11 @@ Function WorldText(x1, y1, x2, y2)
     Dim text, token
     ReleaseCapture
     text = Image.OcrText(x1, y1, x2, y2, 0, 0)
+    If currentTask = 20 Then
+        If x1 = 301 And y1 = 1108 And x2 = 417 And y2 = 1158 Then
+            Call NamelessOcrEmptyDiagnostic(text)
+        End If
+    End If
     If IsNull(text) Then
         text = ""
     End If

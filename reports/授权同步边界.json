@@ -598,5 +598,83 @@
       "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
     },
     "verification": "D:\\game\\anjian-new\\reports\\同步备份\\全不勾选-20261017-200506-000758\\同步后验证.json"
+  },
+  {
+    "authorizedByUser": true,
+    "projectId": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+    "request": "同步到既有龙珠激斗脚本，取消所有勾选配置；不连接模拟器、不操作助手、不提交Git",
+    "before": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "408483e95b4c801b69b57f70f460770c5c5810acce2f7c202c2c7d496abf1bdb",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "03bb444803a119065d2eb63a099dd811034c1ae1f4f514f2541b68a3a508a7a7",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "712793a9938119ee8956ac953f483e5f02125240b6ce4b0eb4fe07d4989bc28e",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "f2821433e09652878b4bb412259baa602613f71336bb0e2f5f6139a6bdeb0451",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "033b7a69f58cf6dbd36f10db0f6fff6371ce296a6f866f8b785e8c0c190eb6cf",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "f2821433e09652878b4bb412259baa602613f71336bb0e2f5f6139a6bdeb0451",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "033b7a69f58cf6dbd36f10db0f6fff6371ce296a6f866f8b785e8c0c190eb6cf",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "after": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "7402030e3f6ad65d185f7900c1440916c9a5400a780652730eac8e815054bcf2",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "30880603ad7715bb948b09bacea06f5ab55cba23616b943ccd00cdc2572f8f04",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "verification": "D:\\game\\anjian-new\\reports\\同步备份\\全不勾选-20261017-211421-535741\\同步后验证.json"
+  },
+  {
+    "authorizedByUser": true,
+    "projectId": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+    "request": "同步到既有龙珠激斗脚本，取消所有勾选配置；不连接模拟器、不操作助手、不提交Git",
+    "before": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "6aec3e915ebca467d9b33ac64ed83569de5f92ca63ff534417daba0cb48b5549",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "7402030e3f6ad65d185f7900c1440916c9a5400a780652730eac8e815054bcf2",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "30880603ad7715bb948b09bacea06f5ab55cba23616b943ccd00cdc2572f8f04",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "478bb62874b170cf113822a0ffe2d67ca2912b36868f8390f728668c8a539b35",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "after": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "bcbd1f87cee4af09683af7e5dc10ddc4f89e8b940eaa373b923d53e518081b20",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "87d6e3152058a20ecc8c90995f8d0935632cbb82dfda824a8fce4bddafd06a72",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "30880603ad7715bb948b09bacea06f5ab55cba23616b943ccd00cdc2572f8f04",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "14f811b22c24e6d8a525dfab96ab517a97d10893e9063f122b8202fc137b6972",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "14f811b22c24e6d8a525dfab96ab517a97d10893e9063f122b8202fc137b6972",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "verification": "D:\\game\\anjian-new\\reports\\同步备份\\全不勾选-20261017-213401-816085\\同步后验证.json"
+  },
+  {
+    "authorizedByUser": true,
+    "projectId": "f36a80cf-4e0e-4492-ab30-c8035f412569",
+    "request": "同步到既有龙珠激斗脚本，取消所有勾选配置；不连接模拟器、不操作助手、不提交Git",
+    "before": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "bcbd1f87cee4af09683af7e5dc10ddc4f89e8b940eaa373b923d53e518081b20",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "87d6e3152058a20ecc8c90995f8d0935632cbb82dfda824a8fce4bddafd06a72",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "30880603ad7715bb948b09bacea06f5ab55cba23616b943ccd00cdc2572f8f04",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "14f811b22c24e6d8a525dfab96ab517a97d10893e9063f122b8202fc137b6972",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "14f811b22c24e6d8a525dfab96ab517a97d10893e9063f122b8202fc137b6972",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "after": {
+      "D:\\game\\anjian-new\\assistant-sync.json": "f3a0a324f6af9165f42f9155bd2fadc1abd144e1f10416118963d328902ff62d",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.mq": "5490ecc6686069750fd77e42831b5276c600d4a82d5ec809635eda2319fa1eb0",
+      "D:\\game\\anjian-new\\dist\\UTF-8查看版\\龙珠激斗脚本.uip": "30880603ad7715bb948b09bacea06f5ab55cba23616b943ccd00cdc2572f8f04",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq": "0ffd8578ffcd047ccb876e0a43d9454f02f7591cee5ab2262723ddbe5b6b16ba",
+      "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq": "0ffd8578ffcd047ccb876e0a43d9454f02f7591cee5ab2262723ddbe5b6b16ba",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip": "de1cca056cfd07a6a159ed2e4a6889fbcad2cf506488d224b1dafe134f8d2f2e",
+      "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
+    },
+    "verification": "D:\\game\\anjian-new\\reports\\同步备份\\全不勾选-20261017-221008-557932\\同步后验证.json"
   }
 ]

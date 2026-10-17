@@ -1,0 +1,395 @@
+﻿Function ForestWait(ms)
+    ForestWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(ms)
+    ForestWait = Not BusinessExpired()
+End Function
+Function ForestDefer(seconds, reason)
+    ForestDefer = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    forestReason = reason
+    forestRetryAt = Time() + seconds
+    forestDeferred = True
+    terminalConfirmed = False
+    ForestDefer = RESULT_WAIT
+End Function
+Function ForestEnterMode()
+    Dim enteredAt, searchCount, hallResult, hallReady
+    ForestEnterMode = RESULT_TIMEOUT
+    enteredAt = TickCount()
+    searchCount = 0
+    Call WorldStage("恐惧森林超次元入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If HeroMatchEither("020_入口", "020_模式灰色") Then
+            businessStarted = TickCount()
+            ForestEnterMode = RESULT_OK
+            Exit Function
+        End If
+        hallResult = ReturnToHall()
+        If hallResult <> RESULT_OK Then
+            Exit Function
+        End If
+        hallReady = WorldMatch("012_P30")
+        If Not hallReady Then
+            hallReady = WorldMatch("012_P31")
+        End If
+        If Not hallReady Then
+            hallReady = WorldMatch("020_大厅返回")
+        End If
+        If hallReady Then
+            If WorldPair("020_模式入口") Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                searchCount = searchCount + 1
+                hallResult = ReturnToHall()
+                If hallResult <> RESULT_OK Or BusinessExpired() Then
+                    Exit Function
+                End If
+                If searchCount <= 5 Then
+                    Swipe 150, 545, 500, 545, 300
+                Else
+                    Swipe 500, 545, 150, 545, 300
+                End If
+                If searchCount = 10 Then
+                    searchCount = 0
+                End If
+            End If
+        End If
+        If TickCount() - enteredAt > 60000 Then
+            // root.787 PC1132..1172: forest alone defers one hour; no 2s Delay.
+            ForestEnterMode = ForestDefer(3600, "原模式入口超过60秒，一小时后重试")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ForestPrepare()
+    ForestPrepare = RESULT_TIMEOUT
+    Call WorldStage("恐惧森林进入主界面")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldMatch("022_入口") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("022_离线领取") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("022_离线关闭") Then
+            If Not WorldTap(150, 50, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("022_主界面") Then
+            If Not ForestWait(1000) Then
+                Exit Function
+            End If
+            ForestPrepare = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Sub ForestInitializeFight()
+    forestAttempts = 0
+    forestFailures = 0
+    forestHeartVisits = 0
+    forestBagVisits = 0
+    forestPopupVisits = 0
+    forestHeartAt = TickCount()
+    forestHeartDelay = 0
+    forestBagAt = TickCount()
+    forestBagDelay = 0
+    forestChallengeAt = TickCount()
+    forestDisplayAt = TickCount()
+    forestEndAt = TickCount()
+    If Not forestAttackStarted Then
+        forestAttackAt = TickCount()
+        forestAttackStarted = True
+    End If
+    forestRuntimeFailureLimit = forestFailureLimit
+    If forestRuntimeFailureLimit = 0 Then
+        forestRuntimeFailureLimit = 1
+    End If
+    forestSeconds = forestMinutes * 60
+    If forestMinutes < 2 Then
+        forestSeconds = 120
+    End If
+    forestFrequencySeconds = forestFrequency * 60
+    // Original PC287..295 tests challenge time, NOT frequency; preserve it.
+    If forestMinutes < 1 Then
+        forestFrequencySeconds = 90
+    End If
+End Sub
+Function ForestMainAction()
+    Dim burst
+    ForestMainAction = False
+    If TickCount() - forestHeartAt > forestHeartDelay Then
+        If forestHeart Then
+            If WorldMatch("022_主界面") Then
+                forestHeartAt = TickCount()
+                forestHeartDelay = forestFrequencySeconds * 1000
+                If Not WorldOffset(560, -848, 2000) Then
+                    Exit Function
+                End If
+            End If
+        Else
+            forestHeartAt = TickCount()
+            forestHeartDelay = forestFrequencySeconds * 1000
+        End If
+    ElseIf TickCount() - forestBagAt > forestBagDelay Then
+        If forestBag Then
+            If WorldMatch("022_主界面") Then
+                forestBagAt = TickCount()
+                forestHeartAt = TickCount()
+                forestBagDelay = (forestFrequencySeconds + 30) * 1000
+                If Not WorldOffset(560, -733, 2000) Then
+                    Exit Function
+                End If
+            End If
+        Else
+            forestBagAt = TickCount()
+            forestHeartAt = TickCount()
+            forestBagDelay = forestFrequencySeconds * 1000
+        End If
+    Else
+        If WorldMatch("022_主界面") Then
+            If TickCount() - forestChallengeAt > 30000 Then
+                forestChallengeAt = TickCount()
+                For burst = 1 To 5
+                    If Not WorldOffset(252, -78, 200) Then
+                        Exit Function
+                    End If
+                Next
+            Else
+                If Not WorldOffset(252, -350, 1000) Then
+                    Exit Function
+                End If
+            End If
+            If Not ForestWait(2000) Then
+                Exit Function
+            End If
+            forestAttempts = forestAttempts + 1
+        End If
+    End If
+    ForestMainAction = Not BusinessExpired()
+End Function
+Function ForestPanels()
+    Dim burst
+    ForestPanels = False
+    If forestHeart Then
+        If WorldMatch("022_念力面板") Then
+            forestHeartVisits = forestHeartVisits + 1
+            If forestHeartVisits < 2 Then
+                For burst = 1 To 20
+                    If Not WorldTap(570, 1124, 200) Then
+                        Exit Function
+                    End If
+                Next
+            ElseIf forestHeartVisits = 2 Then
+                If Not WorldTap(158, 1122, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(158, 1122, 500) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldOffset(0, 0, 700) Then
+                    Exit Function
+                End If
+            End If
+        End If
+    End If
+    If forestBag Then
+        If WorldMatch("022_分解面板") Then
+            forestBagVisits = forestBagVisits + 1
+            If forestBagVisits < 4 Then
+                If Not WorldOffset(253, -42, 0) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If Not ForestWait(5) Then
+            Exit Function
+        End If
+        If WorldMatch("022_分解退出") Then
+            If Not WorldOffset(0, 0, 700) Then
+                Exit Function
+            End If
+            forestAttempts = 0
+            businessStarted = TickCount()
+        End If
+        If Not ForestWait(5) Then
+            Exit Function
+        End If
+        If WorldMatch("022_分解确认") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+    End If
+    ForestPanels = Not BusinessExpired()
+End Function
+Function ForestBattleChecks()
+    ForestBattleChecks = False
+    // root.643 PC821..1254: independent checks, in original order.
+    If WorldMatch("022_通用关闭") Then
+        If Not WorldTap(100, 50, 200) Then
+            Exit Function
+        End If
+        businessStarted = TickCount()
+    End If
+    If WorldMatch("022_入口") Then
+        If Not WorldOffset(0, 0, 500) Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("022_离线领取") Then
+        If Not WorldOffset(0, 0, 200) Then
+            Exit Function
+        End If
+        businessStarted = TickCount()
+    End If
+    If WorldMatch("022_离线关闭") Then
+        If Not WorldTap(150, 50, 500) Then
+            Exit Function
+        End If
+        businessStarted = TickCount()
+        forestAttempts = 0
+    End If
+    If WorldMatch("022_图标6") Then
+        If Not WorldTap(587, 982, 3000) Then
+            Exit Function
+        End If
+        forestPopupVisits = forestPopupVisits + 1
+        If forestPopupVisits > 5 Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+        End If
+        forestAttempts = 0
+    End If
+    If WorldMatch("022_开战少人") Then
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        forestEndAt = TickCount()
+    End If
+    If forestMode = 0 Then
+        If WorldPair("022_战斗") Then
+            If Not WorldOffset(-311, 87, 2000) Then
+                Exit Function
+            End If
+            forestAttempts = 0
+            businessStarted = TickCount()
+        End If
+    Else
+        If WorldMatch("022_战斗二") Then
+            If Not WorldOffset(-311, 10, 0) Then
+                Exit Function
+            End If
+            forestAttempts = 0
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("022_退出战斗") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+            forestFailures = 0
+            forestAttempts = 0
+            businessStarted = TickCount()
+        End If
+    End If
+    If WorldMatch("022_战斗成功") Then
+        If Not WorldOffset(0, 0, 1000) Then
+            Exit Function
+        End If
+        forestFailures = 0
+        forestAttempts = 0
+        businessStarted = TickCount()
+    End If
+    If WorldMatch("022_战斗失败") Then
+        If Not WorldOffset(0, 0, 1000) Then
+            Exit Function
+        End If
+        forestFailures = forestFailures + 1
+        forestAttempts = 0
+        businessStarted = TickCount()
+    End If
+    ForestBattleChecks = Not BusinessExpired()
+End Function
+Function ForestFight()
+    Dim ending
+    ForestFight = RESULT_TIMEOUT
+    Call ForestInitializeFight()
+    Call WorldStage("恐惧森林执行")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        ending = forestAttempts > 10 Or forestFailures > forestRuntimeFailureLimit Or TickCount() - forestAttackAt > forestSeconds * 1000
+        If ending Then
+            If WorldMatch("022_主界面") Then
+                Exit Do
+            End If
+            If TickCount() - forestEndAt > 30000 Then
+                Exit Do
+            End If
+        Else
+            forestEndAt = TickCount()
+            If TickCount() - forestDisplayAt > 10000 Then
+                Call WorldLog("剩余挑战秒=" & forestSeconds - Int((TickCount() - forestAttackAt) / 1000) & " 连败=" & forestFailures & "/" & forestRuntimeFailureLimit)
+                forestDisplayAt = TickCount()
+            End If
+            If Not ForestMainAction() Then
+                Exit Function
+            End If
+        End If
+        If Not ForestPanels() Then
+            Exit Function
+        End If
+        If Not ForestBattleChecks() Then
+            Exit Function
+        End If
+    Loop
+    If Not ForestWait(3000) Then
+        Exit Function
+    End If
+    ForestFight = ForestDefer(forestInterval * 60, "原次数/连败/时长上限，本轮结束")
+End Function
+Function ExecuteForest()
+    Dim modeResult
+    ExecuteForest = RESULT_TIMEOUT
+    If forestDeferred Then
+        ExecuteForest = RESULT_WAIT
+        Exit Function
+    End If
+    modeResult = ForestEnterMode()
+    If modeResult <> RESULT_OK Then
+        ExecuteForest = modeResult
+        Exit Function
+    End If
+    If ForestPrepare() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteForest = ForestFight()
+End Function

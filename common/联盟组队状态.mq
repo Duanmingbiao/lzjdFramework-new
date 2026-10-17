@@ -1,0 +1,93 @@
+﻿Sub LoadAllianceSettings()
+    allianceEnabled = WorldBoolean("日常_联盟组队战")
+    allianceEnroll = WorldBoolean("日常_联盟组队战_参赛")
+    allianceTimeChoice = WorldNumber("日常_联盟组队战_时间", 1, 1)
+    allianceProcessChoice = WorldNumber("日常_联盟组队战_过程", 1, 1)
+    allianceFailureLimit = WorldNumber("设置_重要_任务失败上限", 2, 9999)
+    allianceRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+    Call WriteMainLog("[联盟组队战23配置] 按已确认root.641；过程仅保留，时间初始化按原13分支取当前时间")
+End Sub
+Sub NewAllianceSession()
+    allianceDone = False
+    allianceAbandoned = False
+    allianceFailed = False
+    allianceCount = 0
+    allianceFailures = 0
+    allianceRecoveries = 0
+    allianceRestarts = 0
+    allianceDue = Time()
+    allianceDeferred = False
+    allianceRetryAt = 0
+    allianceExitPending = False
+    alliancePendingPermanent = False
+    alliancePendingRound = False
+    alliancePendingDue = 0
+    alliancePublicTimedOut = False
+    allianceTimeoutRecovery = False
+    alliancePhase = "未开始"
+    allianceReason = ""
+End Sub
+Function SelectAlliance()
+    SelectAlliance = 0
+    If allianceEnabled And Not allianceDone And Not allianceAbandoned Then
+        If Time() >= allianceDue Then
+            SelectAlliance = 23
+        End If
+    End If
+End Function
+Sub StartAllianceTask()
+    allianceFailed = False
+    Call WorldStage("联盟组队战启动/root.641")
+End Sub
+Sub RecoverAllianceTask()
+    allianceFailed = True
+    allianceRecoveries = allianceRecoveries + 1
+    terminalConfirmed = False
+    allianceTimeoutRecovery = False
+    If ForegroundInterrupted() Then
+        alliancePublicTimedOut = False
+    ElseIf alliancePublicTimedOut Then
+        alliancePublicTimedOut = False
+        allianceTimeoutRecovery = True
+        allianceFailures = allianceFailures + 1
+        If allianceFailures >= allianceFailureLimit Then
+            allianceAbandoned = True
+        End If
+        Call WorldLog("原公共超时失败次数=" & allianceFailures & "/" & allianceFailureLimit & "；不是业务完成")
+    End If
+    If allianceAbandoned Then
+        resumeTask = 0
+    End If
+    Call WorldLog("保存恢复联盟23；保留待大厅确认事件，不增加完成次数")
+End Sub
+Sub RestartAllianceTask()
+    allianceRestarts = allianceRestarts + 1
+    Call WorldLog("公共重启联盟23 次数=" & allianceRestarts)
+End Sub
+Sub CommitAllianceTask()
+    allianceDone = alliancePendingPermanent
+    If alliancePendingRound Then
+        allianceCount = allianceCount + 1
+        allianceDue = alliancePendingDue
+    End If
+    allianceFailed = False
+    allianceExitPending = False
+    Call WorldLog("大厅连续确认后提交原业务出口=" & allianceReason & " 本轮计数=" & allianceCount & " 下次Unix=" & allianceDue)
+End Sub
+Function ReleaseAllianceRetry(hallConfirmed)
+    ReleaseAllianceRetry = False
+    If currentTask <> 23 Or Not allianceDeferred Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    allianceDue = allianceRetryAt
+    allianceDeferred = False
+    terminalConfirmed = False
+    Call WorldLog("原延期/非成功收尾=" & allianceReason & " 下次Unix=" & allianceDue & "；不增加完成次数")
+    currentTask = 0
+    resumeTask = 0
+    ReleaseAllianceRetry = True
+    Call EndForegroundCommit()
+End Function
