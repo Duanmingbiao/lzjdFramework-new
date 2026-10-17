@@ -1,4 +1,11 @@
 ﻿// app/入口.mq
+Dim experienceEnabled, experienceDue, experienceDone, experienceCount, experienceAbandoned, experienceRecoveries, experienceRestarts, experiencePhase, experienceReason, experienceExitKind, experienceFinishedAt, experienceNativeTimeout
+Dim trialPublicTimedOutTask, trialPublicRecoveryTask, trialRestartOnTimeout, goldFailures, experienceFailures, soulFailures, partnerFailures
+Dim yskEnabled, yskMinutes, yskInterval, yskRestartOnTimeout, yskDue, yskDone, yskAbandoned, yskAttackAt, yskAttackStarted, yskHasCoin, yskPhase, yskExitKind, yskFailures, yskRecoveries, yskRestarts, yskFinishedAt, yskNativeTimeout, yskNoRestartPending
+Dim partnerEnabled, partnerDue, partnerDone, partnerCount, partnerAbandoned, partnerRecoveries, partnerRestarts, partnerPhase, partnerReason, partnerExitKind, partnerFinishedAt, partnerNativeTimeout
+Dim geneEnabled, geneDue, geneDone, geneCount, geneAbandoned, geneRecoveries, geneRestarts, genePhase, geneReason, geneExitKind, geneFinishedAt, geneNativeTimeout, genePickIndex, geneClickAt, geneActionAt, geneSpecialExit, geneFailures, geneForcedRecovery, geneNoRestartPending, geneRestartOnTimeout
+Dim soulEnabled, soulDue, soulDone, soulCount, soulAbandoned, soulRecoveries, soulRestarts, soulPhase, soulReason, soulExitKind, soulFinishedAt, soulNativeTimeout
+Dim goldEnabled, goldDue, goldDone, goldCount, goldAbandoned, goldRecoveries, goldRestarts, goldPhase, goldReason, goldExitKind, goldFinishedAt, goldNativeTimeout
 Dim redEnabled, redMap, red84Hour, red84Minute, red85Hour, red85Minute, redReason, redMode, redActionAt, redFirstDone, redRefreshLeft, red84Due, red84Done, red84Failed, red84Count, red84Failures, red84Restarts, red84Recoveries, red84Phase, red84Terminal, red84Reason, red84FinishedAt, red85Due, red85Done, red85Failed, red85Count, red85Failures, red85Restarts, red85Recoveries, red85Phase, red85Terminal, red85Reason, red85FinishedAt
 Dim senzuEnabled, senzuDue, senzuDone, senzuAssist, senzuCount, senzuRecoveries, senzuRestarts, senzuPhase, senzuReason, senzuStop, senzuFinishedAt
 Dim advEnabled, advReward, advDue, advDone, advCount, advRecoveries, advRestarts, advPhase, advReason, advFinishedAt, advFailures, advCloseTen, advDirection
@@ -220,7 +227,7 @@ Function HandleForegroundRecovery()
         Exit Function
     End If
     Call Note("公共调度器收到前台离开；前台=" & Thread.GetShareVar("fg.reason"))
-    If currentTask = 150 Or currentTask = 155 Or currentTask = 154 Or currentTask = 153 Or currentTask = 81 Or currentTask = 80 Or currentTask = 82 Or currentTask = 79 Or currentTask = 78 Or currentTask = 71 Or currentTask = 86 Or currentTask = 87 Or currentTask = 88 Or currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Or currentTask = 151 Or currentTask = 152 Or IsWorldBoss(currentTask) Or currentTask = 83 Or IsRedArmy(currentTask) Then
+    If currentTask = 92 Or currentTask = 16 Or currentTask = 15 Or currentTask = 14 Or currentTask = 13 Or currentTask = 12 Or currentTask = 150 Or currentTask = 155 Or currentTask = 154 Or currentTask = 153 Or currentTask = 81 Or currentTask = 80 Or currentTask = 82 Or currentTask = 79 Or currentTask = 78 Or currentTask = 71 Or currentTask = 86 Or currentTask = 87 Or currentTask = 88 Or currentTask = 168 Or currentTask = 169 Or currentTask = 167 Or currentTask = 166 Or currentTask = 55 Or currentTask = 56 Or IsTimedStamina(currentTask) Or currentTask = 151 Or currentTask = 152 Or IsWorldBoss(currentTask) Or currentTask = 83 Or IsRedArmy(currentTask) Then
         Call SaveRecovery()
     End If
     terminalConfirmed = False
@@ -1406,6 +1413,18 @@ Function WorldName(taskId)
     WorldName = "世界首领70"
     If taskId = 32 Then
         WorldName = "世界首领_打沙鲁32"
+    ElseIf taskId = 13 Then
+        WorldName = "经验试炼13"
+    ElseIf taskId = 92 Then
+        WorldName = "异时空试炼92"
+    ElseIf taskId = 16 Then
+        WorldName = "伙伴试炼16"
+    ElseIf taskId = 15 Then
+        WorldName = "基因试炼15"
+    ElseIf taskId = 14 Then
+        WorldName = "龙魂试炼14"
+    ElseIf taskId = 12 Then
+        WorldName = "金币试炼12"
     ElseIf taskId = 150 Then
         WorldName = "龙珠大冒险150"
     ElseIf taskId = 155 Then
@@ -1442,7 +1461,19 @@ Sub WorldLog(message)
     Call Note("[" & WorldName(currentTask) & "] " & message)
 End Sub
 Sub WorldStage(value)
-    If currentTask = 150 Then
+    If currentTask = 92 Then
+        yskPhase = value
+    ElseIf currentTask = 16 Then
+        partnerPhase = value
+    ElseIf currentTask = 15 Then
+        genePhase = value
+    ElseIf currentTask = 14 Then
+        soulPhase = value
+    ElseIf currentTask = 13 Then
+        experiencePhase = value
+    ElseIf currentTask = 12 Then
+        goldPhase = value
+    ElseIf currentTask = 150 Then
         advPhase = value
     ElseIf currentTask = 155 Then
         snakePhase = value
@@ -2139,6 +2170,13 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    trialRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+    Call LoadGoldSettings()
+    Call LoadSoulSettings()
+    Call LoadGeneSettings()
+    Call LoadPartnerSettings()
+    Call LoadYskSettings()
+    Call LoadExperienceSettings()
     Call LoadAdventureSettings()
     Call LoadSnakeSettings()
     Call LoadPlantSettings()
@@ -2182,6 +2220,13 @@ End Sub
 
 // common/任务状态.mq
 Sub NewSession()
+    Call NewTrialPublicSession()
+    Call NewGoldSession()
+    Call NewSoulSession()
+    Call NewGeneSession()
+    Call NewPartnerSession()
+    Call NewYskSession()
+    Call NewExperienceSession()
     Call NewAdventureSession()
     Call NewSnakeSession()
     Call NewPlantSession()
@@ -2267,9 +2312,28 @@ Sub NewSession()
 End Sub
 Sub SaveCurrentTask(taskId)
     Call Note("[流程] 入口 SaveCurrentTask")
+    Call BeginTrialPublicTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 13 Then
+        Call StartExperienceTask()
+    End If
+    If taskId = 92 Then
+        Call StartYskTask()
+    End If
+    If taskId = 16 Then
+        Call StartPartnerTask()
+    End If
+    If taskId = 15 Then
+        Call StartGeneTask()
+    End If
+    If taskId = 14 Then
+        Call StartSoulTask()
+    End If
+    If taskId = 12 Then
+        Call StartGoldTask()
+    End If
     If taskId = 150 Then
         Call StartAdventureTask()
     End If
@@ -2355,6 +2419,25 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
+    Call RecoverTrialPublicBoundary()
+    If currentTask = 13 Then
+        Call RecoverExperienceTask()
+    End If
+    If currentTask = 92 Then
+        Call RecoverYskTask()
+    End If
+    If currentTask = 16 Then
+        Call RecoverPartnerTask()
+    End If
+    If currentTask = 15 Then
+        Call RecoverGeneTask()
+    End If
+    If currentTask = 14 Then
+        Call RecoverSoulTask()
+    End If
+    If currentTask = 12 Then
+        Call RecoverGoldTask()
+    End If
     If currentTask = 150 Then
         Call RecoverAdventureTask()
     End If
@@ -2446,7 +2529,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
+    If currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -2462,7 +2545,19 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 150 Then
+    If currentTask = 92 Then
+        Call CommitYskTask()
+    ElseIf currentTask = 16 Then
+        Call CommitPartnerTask()
+    ElseIf currentTask = 15 Then
+        Call CommitGeneTask()
+    ElseIf currentTask = 14 Then
+        Call CommitSoulTask()
+    ElseIf currentTask = 13 Then
+        Call CommitExperienceTask()
+    ElseIf currentTask = 12 Then
+        Call CommitGoldTask()
+    ElseIf currentTask = 150 Then
         Call CommitAdventureTask()
     ElseIf currentTask = 155 Then
         Call CommitSnakeTask()
@@ -2565,6 +2660,30 @@ Function LoginExpired()
     LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
 End Function
 Function BusinessExpired()
+    If currentTask = 92 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 16 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 15 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 14 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 13 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 12 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
     If currentTask = 150 Then
         BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
         Exit Function
@@ -2597,6 +2716,118 @@ Function BusinessExpired()
 End Function
 Sub Progress()
     progressAt = TickCount()
+End Sub
+
+Function IsTrialTask(taskId)
+    IsTrialTask = taskId = 12 Or taskId = 13 Or taskId = 14 Or taskId = 15 Or taskId = 16 Or taskId = 92
+End Function
+Sub NewTrialPublicSession()
+    trialPublicTimedOutTask = 0
+    trialPublicRecoveryTask = 0
+    goldFailures = 0
+    experienceFailures = 0
+    soulFailures = 0
+    partnerFailures = 0
+End Sub
+Sub BeginTrialPublicTask(taskId)
+    If IsTrialTask(taskId) Then
+        trialPublicTimedOutTask = 0
+        trialPublicRecoveryTask = 0
+    End If
+End Sub
+Function TrialWatchdogExpired()
+    TrialWatchdogExpired = False
+    If ForegroundInterrupted() Then
+        TrialWatchdogExpired = True
+        Exit Function
+    End If
+    If TickCount() - businessStarted > businessLimit Then
+        trialPublicTimedOutTask = currentTask
+        TrialWatchdogExpired = True
+    End If
+End Function
+Sub RecoverTrialPublicBoundary()
+    Dim failures
+    If Not IsTrialTask(currentTask) Then
+        Exit Sub
+    End If
+    If ForegroundInterrupted() Then
+        trialPublicTimedOutTask = 0
+        trialPublicRecoveryTask = 0
+        Exit Sub
+    End If
+    If trialPublicTimedOutTask <> currentTask Then
+        Exit Sub
+    End If
+    trialPublicTimedOutTask = 0
+    trialPublicRecoveryTask = currentTask
+    failures = 0
+    If currentTask = 12 Then
+        goldFailures = goldFailures + 1
+        failures = goldFailures
+        If failures >= 3 Then
+            goldAbandoned = True
+        End If
+    ElseIf currentTask = 13 Then
+        experienceFailures = experienceFailures + 1
+        failures = experienceFailures
+        If failures >= 3 Then
+            experienceAbandoned = True
+        End If
+    ElseIf currentTask = 14 Then
+        soulFailures = soulFailures + 1
+        failures = soulFailures
+        If failures >= 3 Then
+            soulAbandoned = True
+        End If
+    ElseIf currentTask = 15 Then
+        geneFailures = geneFailures + 1
+        failures = geneFailures
+        If failures >= 3 Then
+            geneAbandoned = True
+        End If
+    ElseIf currentTask = 16 Then
+        partnerFailures = partnerFailures + 1
+        failures = partnerFailures
+        If failures >= 3 Then
+            partnerAbandoned = True
+        End If
+    ElseIf currentTask = 92 Then
+        yskFailures = yskFailures + 1
+        failures = yskFailures
+        If failures >= 3 Then
+            yskAbandoned = True
+        End If
+    End If
+    If failures >= 3 Then
+        resumeTask = 0
+        Call WorldLog("原公共超时达到3次，失败放弃并释放后续调度；非成功")
+    End If
+    Call WorldLog("原公共超时失败次数=" & failures & "/3；不计业务完成次数、不改期65秒")
+End Sub
+
+Sub AbandonTrialEntry()
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Sub
+    End If
+    If currentTask = 12 Then
+        goldAbandoned = True
+    ElseIf currentTask = 13 Then
+        experienceAbandoned = True
+    ElseIf currentTask = 14 Then
+        soulAbandoned = True
+    ElseIf currentTask = 15 Then
+        geneAbandoned = True
+    ElseIf currentTask = 16 Then
+        partnerAbandoned = True
+    ElseIf currentTask = 92 Then
+        yskAbandoned = True
+    Else
+        Exit Sub
+    End If
+    resumeTask = 0
+    terminalConfirmed = False
+    Call WorldLog("原公共试炼入口60秒失败放弃；已等2000毫秒；不计完成次数、不改期65秒，交原强制重启")
 End Sub
 
 
@@ -4467,6 +4698,278 @@ Function MatchPattern(name)
         FindMultiColor 46, 588, 671, 1067, "9C5E38-202020", "-64|-22|6E3324-202020,-65|-22|8D4C3E-202020,70|-16|8B4E38-202020,68|-16|6E3324-202020,-55|-22|6E3324-202020,-79|-20|9E614C-202020,-6|5|A4793D-202020,-3|8|824D2F-202020,75|-168|91643A-202020,-75|-173|8F623A-202020,-79|-174|A27B5E-202020,72|-178|977348-202020", 3, 0.93, foundX, foundY
     Case "150_P12D4"
         FindMultiColor 46, 588, 671, 1067, "9C5E38-202020", "-64|-22|6E3324-202020,-65|-22|8D4C3E-202020,70|-16|8B4E38-202020,68|-16|6E3324-202020,-55|-22|6E3324-202020,-79|-20|9E614C-202020,-6|5|A4793D-202020,-3|8|824D2F-202020,75|-168|91643A-202020,-75|-173|8F623A-202020,-79|-174|A27B5E-202020,72|-178|977348-202020", 4, 0.93, foundX, foundY
+    Case "012_P00"
+        FindMultiColor 0, 0, 719, 1279, "94F5FF-101010", "-41|28|212021-101010,-105|6|AD6DCE-101010,-143|19|210C21-101010,-100|62|421831-101010,-100|67|1C5DD6-101010,-107|62|52284A-101010,-61|95|9BA075-101010", 1, 0.9, foundX, foundY
+    Case "012_P08"
+        FindMultiColor 0, 0, 719, 1279, "94F5FF-101010", "-57|-19|DEB6EF-101010,-47|-10|B670D6-101010,-55|2|B571D6-101010,-121|-9|B577D6-101010,17|-10|22249B-101010,25|-11|4A1C00-101010,26|0|000400-101010", 1, 0.9, foundX, foundY
+    Case "012_P12"
+        FindMultiColor 0, 0, 719, 1279, "48CEA4-101010", "-1|9|23B475-101010,168|0|1FBBFF-101010,-125|151|F79618-101010,-150|273|60E6C6-101010,-130|-110|AB4F2D-101010,-120|-114|E59E30-101010,-118|-115|763620-101010", 1, 0.9, foundX, foundY
+    Case "012_P13"
+        FindMultiColor 0, 0, 719, 1279, "3CC69C-101010", "-2|-12|62E2BD-101010,283|-1|18B6FF-101010,-14|149|F79618-101010,-39|271|60E6C6-101010,-19|-112|AB4F2D-101010,-9|-116|E59E30-101010,-7|-117|763620-101010", 1, 0.9, foundX, foundY
+    Case "012_P14"
+        FindMultiColor 0, 0, 719, 1279, "F4FFFE-101010", "-15|11|F8F8F8-101010,-57|27|247935-101010,42|-98|934432-101010,360|-40|548BA2-101010,24|-437|AE6231-101010,225|-348|9F7D42-101010,250|-295|75F1FF-101010,180|-252|026DF9-101010,273|-269|FFFFFF-101010", 1, 0.9, foundX, foundY
+    Case "012_P22"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "1|64|000040-101010,64|8|000040-101010,383|-14|2BF9FF-101010,377|39|000040-101010,305|-7|2BF9FF-101010,-31|45|000040-101010,220|46|000040-101010,292|24|000040-101010,324|-8|2BF9FF-101010", 1, 0.9, foundX, foundY
+    Case "012_P23"
+        FindMultiColor 0, 0, 719, 1279, "2DC086-202020", "-33|-5|688F83-202020,-76|10|247935-202020,501|-1053|D370BA-202020,513|-1074|A7D0F1-202020,511|-1079|9E2365-202020,484|-1085|02D0FF-202020,141|-274|838383-202020,299|-267|898989-202020,296|-294|BABABA-202020", 1, 0.9, foundX, foundY
+    Case "012_P24"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "10|-4|000040-101010,29|-3|2BF9FF-101010,104|18|000040-101010,386|-3|2BF9FF-101010,379|47|000040-101010,178|117|FFFFFF-101010,172|74|000040-101010,222|55|000040-101010,292|55|000040-101010", 1, 0.9, foundX, foundY
+    Case "012_P25"
+        FindMultiColor 0, 0, 719, 1279, "71F3FF-101010", "51|16|25C8FF-101010,-238|-945|000000-101010,-228|-948|FFFFFF-101010,-221|-912|5A5D00-101010,-113|-975|000000-101010,-104|-982|FFFFFF-101010,43|-968|000000-101010,6|-910|FFFFFF-101010,-177|-916|5A5D00-101010", 1, 0.9, foundX, foundY
+    Case "012_P26"
+        FindMultiColor 0, 0, 719, 1279, "2FD2FF-101010", "103|9|18AEFF-101010,-155|201|28130D-101010,-142|155|101F29-101010,-179|315|194037-101010,350|-577|FEDA9A-101010,329|-739|2F3C46-101010,324|-750|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "012_P27"
+        FindMultiColor 0, 0, 719, 1279, "17AEFF-101010", "93|3|16A5FF-101010,-158|192|28130D-101010,-145|146|101F29-101010,-182|306|194037-101010,348|-586|FEDA9A-101010,326|-748|2F3C46-101010,321|-759|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "012_P28"
+        FindMultiColor 0, 0, 719, 1279, "2727B3-101010", "-28|18|251F80-101010,21|-15|98B9E6-101010,30|-13|3E5FA1-101010,-4|-34|59618B-101010,16|26|233468-101010,-16|23|155791-101010,12|1|A14E2D-101010", 1, 0.9, foundX, foundY
+    Case "012_P29"
+        FindMultiColor 0, 0, 719, 1279, "808EB7-101010", "16|-12|A04D2C-101010,22|-12|B05532-101010,24|-23|8BB3DE-101010,0|-29|7894BD-101010,-2|-20|1818B3-101010,-26|1|292184-101010,-14|4|223972-101010", 1, 0.9, foundX, foundY
+    Case "012_P30"
+        FindMultiColor 0, 0, 719, 1279, "D1E0FF-101010", "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010", 1, 0.9, foundX, foundY
+    Case "012_P31"
+        FindMultiColor 0, 0, 719, 1279, "8391AB-101010", "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010", 1, 0.9, foundX, foundY
+    Case "012_P32"
+        FindMultiColor 6, 1133, 153, 1279, "FFFFFF-101010", "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010", 1, 0.9, foundX, foundY
+    Case "012_P33"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
+    Case "012_P34"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
+    Case "012_AutoReady"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|1196F1,314|74|0DB7FB,322|93|FFFFFF,332|97|FFFFFF,317|35|0DB7FB,313|35|0DB7FB,-309|146|FDE5BB,-308|157|693716", 1, 0.9, foundX, foundY
+    Case "012_AutoOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|0790EF,314|74|04B1FA,322|93|FFFFFF,332|97|FFFFFF,317|35|03B0F9,313|35|03B0F9", 1, 0.9, foundX, foundY
+    Case "012_TripleOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,317|35|06ADF2,313|35|06ADF2", 1, 0.9, foundX, foundY
+    Case "012_BattleBase"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4", 1, 0.9, foundX, foundY
+    Case "013_P01"
+        FindMultiColor 0, 0, 719, 1279, "4FA281-202020", "-55|13|E79471-202020,-47|11|29654A-202020,-59|3|4A7D6B-202020,-136|64|DC8467-202020,-142|61|2D4932-202020,-153|11|7F6EE9-202020,-155|9|231F4B-202020", 1, 0.9, foundX, foundY
+    Case "013_P09"
+        FindMultiColor 0, 0, 719, 1279, "4DA27E-101010", "5|29|7355F7-101010,1|31|76ACA3-101010,4|22|51A278-101010,-134|66|DC8467-101010,-140|63|2D4932-101010,-151|13|7F6EE9-101010,-153|11|231F4B-101010", 1, 0.9, foundX, foundY
+    Case "013_P12"
+        FindMultiColor 0, 0, 719, 1279, "48CEA4-101010", "-1|9|23B475-101010,168|0|1FBBFF-101010,-125|151|F79618-101010,-150|273|60E6C6-101010,-130|-110|AB4F2D-101010,-120|-114|E59E30-101010,-118|-115|763620-101010", 1, 0.9, foundX, foundY
+    Case "013_P13"
+        FindMultiColor 0, 0, 719, 1279, "3CC69C-101010", "-2|-12|62E2BD-101010,283|-1|18B6FF-101010,-14|149|F79618-101010,-39|271|60E6C6-101010,-19|-112|AB4F2D-101010,-9|-116|E59E30-101010,-7|-117|763620-101010", 1, 0.9, foundX, foundY
+    Case "013_P14"
+        FindMultiColor 0, 0, 719, 1279, "F4FFFE-101010", "-15|11|F8F8F8-101010,-57|27|247935-101010,42|-98|934432-101010,360|-40|548BA2-101010,24|-437|AE6231-101010,225|-348|9F7D42-101010,250|-295|75F1FF-101010,180|-252|026DF9-101010,273|-269|FFFFFF-101010", 1, 0.9, foundX, foundY
+    Case "013_P22"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "1|64|000040-101010,64|8|000040-101010,383|-14|2BF9FF-101010,377|39|000040-101010,305|-7|2BF9FF-101010,-31|45|000040-101010,220|46|000040-101010,292|24|000040-101010,324|-8|2BF9FF-101010", 1, 0.9, foundX, foundY
+    Case "013_P23"
+        FindMultiColor 0, 0, 719, 1279, "2DC086-202020", "-33|-5|688F83-202020,-76|10|247935-202020,501|-1053|D370BA-202020,513|-1074|A7D0F1-202020,511|-1079|9E2365-202020,484|-1085|02D0FF-202020,141|-274|838383-202020,299|-267|898989-202020,296|-294|BABABA-202020", 1, 0.9, foundX, foundY
+    Case "013_P24"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "10|-4|000040-101010,29|-3|2BF9FF-101010,104|18|000040-101010,386|-3|2BF9FF-101010,379|47|000040-101010,178|117|FFFFFF-101010,172|74|000040-101010,222|55|000040-101010,292|55|000040-101010", 1, 0.9, foundX, foundY
+    Case "013_P25"
+        FindMultiColor 0, 0, 719, 1279, "71F3FF-101010", "51|16|25C8FF-101010,-238|-945|000000-101010,-228|-948|FFFFFF-101010,-221|-912|5A5D00-101010,-113|-975|000000-101010,-104|-982|FFFFFF-101010,43|-968|000000-101010,6|-910|FFFFFF-101010,-177|-916|5A5D00-101010", 1, 0.9, foundX, foundY
+    Case "013_P26"
+        FindMultiColor 0, 0, 719, 1279, "2FD2FF-101010", "103|9|18AEFF-101010,-155|201|28130D-101010,-142|155|101F29-101010,-179|315|194037-101010,350|-577|FEDA9A-101010,329|-739|2F3C46-101010,324|-750|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "013_P27"
+        FindMultiColor 0, 0, 719, 1279, "17AEFF-101010", "93|3|16A5FF-101010,-158|192|28130D-101010,-145|146|101F29-101010,-182|306|194037-101010,348|-586|FEDA9A-101010,326|-748|2F3C46-101010,321|-759|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "013_P28"
+        FindMultiColor 0, 0, 719, 1279, "2727B3-101010", "-28|18|251F80-101010,21|-15|98B9E6-101010,30|-13|3E5FA1-101010,-4|-34|59618B-101010,16|26|233468-101010,-16|23|155791-101010,12|1|A14E2D-101010", 1, 0.9, foundX, foundY
+    Case "013_P29"
+        FindMultiColor 0, 0, 719, 1279, "808EB7-101010", "16|-12|A04D2C-101010,22|-12|B05532-101010,24|-23|8BB3DE-101010,0|-29|7894BD-101010,-2|-20|1818B3-101010,-26|1|292184-101010,-14|4|223972-101010", 1, 0.9, foundX, foundY
+    Case "013_P30"
+        FindMultiColor 0, 0, 719, 1279, "D1E0FF-101010", "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010", 1, 0.9, foundX, foundY
+    Case "013_P31"
+        FindMultiColor 0, 0, 719, 1279, "8391AB-101010", "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010", 1, 0.9, foundX, foundY
+    Case "013_P32"
+        FindMultiColor 6, 1133, 153, 1279, "FFFFFF-101010", "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010", 1, 0.9, foundX, foundY
+    Case "013_P33"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
+    Case "013_P34"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
+    Case "013_AutoReady"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|1196F1,314|74|0DB7FB,322|93|FFFFFF,332|97|FFFFFF,317|35|0DB7FB,313|35|0DB7FB,-309|146|FDE5BB,-308|157|693716", 1, 0.9, foundX, foundY
+    Case "013_AutoOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|0790EF,314|74|04B1FA,322|93|FFFFFF,332|97|FFFFFF,317|35|03B0F9,313|35|03B0F9", 1, 0.9, foundX, foundY
+    Case "013_TripleOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,317|35|06ADF2,313|35|06ADF2", 1, 0.9, foundX, foundY
+    Case "013_BattleBase"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4", 1, 0.9, foundX, foundY
+    Case "014_P02"
+        FindMultiColor 0, 0, 719, 1279, "FFFFFF-202020", "-8|-14|DBB21E-202020,-152|27|DD8BC3-202020,-121|46|DAA82F-202020,-21|38|EEE6E6-202020,-228|-32|B0469D-202020,-231|-27|C4B3E6-202020,-161|148|921F8A-202020,-231|89|907FC3-202020,-159|144|9E7DC8-202020", 1, 0.9, foundX, foundY
+    Case "014_P05"
+        FindMultiColor 0, 0, 719, 1279, "C4C4C4-101010", "-47|-9|141414-101010,-89|15|B1B1B1-101010,-95|67|000000-101010,-194|119|1C1C1C-101010,-158|86|F4F4F4-101010,-279|58|EBEBEB-101010,-269|50|CCCCCC-101010,-462|-31|FDFDFD-101010,-74|120|8C8C8C-101010", 1, 0.9, foundX, foundY
+    Case "014_P12"
+        FindMultiColor 0, 0, 719, 1279, "48CEA4-101010", "-1|9|23B475-101010,168|0|1FBBFF-101010,-125|151|F79618-101010,-150|273|60E6C6-101010,-130|-110|AB4F2D-101010,-120|-114|E59E30-101010,-118|-115|763620-101010", 1, 0.9, foundX, foundY
+    Case "014_P13"
+        FindMultiColor 0, 0, 719, 1279, "3CC69C-101010", "-2|-12|62E2BD-101010,283|-1|18B6FF-101010,-14|149|F79618-101010,-39|271|60E6C6-101010,-19|-112|AB4F2D-101010,-9|-116|E59E30-101010,-7|-117|763620-101010", 1, 0.9, foundX, foundY
+    Case "014_P14"
+        FindMultiColor 0, 0, 719, 1279, "F4FFFE-101010", "-15|11|F8F8F8-101010,-57|27|247935-101010,42|-98|934432-101010,360|-40|548BA2-101010,24|-437|AE6231-101010,225|-348|9F7D42-101010,250|-295|75F1FF-101010,180|-252|026DF9-101010,273|-269|FFFFFF-101010", 1, 0.9, foundX, foundY
+    Case "014_P22"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "1|64|000040-101010,64|8|000040-101010,383|-14|2BF9FF-101010,377|39|000040-101010,305|-7|2BF9FF-101010,-31|45|000040-101010,220|46|000040-101010,292|24|000040-101010,324|-8|2BF9FF-101010", 1, 0.9, foundX, foundY
+    Case "014_P23"
+        FindMultiColor 0, 0, 719, 1279, "2DC086-202020", "-33|-5|688F83-202020,-76|10|247935-202020,501|-1053|D370BA-202020,513|-1074|A7D0F1-202020,511|-1079|9E2365-202020,484|-1085|02D0FF-202020,141|-274|838383-202020,299|-267|898989-202020,296|-294|BABABA-202020", 1, 0.9, foundX, foundY
+    Case "014_P24"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "10|-4|000040-101010,29|-3|2BF9FF-101010,104|18|000040-101010,386|-3|2BF9FF-101010,379|47|000040-101010,178|117|FFFFFF-101010,172|74|000040-101010,222|55|000040-101010,292|55|000040-101010", 1, 0.9, foundX, foundY
+    Case "014_P25"
+        FindMultiColor 0, 0, 719, 1279, "71F3FF-101010", "51|16|25C8FF-101010,-238|-945|000000-101010,-228|-948|FFFFFF-101010,-221|-912|5A5D00-101010,-113|-975|000000-101010,-104|-982|FFFFFF-101010,43|-968|000000-101010,6|-910|FFFFFF-101010,-177|-916|5A5D00-101010", 1, 0.9, foundX, foundY
+    Case "014_P26"
+        FindMultiColor 0, 0, 719, 1279, "2FD2FF-101010", "103|9|18AEFF-101010,-155|201|28130D-101010,-142|155|101F29-101010,-179|315|194037-101010,350|-577|FEDA9A-101010,329|-739|2F3C46-101010,324|-750|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "014_P27"
+        FindMultiColor 0, 0, 719, 1279, "17AEFF-101010", "93|3|16A5FF-101010,-158|192|28130D-101010,-145|146|101F29-101010,-182|306|194037-101010,348|-586|FEDA9A-101010,326|-748|2F3C46-101010,321|-759|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "014_P28"
+        FindMultiColor 0, 0, 719, 1279, "2727B3-101010", "-28|18|251F80-101010,21|-15|98B9E6-101010,30|-13|3E5FA1-101010,-4|-34|59618B-101010,16|26|233468-101010,-16|23|155791-101010,12|1|A14E2D-101010", 1, 0.9, foundX, foundY
+    Case "014_P29"
+        FindMultiColor 0, 0, 719, 1279, "808EB7-101010", "16|-12|A04D2C-101010,22|-12|B05532-101010,24|-23|8BB3DE-101010,0|-29|7894BD-101010,-2|-20|1818B3-101010,-26|1|292184-101010,-14|4|223972-101010", 1, 0.9, foundX, foundY
+    Case "014_P30"
+        FindMultiColor 0, 0, 719, 1279, "D1E0FF-101010", "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010", 1, 0.9, foundX, foundY
+    Case "014_P31"
+        FindMultiColor 0, 0, 719, 1279, "8391AB-101010", "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010", 1, 0.9, foundX, foundY
+    Case "014_P32"
+        FindMultiColor 6, 1133, 153, 1279, "FFFFFF-101010", "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010", 1, 0.9, foundX, foundY
+    Case "014_P33"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
+    Case "014_P34"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
+    Case "014_AutoReady"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|1196F1,314|74|0DB7FB,322|93|FFFFFF,332|97|FFFFFF,317|35|0DB7FB,313|35|0DB7FB,-309|146|FDE5BB,-308|157|693716", 1, 0.9, foundX, foundY
+    Case "014_AutoOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|0790EF,314|74|04B1FA,322|93|FFFFFF,332|97|FFFFFF,317|35|03B0F9,313|35|03B0F9", 1, 0.9, foundX, foundY
+    Case "014_TripleOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,317|35|06ADF2,313|35|06ADF2", 1, 0.9, foundX, foundY
+    Case "014_BattleBase"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4", 1, 0.9, foundX, foundY
+    Case "015_P03"
+        FindMultiColor 0, 0, 719, 1279, "832E02-101010", "-31|-6|DBBBBB-101010,-34|-14|000000-101010,-34|-21|6B2727-101010,-97|100|EEE6CD-101010,-91|96|480101-101010,-115|33|270503-101010,-51|39|8C8877-101010", 1, 0.9, foundX, foundY
+    Case "015_P06"
+        FindMultiColor 0, 0, 719, 1279, "A8A8A8-101010", "-29|-43|939393-101010,-57|0|5B5B5B-101010,-41|59|030303-101010,-141|3|C3C3C3-101010,-146|-75|B8B8B8-101010,-100|68|222222-101010,-85|-17|C3C3C3-101010,-76|-72|484848-101010,-149|44|5B5B5B-101010", 1, 0.9, foundX, foundY
+    Case "015_P10"
+        FindMultiColor 0, 0, 719, 1279, "399758-101010", "0|51|A2328D-101010,-2|53|F78ADE-101010,-2|59|A5E7F7-101010,-92|36|424A95-101010,-87|33|4187E5-101010,-97|-6|F9F3F6-101010,-128|42|310001-101010", 1, 0.9, foundX, foundY
+    Case "015_P12"
+        FindMultiColor 0, 0, 719, 1279, "48CEA4-101010", "-1|9|23B475-101010,168|0|1FBBFF-101010,-125|151|F79618-101010,-150|273|60E6C6-101010,-130|-110|AB4F2D-101010,-120|-114|E59E30-101010,-118|-115|763620-101010", 1, 0.9, foundX, foundY
+    Case "015_P13"
+        FindMultiColor 0, 0, 719, 1279, "3CC69C-101010", "-2|-12|62E2BD-101010,283|-1|18B6FF-101010,-14|149|F79618-101010,-39|271|60E6C6-101010,-19|-112|AB4F2D-101010,-9|-116|E59E30-101010,-7|-117|763620-101010", 1, 0.9, foundX, foundY
+    Case "015_P14"
+        FindMultiColor 0, 0, 719, 1279, "F4FFFE-101010", "-15|11|F8F8F8-101010,-57|27|247935-101010,42|-98|934432-101010,360|-40|548BA2-101010,24|-437|AE6231-101010,225|-348|9F7D42-101010,250|-295|75F1FF-101010,180|-252|026DF9-101010,273|-269|FFFFFF-101010", 1, 0.9, foundX, foundY
+    Case "015_P15"
+        FindMultiColor 0, 0, 719, 1279, "2DBF85-202020", "-34|-5|93BBAE-202020,-76|10|247935-202020,-39|-549|2F40D4-202020,-39|-408|2F40D4-202020,-40|-270|3243D7-202020,-52|-194|23AFFF-202020,178|-95|543B23-202020,-99|-137|543B23-202020,160|-542|1A9EFF-202020,302|-542|1A9EFF-202020", 1, 0.9, foundX, foundY
+    Case "015_P16"
+        FindMultiColor 0, 0, 719, 1279, "2DBF85-202020", "-34|-5|93BBAE-202020,-76|10|247935-202020,-39|-549|2F40D4-202020,-39|-408|2F40D4-202020,-40|-270|3243D7-202020,-52|-194|23AFFF-202020,178|-95|543B23-202020,-99|-137|543B23-202020,160|-405|1A9EFF-202020,303|-405|1A9EFF-202020", 1, 0.9, foundX, foundY
+    Case "015_P17"
+        FindMultiColor 0, 0, 719, 1279, "2DBF85-202020", "-34|-5|93BBAE-202020,-76|10|247935-202020,-39|-549|2F40D4-202020,-39|-408|2F40D4-202020,-40|-270|3243D7-202020,-52|-194|23AFFF-202020,178|-95|543B23-202020,-99|-137|543B23-202020,159|-266|1A9EFF-202020,302|-266|1A9EFF-202020", 1, 0.9, foundX, foundY
+    Case "015_P18"
+        FindMultiColor 0, 0, 719, 1279, "F9E0AD-101010", "-43|147|28AA72-101010,-19|42|95523E-101010,-519|-20|FFFFFF-101010,-498|-59|080808-101010,-383|226|96543B-101010,-154|56|301A15-101010,-632|86|573524-101010,-624|94|96543B-101010,-587|-18|05154F-101010", 1, 0.9, foundX, foundY
+    Case "015_P19"
+        FindMultiColor 0, 0, 719, 1279, "FF04CE-101010", "169|-13|FF59DE-101010,-1|251|41AA8C-101010,-16|264|739589-101010,-13|-120|00FFFF-101010,250|-270|00A2FF-101010,60|-360|FF6542-101010,249|-281|00A2FF-101010", 1, 0.9, foundX, foundY
+    Case "015_P20"
+        FindMultiColor 0, 0, 719, 1279, "EDAB50-101010", "12|-42|ECB351-101010,51|-23|E18036-101010,0|-63|FCD4A4-101010,11|-2|EDAB50-101010,4|22|EB8037-101010,-12|-30|FCFDFD-101010,-2|-58|F9D1A0-101010,-1|-1|EDAB50-101010,-6|-30|FCFDFD-101010", 1, 0.9, foundX, foundY
+    Case "015_P21"
+        FindMultiColor 198, 989, 514, 1279, "EDAB50-202020", "6|2|EDAB50-202020,1|32|F17D3B-202020,1|-76|F5CC9A-202020,-137|150|239EFF-202020,-95|143|30B4FE-202020,-23|149|1FA3FD-202020,-29|125|6CE8FF-202020,-39|150|239EFF-202020,-99|143|31B3FD-202020", 1, 0.9, foundX, foundY
+    Case "015_P22"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "1|64|000040-101010,64|8|000040-101010,383|-14|2BF9FF-101010,377|39|000040-101010,305|-7|2BF9FF-101010,-31|45|000040-101010,220|46|000040-101010,292|24|000040-101010,324|-8|2BF9FF-101010", 1, 0.9, foundX, foundY
+    Case "015_P23"
+        FindMultiColor 0, 0, 719, 1279, "2DC086-202020", "-33|-5|688F83-202020,-76|10|247935-202020,501|-1053|D370BA-202020,513|-1074|A7D0F1-202020,511|-1079|9E2365-202020,484|-1085|02D0FF-202020,141|-274|838383-202020,299|-267|898989-202020,296|-294|BABABA-202020", 1, 0.9, foundX, foundY
+    Case "015_P24"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "10|-4|000040-101010,29|-3|2BF9FF-101010,104|18|000040-101010,386|-3|2BF9FF-101010,379|47|000040-101010,178|117|FFFFFF-101010,172|74|000040-101010,222|55|000040-101010,292|55|000040-101010", 1, 0.9, foundX, foundY
+    Case "015_P25"
+        FindMultiColor 0, 0, 719, 1279, "71F3FF-101010", "51|16|25C8FF-101010,-238|-945|000000-101010,-228|-948|FFFFFF-101010,-221|-912|5A5D00-101010,-113|-975|000000-101010,-104|-982|FFFFFF-101010,43|-968|000000-101010,6|-910|FFFFFF-101010,-177|-916|5A5D00-101010", 1, 0.9, foundX, foundY
+    Case "015_P26"
+        FindMultiColor 0, 0, 719, 1279, "2FD2FF-101010", "103|9|18AEFF-101010,-155|201|28130D-101010,-142|155|101F29-101010,-179|315|194037-101010,350|-577|FEDA9A-101010,329|-739|2F3C46-101010,324|-750|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "015_P27"
+        FindMultiColor 0, 0, 719, 1279, "17AEFF-101010", "93|3|16A5FF-101010,-158|192|28130D-101010,-145|146|101F29-101010,-182|306|194037-101010,348|-586|FEDA9A-101010,326|-748|2F3C46-101010,321|-759|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "015_P28"
+        FindMultiColor 0, 0, 719, 1279, "2727B3-101010", "-28|18|251F80-101010,21|-15|98B9E6-101010,30|-13|3E5FA1-101010,-4|-34|59618B-101010,16|26|233468-101010,-16|23|155791-101010,12|1|A14E2D-101010", 1, 0.9, foundX, foundY
+    Case "015_P29"
+        FindMultiColor 0, 0, 719, 1279, "808EB7-101010", "16|-12|A04D2C-101010,22|-12|B05532-101010,24|-23|8BB3DE-101010,0|-29|7894BD-101010,-2|-20|1818B3-101010,-26|1|292184-101010,-14|4|223972-101010", 1, 0.9, foundX, foundY
+    Case "015_P30"
+        FindMultiColor 0, 0, 719, 1279, "D1E0FF-101010", "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010", 1, 0.9, foundX, foundY
+    Case "015_P31"
+        FindMultiColor 0, 0, 719, 1279, "8391AB-101010", "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010", 1, 0.9, foundX, foundY
+    Case "015_P32"
+        FindMultiColor 6, 1133, 153, 1279, "FFFFFF-101010", "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010", 1, 0.9, foundX, foundY
+    Case "015_P33"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
+    Case "015_P34"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
+    Case "015_AutoReady"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|1196F1,314|74|0DB7FB,322|93|FFFFFF,332|97|FFFFFF,317|35|0DB7FB,313|35|0DB7FB,-309|146|FDE5BB,-308|157|693716", 1, 0.9, foundX, foundY
+    Case "015_AutoOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|0790EF,314|74|04B1FA,322|93|FFFFFF,332|97|FFFFFF,317|35|03B0F9,313|35|03B0F9", 1, 0.9, foundX, foundY
+    Case "015_TripleOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,317|35|06ADF2,313|35|06ADF2", 1, 0.9, foundX, foundY
+    Case "015_BattleBase"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4", 1, 0.9, foundX, foundY
+    Case "016_P04"
+        FindMultiColor 0, 0, 719, 1279, "B35837-101010", "-5|-12|003D3D-101010,1|-23|86CD65-101010,-100|-97|1C3D81-101010,-91|-97|026565-101010,23|-96|8E2301-101010,-17|-89|FFFFFF-101010,20|-111|D1653C-101010", 1, 0.9, foundX, foundY
+    Case "016_P07"
+        FindMultiColor 0, 0, 719, 1279, "A2A2A2-101010", "-60|-38|ECECEC-101010,-73|17|585858-101010,-104|61|B2B2B2-101010,-88|-70|252525-101010,-145|48|262626-101010,-27|41|000000-101010,-598|-58|DEDEDE-101010,-248|46|777777-101010,-248|-6|363636-101010", 1, 0.9, foundX, foundY
+    Case "016_P11"
+        FindMultiColor 0, 0, 719, 1279, "75A08D-101010", "57|12|000000-101010,56|15|545A71-101010,60|17|C6F7F7-101010,29|-14|1C1F53-101010,29|-17|9A2503-101010,27|-14|79D055-101010,27|-57|FFFBFF-101010", 1, 0.9, foundX, foundY
+    Case "016_P12"
+        FindMultiColor 0, 0, 719, 1279, "48CEA4-101010", "-1|9|23B475-101010,168|0|1FBBFF-101010,-125|151|F79618-101010,-150|273|60E6C6-101010,-130|-110|AB4F2D-101010,-120|-114|E59E30-101010,-118|-115|763620-101010", 1, 0.9, foundX, foundY
+    Case "016_P13"
+        FindMultiColor 0, 0, 719, 1279, "3CC69C-101010", "-2|-12|62E2BD-101010,283|-1|18B6FF-101010,-14|149|F79618-101010,-39|271|60E6C6-101010,-19|-112|AB4F2D-101010,-9|-116|E59E30-101010,-7|-117|763620-101010", 1, 0.9, foundX, foundY
+    Case "016_P14"
+        FindMultiColor 0, 0, 719, 1279, "F4FFFE-101010", "-15|11|F8F8F8-101010,-57|27|247935-101010,42|-98|934432-101010,360|-40|548BA2-101010,24|-437|AE6231-101010,225|-348|9F7D42-101010,250|-295|75F1FF-101010,180|-252|026DF9-101010,273|-269|FFFFFF-101010", 1, 0.9, foundX, foundY
+    Case "016_P22"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "1|64|000040-101010,64|8|000040-101010,383|-14|2BF9FF-101010,377|39|000040-101010,305|-7|2BF9FF-101010,-31|45|000040-101010,220|46|000040-101010,292|24|000040-101010,324|-8|2BF9FF-101010", 1, 0.9, foundX, foundY
+    Case "016_P23"
+        FindMultiColor 0, 0, 719, 1279, "2DC086-202020", "-33|-5|688F83-202020,-76|10|247935-202020,501|-1053|D370BA-202020,513|-1074|A7D0F1-202020,511|-1079|9E2365-202020,484|-1085|02D0FF-202020,141|-274|838383-202020,299|-267|898989-202020,296|-294|BABABA-202020", 1, 0.9, foundX, foundY
+    Case "016_P24"
+        FindMultiColor 0, 0, 719, 1279, "2BF9FF-101010", "10|-4|000040-101010,29|-3|2BF9FF-101010,104|18|000040-101010,386|-3|2BF9FF-101010,379|47|000040-101010,178|117|FFFFFF-101010,172|74|000040-101010,222|55|000040-101010,292|55|000040-101010", 1, 0.9, foundX, foundY
+    Case "016_P25"
+        FindMultiColor 0, 0, 719, 1279, "71F3FF-101010", "51|16|25C8FF-101010,-238|-945|000000-101010,-228|-948|FFFFFF-101010,-221|-912|5A5D00-101010,-113|-975|000000-101010,-104|-982|FFFFFF-101010,43|-968|000000-101010,6|-910|FFFFFF-101010,-177|-916|5A5D00-101010", 1, 0.9, foundX, foundY
+    Case "016_P26"
+        FindMultiColor 0, 0, 719, 1279, "2FD2FF-101010", "103|9|18AEFF-101010,-155|201|28130D-101010,-142|155|101F29-101010,-179|315|194037-101010,350|-577|FEDA9A-101010,329|-739|2F3C46-101010,324|-750|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "016_P27"
+        FindMultiColor 0, 0, 719, 1279, "17AEFF-101010", "93|3|16A5FF-101010,-158|192|28130D-101010,-145|146|101F29-101010,-182|306|194037-101010,348|-586|FEDA9A-101010,326|-748|2F3C46-101010,321|-759|2A1324-101010", 1, 0.9, foundX, foundY
+    Case "016_P28"
+        FindMultiColor 0, 0, 719, 1279, "2727B3-101010", "-28|18|251F80-101010,21|-15|98B9E6-101010,30|-13|3E5FA1-101010,-4|-34|59618B-101010,16|26|233468-101010,-16|23|155791-101010,12|1|A14E2D-101010", 1, 0.9, foundX, foundY
+    Case "016_P29"
+        FindMultiColor 0, 0, 719, 1279, "808EB7-101010", "16|-12|A04D2C-101010,22|-12|B05532-101010,24|-23|8BB3DE-101010,0|-29|7894BD-101010,-2|-20|1818B3-101010,-26|1|292184-101010,-14|4|223972-101010", 1, 0.9, foundX, foundY
+    Case "016_P30"
+        FindMultiColor 0, 0, 719, 1279, "D1E0FF-101010", "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010", 1, 0.9, foundX, foundY
+    Case "016_P31"
+        FindMultiColor 0, 0, 719, 1279, "8391AB-101010", "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010", 1, 0.9, foundX, foundY
+    Case "016_P32"
+        FindMultiColor 6, 1133, 153, 1279, "FFFFFF-101010", "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010", 1, 0.9, foundX, foundY
+    Case "016_P33"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
+    Case "016_P34"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
+    Case "016_AutoReady"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|1196F1,314|74|0DB7FB,322|93|FFFFFF,332|97|FFFFFF,317|35|0DB7FB,313|35|0DB7FB,-309|146|FDE5BB,-308|157|693716", 1, 0.9, foundX, foundY
+    Case "016_AutoOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,316|116|0790EF,314|74|04B1FA,322|93|FFFFFF,332|97|FFFFFF,317|35|03B0F9,313|35|03B0F9", 1, 0.9, foundX, foundY
+    Case "016_TripleOff"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4,317|35|06ADF2,313|35|06ADF2", 1, 0.9, foundX, foundY
+    Case "016_BattleBase"
+        FindMultiColor 0, 0, 719, 205, "025EFE", "5|1|014FFB,7|-22|0117FE,7|-20|012FFE,5|-10|01BCFE,5|-8|02BFFF,18|-8|28C4F8,-8|-3|96443B,-8|-4|96443B,6|13|B4C5C5,27|-8|DEDEDE,-15|-9|D4D4D4", 1, 0.9, foundX, foundY
+    Case "092_P00"
+        FindMultiColor 0, 0, 719, 1279, "75D0F1-101010", "-58|104|653B1A-101010,-69|-1|FFFFFF-101010,-85|46|FFFFFF-101010,-62|81|C8E0F9-101010,-53|105|653B1A-101010,-194|71|96F9FF-101010,89|101|B36FD5-101010,88|109|AD76D3-101010,-125|8|A77544-101010", 1, 0.9, foundX, foundY
+    Case "092_P01"
+        FindMultiColor 0, 0, 719, 1279, "2DBF85-202020", "-34|-5|93BBAE-202020,-76|10|247935-202020,-15|-1059|FFFFFF-202020,-15|-1016|FEEE91-202020,8|-1070|FFFFFF-202020,-37|-1021|FFF297-202020,8|-1021|FFF297-202020,539|-1069|9A6137-202020,549|-1059|F5A382-202020", 1, 0.9, foundX, foundY
+    Case "092_P02"
+        FindMultiColor 0, 0, 719, 1279, "6480FF-101010", "35|11|320CAD-101010,31|-80|D2D7DC-101010,-69|-50|415A93-101010,-119|0|6C9AFF-101010,-44|30|C4422D-101010,-242|636|0A86FF-101010,-113|641|017EFE-101010,-195|642|3678CB-101010,28|643|3678CB-101010", 1, 0.9, foundX, foundY
+    Case "092_P03"
+        FindMultiColor 0, 0, 719, 1279, "2691F4-101010", "53|-20|E9E0BF-101010,59|27|E9E0BF-101010,-243|-384|FFFFFF-101010,57|678|D49A50-101010,37|714|2A2624-101010,4|749|999189-101010,34|749|ECE3DB-101010,34|681|FFFFFF-101010,72|686|B27026-101010", 1, 0.9, foundX, foundY
+    Case "092_P04"
+        FindMultiColor 0, 0, 719, 1279, "D7712D-101010", "1|6|D3743D-101010,27|7|A55322-101010,609|7|C09282-101010,329|1069|AF6D23-101010,354|1120|34230D-101010,316|1136|E6DDD5-101010,648|16|FFFFFF-101010,631|-3|D97842-101010,639|31|AB5324-101010", 1, 0.9, foundX, foundY
+    Case "092_P05"
+        FindMultiColor 0, 0, 719, 1279, "D7712D-101010", "1|6|D3743D-101010,27|7|A55322-101010,609|7|C09282-101010,329|1069|AF6D23-101010,354|1120|34230D-101010,316|1136|E6DDD5-101010,653|17|FFFFFF-101010,642|5|09B1F7-101010,646|10|FFFFFF-101010", 1, 0.9, foundX, foundY
+    Case "092_P06"
+        FindMultiColor 0, 0, 719, 1279, "6DF1FF-101010", "23|28|FFFFFF-101010,-84|37|026DFF-101010,-242|0|8AF5ED-101010,-180|33|23A775-101010,-297|12|65E0C8-101010,-171|-747|527AA8-101010,-182|-760|CBAFA5-101010,-86|-720|99ABBA-101010,-354|-731|021D64-101010", 1, 0.9, foundX, foundY
+    Case "092_P07"
+        FindMultiColor 0, 0, 719, 1279, "3994DD-202020", "1|-39|96F9F9-202020,-3|0|3994DD-202020,2|-48|53EAF2-202020,-12|-23|5ACEF2-202020,32|-55|581F48-202020,0|-63|E54079-202020,-1|19|BD2479-202020,-42|7|C92C7F-202020,46|-40|ED799A-202020", 1, 0.9, foundX, foundY
+    Case "092_P08"
+        FindMultiColor 0, 0, 719, 1279, "3C99DB-202020", "-1|-39|96F9F9-202020,0|-57|032E61-202020,-20|11|45A0E2-202020,19|11|45A0E2-202020,0|20|06375D-202020,-12|-66|E54079-202020,12|-66|E54079-202020,0|25|BD2479-202020,-49|-55|FDABB3-202020,49|-54|FA87A0-202020,-38|-54|3E1536-202020,-3|-60|63234C-202020", 1, 0.9, foundX, foundY
+    Case "092_P09"
+        FindMultiColor 0, 0, 719, 1279, "65E9C8-101010", "-109|34|068A50-101010,201|14|24C0FE-101010,104|8|37DCFD-101010,77|-919|6B7F90-101010,48|-983|DFF0FC-101010,-81|-894|BF5C02-101010,194|-897|C15E03-101010,145|-946|802615-101010,82|-912|9E3B23-101010", 1, 0.9, foundX, foundY
+    Case "092_E28"
+        FindMultiColor 0, 0, 719, 1279, "2727B3-101010", "-28|18|251F80-101010,21|-15|98B9E6-101010,30|-13|3E5FA1-101010,-4|-34|59618B-101010,16|26|233468-101010,-16|23|155791-101010,12|1|A14E2D-101010", 1, 0.9, foundX, foundY
+    Case "092_E29"
+        FindMultiColor 0, 0, 719, 1279, "808EB7-101010", "16|-12|A04D2C-101010,22|-12|B05532-101010,24|-23|8BB3DE-101010,0|-29|7894BD-101010,-2|-20|1818B3-101010,-26|1|292184-101010,-14|4|223972-101010", 1, 0.9, foundX, foundY
+    Case "092_E30"
+        FindMultiColor 0, 0, 719, 1279, "D1E0FF-101010", "1|-47|363536-101010,23|-31|080808-101010,-9|-8|FFFFFF-101010,12|-1|FFFBFF-101010,25|12|D4D4EC-101010,0|-293|A36712-101010,-5|-303|6B9EDE-101010,-11|-297|D6E3FF-101010,7|-279|FDFEFF-101010", 1, 0.9, foundX, foundY
+    Case "092_E31"
+        FindMultiColor 0, 0, 719, 1279, "8391AB-101010", "20|-22|080808-101010,3|-23|393C39-101010,-10|-2|FFFFFF-101010,25|17|C9C5D9-101010,19|13|0D1972-101010,5|-289|2FF2FD-101010,-4|-256|FAFEFE-101010,3|-260|D8F7FD-101010,-7|-266|313818-101010", 1, 0.9, foundX, foundY
+    Case "092_E32"
+        FindMultiColor 6, 1133, 153, 1279, "FFFFFF-101010", "-18|-4|FFFFFF-101010,-4|-19|080808-101010,-28|20|F7F2EF-101010,-8|-22|3E423E-101010,-42|-41|080808-101010,-11|-50|424542-101010,-35|-50|424542-101010,23|-17|292C29-101010,-44|0|010C4A-101010", 1, 0.9, foundX, foundY
+    Case "092_E33"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-13|-11|212021-101010,-13|-35|943410-101010,-27|-35|4255DE-101010,3|-22|5174AF-101010,-62|-24|63387B-101010,-81|-39|7B8E98-101010,-146|56|1547C0-101010", 1, 0.9, foundX, foundY
+    Case "092_E34"
+        FindMultiColor 0, 0, 719, 1279, "DEE7A5-101010", "-22|-4|212021-101010,-26|-28|4957E2-101010,-48|-42|D9B9EC-101010,-68|-44|8C8E7B-101010,-110|-43|B56DD6-101010,-117|53|296FC0-101010,-141|49|777039-101010", 1, 0.9, foundX, foundY
     End Select
     MatchPattern = foundX >= 0 And foundY >= 0
 End Function
@@ -4720,6 +5223,24 @@ Sub StartGame()
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If currentTask = 13 Then
+        Call RestartExperienceTask()
+    End If
+    If currentTask = 92 Then
+        Call RestartYskTask()
+    End If
+    If currentTask = 16 Then
+        Call RestartPartnerTask()
+    End If
+    If currentTask = 15 Then
+        Call RestartGeneTask()
+    End If
+    If currentTask = 14 Then
+        Call RestartSoulTask()
+    End If
+    If currentTask = 12 Then
+        Call RestartGoldTask()
+    End If
     If currentTask = 150 Then
         Call RestartAdventureTask()
     End If
@@ -4925,6 +5446,246 @@ Function EnterEnemyHall()
     Loop
 End Function
 
+// 3.8 compatible numeric fallback, original trial ROI and original red color only.
+// Keep general OCR first: numeric OCR must not replace cooldown/title text OCR.
+Function TrialCountText(x1, y1, x2, y2)
+    Dim text, raw, verified
+    TrialCountText = ""
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    text = WorldText(x1, y1, x2, y2)
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialCountText = text
+    If Not IsNull(text) Then
+        If text <> "" And Not TrialMayBeExhausted(text) Then
+            Exit Function
+        End If
+    End If
+    // Discard the unverified candidate before any interrupt/deadline early return.
+    TrialCountText = ""
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    ReleaseCapture
+    KeepCapture
+    raw = SmartOcr(x1, y1, x2, y2, "0000E9-101010")
+    verified = TrialSeparatedCount(x1, y1, x2, y2)
+    ReleaseCapture
+    TrialCountText = ""
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialCountText = verified
+    text = ""
+    If Not IsNull(raw) Then
+        text = CStr(raw)
+    End If
+    Call WorldLog("3.8分隔符OCR 区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 原数字OCR=[" & text & "] 核验结果=[" & verified & "]；空值或无斜线证据不是耗尽")
+End Function
+
+Function TrialMayBeExhausted(value)
+    Dim text, digits, i
+    text = Replace(value, "/", "")
+    text = Replace(text, "|", "")
+    text = Replace(text, " ", "")
+    text = Replace(text, Chr(9), "")
+    text = Replace(text, Chr(10), "")
+    text = Replace(text, Chr(13), "")
+    TrialMayBeExhausted = text = "02" Or text = "03" Or text = "04" Or text = "05" Or text = "012" Or text = "013" Or text = "014" Or text = "015"
+    // Preserve original cooldowns and explicit positive fractions, but a bare
+    // number (073, 65465, missing denominator, etc.) also needs segmentation.
+    If InStr(1, text, "00") > 0 Or InStr(1, value, "/") > 0 Or InStr(1, value, "|") > 0 Then
+        Exit Function
+    End If
+    digits = text
+    For i = 0 To 9
+        digits = Replace(digits, Chr(48 + i), "")
+    Next
+    If text <> "" And digits = "" Then
+        TrialMayBeExhausted = True
+    End If
+End Function
+
+// All probes below use the caller's one frozen frame, original ROI and red tolerance.
+// A whole-ROI SmartOcr value (including 073) is diagnostic only, never terminal proof.
+Function TrialRedColumn(x, y1, y2)
+    Dim px, py, hit
+    px = -1
+    py = -1
+    hit = FindColor(x, y1, x, y2, "0000E9-101010", 0, 1, px, py)
+    TrialRedColumn = hit > -1
+End Function
+Function TrialRedPixel(x, y)
+    Dim color, r, g, b
+    color = GetPixelColor(x, y, 1)
+    r = color Mod 256
+    g = Int(color / 256) Mod 256
+    b = Int(color / 65536)
+    TrialRedPixel = r >= 217 And r <= 249 And g >= 0 And g <= 16 And b >= 0 And b <= 16
+End Function
+Function TrialSlashKnown(x1, y1, x2, y2)
+    Dim x, y, hits, firstX, lastX, firstY, lastY, rowX, rows
+    TrialSlashKnown = False
+    firstY = -1
+    lastY = -1
+    firstX = -1
+    lastX = -1
+    rows = 0
+    If x2 - x1 < 1 Or x2 - x1 > 6 Then
+        Exit Function
+    End If
+    For y = y1 To y2
+        hits = 0
+        rowX = -1
+        For x = x1 To x2
+            If TrialRedPixel(x, y) Then
+                hits = hits + 1
+                If rowX = -1 Then
+                    rowX = x
+                End If
+            End If
+        Next
+        If hits > 3 Then
+            Exit Function
+        End If
+        If hits > 0 Then
+            If firstY = -1 Then
+                firstY = y
+                firstX = rowX
+            End If
+            lastY = y
+            lastX = rowX
+            rows = rows + 1
+        End If
+    Next
+    If rows < 8 Or rows <> lastY - firstY + 1 Then
+        Exit Function
+    End If
+    If lastY - firstY > 23 Then
+        Exit Function
+    End If
+    TrialSlashKnown = firstX - lastX >= 2
+End Function
+Function TrialSeparatedCount(x1, y1, x2, y2)
+    Dim x, groups, occupied, inside, leftStart, leftEnd, slashStart, slashEnd, rightStart, rightEnd, numerator, denominator
+    TrialSeparatedCount = ""
+    groups = 0
+    inside = False
+    leftStart = -1
+    leftEnd = -1
+    slashStart = -1
+    slashEnd = -1
+    rightStart = -1
+    rightEnd = -1
+    For x = x1 To x2
+        If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+            Exit Function
+        End If
+        occupied = TrialRedColumn(x, y1, y2)
+        If occupied Then
+            If Not inside Then
+                groups = groups + 1
+            End If
+            If groups = 1 Then
+                If leftStart = -1 Then
+                    leftStart = x
+                End If
+                leftEnd = x
+            ElseIf groups = 2 Then
+                If slashStart = -1 Then
+                    slashStart = x
+                End If
+                slashEnd = x
+            Else
+                If rightStart = -1 Then
+                    rightStart = x
+                End If
+                rightEnd = x
+            End If
+        End If
+        inside = occupied
+    Next
+    If groups <> 3 And groups <> 4 Then
+        Exit Function
+    End If
+    If Not TrialSlashKnown(slashStart, y1, slashEnd, y2) Then
+        Exit Function
+    End If
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    numerator = SmartOcr(leftStart, y1, leftEnd, y2, "0000E9-101010")
+    denominator = SmartOcr(rightStart, y1, rightEnd, y2, "0000E9-101010")
+    If IsNull(numerator) Or IsNull(denominator) Then
+        Exit Function
+    End If
+    If denominator <> "2" And denominator <> "3" And denominator <> "4" And denominator <> "5" And denominator <> "12" And denominator <> "13" And denominator <> "14" And denominator <> "15" Then
+        Exit Function
+    End If
+    If numerator <> "0" And numerator <> "1" And numerator <> "2" And numerator <> "3" And numerator <> "4" And numerator <> "5" And numerator <> "6" And numerator <> "7" And numerator <> "8" And numerator <> "9" Then
+        Exit Function
+    End If
+    If numerator = "0" Then
+        If Not TrialZeroKnown(leftStart, y1, leftEnd, y2) Then
+            Exit Function
+        End If
+    End If
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialSeparatedCount = numerator & "/" & denominator
+End Function
+
+// Exhaustion additionally needs a closed zero outline, not just an OCR zero.
+// Reject broken/clipped glyphs and an 8/6/9 misread as zero; unknown stays unknown.
+Function TrialZeroKnown(x1, y1, x2, y2)
+    Dim x, y, firstY, lastY, runs, inside, occupied, middle
+    TrialZeroKnown = False
+    firstY = -1
+    lastY = -1
+    If x2 - x1 < 5 Or x2 - x1 > 13 Then
+        Exit Function
+    End If
+    For y = y1 To y2
+        For x = x1 To x2
+            If TrialRedPixel(x, y) Then
+                If firstY = -1 Then
+                    firstY = y
+                End If
+                lastY = y
+            End If
+        Next
+    Next
+    If lastY - firstY < 8 Or lastY - firstY > 21 Then
+        Exit Function
+    End If
+    middle = Int((x1 + x2) / 2)
+    If Not TrialRedPixel(middle, firstY) Or Not TrialRedPixel(middle, lastY) Then
+        Exit Function
+    End If
+    For y = firstY + 2 To lastY - 2
+        runs = 0
+        inside = False
+        For x = x1 To x2
+            occupied = TrialRedPixel(x, y)
+            If occupied And Not inside Then
+                runs = runs + 1
+            End If
+            inside = occupied
+        Next
+        If runs <> 2 Or TrialRedPixel(middle, y) Then
+            Exit Function
+        End If
+    Next
+    TrialZeroKnown = True
+End Function
+
 
 // common/返回大厅.mq
 Function ReturnToHall()
@@ -4957,6 +5718,12 @@ End Function
 
 // common/任务注册.mq
 Sub RegisterTasks()
+    Call Note("注册异时空试炼92；原SlYsk时长与间隔配置；原多点找色")
+    Call Note("注册伙伴试炼16；原SlHb配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册基因试炼15；原SlJyin配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册龙魂试炼14；原SlLh配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册经验试炼13；原SlJyan配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册金币试炼12；原SlJb配置；3.8旧OCR兼容，非同引擎")
     Call Note("注册龙珠大冒险150；原许愿和养成升级，原8小时间隔")
     Call Note("注册蛇道155；原配置、普通困难列表、雇佣旧OCR兼容")
     Call Note("注册种仙豆154；原单开关、06:00日程、收取及金币升级")
@@ -4983,6 +5750,30 @@ End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
+    If resumeTask = 13 Then
+        SelectDueTask = 13
+        Exit Function
+    End If
+    If resumeTask = 92 Then
+        SelectDueTask = 92
+        Exit Function
+    End If
+    If resumeTask = 16 Then
+        SelectDueTask = 16
+        Exit Function
+    End If
+    If resumeTask = 15 Then
+        SelectDueTask = 15
+        Exit Function
+    End If
+    If resumeTask = 14 Then
+        SelectDueTask = 14
+        Exit Function
+    End If
+    If resumeTask = 12 Then
+        SelectDueTask = 12
+        Exit Function
+    End If
     If resumeTask = 150 Then
         SelectDueTask = 150
         Exit Function
@@ -5024,6 +5815,31 @@ Function SelectDueTask()
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    selected = SelectGold()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectExperience()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectSoul()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectGene()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectPartner()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
     End If
     selected = SelectWorldBoss()
     If selected <> 0 Then
@@ -5081,6 +5897,11 @@ Function SelectDueTask()
         Exit Function
     End If
     selected = SelectMemory()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectYsk()
     If selected <> 0 Then
         SelectDueTask = selected
         Exit Function
@@ -5234,7 +6055,25 @@ End Function
 Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 150 Then
+    If taskId = 92 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteYskTrial()
+    ElseIf taskId = 16 Then
+        terminalConfirmed = False
+        DispatchTask = ExecutePartnerTrial()
+    ElseIf taskId = 15 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteGeneTrial()
+    ElseIf taskId = 14 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteSoulTrial()
+    ElseIf taskId = 13 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteExperienceTrial()
+    ElseIf taskId = 12 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteGoldTrial()
+    ElseIf taskId = 150 Then
         terminalConfirmed = False
         DispatchTask = ExecuteAdventure()
     ElseIf taskId = 155 Then
@@ -5457,6 +6296,29 @@ Sub SchedulerStep()
         End If
     End If
     Call SaveRecovery()
+    If trialPublicRecoveryTask = currentTask And IsTrialTask(currentTask) Then
+        trialPublicRecoveryTask = 0
+        businessStarted = TickCount()
+        If Sys.IsRunning(GAME_PACKAGE) And Not trialRestartOnTimeout Then
+            Call WorldLog("原公共超时配置不重启；返回大厅后重新调度")
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            Call WorldLog("公共超时返回大厅结果=" & hallResult & "；非成功提交")
+            Call WorldWait(1000)
+            Exit Sub
+        End If
+    End If
+    If currentTask = 92 And yskNoRestartPending Then
+        yskNoRestartPending = False
+        Exit Sub
+    End If
+    If currentTask = 15 And geneNoRestartPending Then
+        geneNoRestartPending = False
+        Call WorldLog("原公共超时配置不重启；大厅未确认，保留公共恢复，不提交")
+        Exit Sub
+    End If
     Call Note("[流程] 调度出口 业务未提交成功，进入恢复")
     If currentTask = 81 And duelTimedOut And Not duelRestartOnTimeout Then
         If Sys.IsRunning(GAME_PACKAGE) Then
@@ -14616,4 +15478,3061 @@ Function RunAdventure()
         Exit Function
     End If
     RunAdventure = RESULT_OK
+End Function
+
+
+// common/金币试炼状态.mq
+Sub LoadGoldSettings()
+    goldEnabled = WorldBoolean("SlJb")
+End Sub
+Sub NewGoldSession()
+    goldDue = Time()
+    goldDone = False
+    goldAbandoned = False
+    goldCount = 0
+    goldRecoveries = 0
+    goldRestarts = 0
+    goldPhase = "未开始"
+    goldReason = ""
+    goldExitKind = 0
+    goldFinishedAt = 0
+    goldNativeTimeout = False
+End Sub
+Function SelectGold()
+    SelectGold = 0
+    If goldEnabled And Not goldDone And Not goldAbandoned And Time() >= goldDue Then
+        SelectGold = 12
+    End If
+End Function
+Sub StartGoldTask()
+    goldReason = ""
+    goldExitKind = 0
+    goldFinishedAt = 0
+    goldNativeTimeout = False
+    Call WorldStage("金币试炼启动")
+End Sub
+Sub RecoverGoldTask()
+    goldRecoveries = goldRecoveries + 1
+    If goldNativeTimeout Then
+        goldCount = goldCount + 1
+        goldDue = goldFinishedAt + 65
+        goldAbandoned = goldCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & goldCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留12，不计次、不改期")
+    End If
+    If goldAbandoned Then
+        resumeTask = 0
+    End If
+    goldNativeTimeout = False
+    goldExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartGoldTask()
+    goldRestarts = goldRestarts + 1
+    Call WorldLog("公共重启恢复12 次数=" & goldRestarts)
+End Sub
+Sub CommitGoldTask()
+    If goldExitKind = 1 Then
+        goldDone = True
+    ElseIf goldExitKind = 2 Then
+        goldDue = goldFinishedAt + 65
+    ElseIf goldExitKind = 4 Then
+        goldCount = goldCount + 1
+        goldDue = goldFinishedAt + 65
+        goldDone = goldCount >= 5
+    End If
+    goldExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & goldCount & " 下次Unix=" & goldDue)
+End Sub
+Function ResetGoldTimer()
+    ResetGoldTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetGoldTimer = True
+End Function
+Function ConfirmGoldExit(reason, exitKind)
+    ConfirmGoldExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    goldReason = reason
+    goldExitKind = exitKind
+    goldFinishedAt = Time()
+    If exitKind = 3 Then
+        goldNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmGoldExit = RESULT_OK
+End Function
+
+
+// flows/012_金币试炼/金币试炼.mq
+Function GoldWait(waitMs)
+    GoldWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    GoldWait = Not BusinessExpired()
+End Function
+Function GoldTrialScrollUp()
+    GoldTrialScrollUp = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 300, 370, 1000, 300
+    GoldTrialScrollUp = True
+End Function
+Function GoldTrialKnown()
+    GoldTrialKnown = True
+    If WorldMatch("012_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P34") Then
+        Exit Function
+    End If
+    GoldTrialKnown = False
+End Function
+Function GoldHallKnown()
+    GoldHallKnown = True
+    If WorldMatch("012_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P32") Then
+        Exit Function
+    End If
+    GoldHallKnown = False
+End Function
+Function GoldTrialIcon()
+    GoldTrialIcon = True
+    If WorldMatch("012_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P29") Then
+        Exit Function
+    End If
+    GoldTrialIcon = False
+End Function
+Function EnterGoldTrial()
+    Dim started, result
+    EnterGoldTrial = RESULT_TIMEOUT
+    Call WorldStage("金币试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If GoldTrialKnown() Then
+            EnterGoldTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not GoldWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If GoldTrialKnown() Then
+            EnterGoldTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If GoldHallKnown() Then
+            If GoldTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not GoldWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteGoldTrial()
+    ExecuteGoldTrial = RESULT_TIMEOUT
+    If EnterGoldTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteGoldTrial = RunGoldTrial()
+End Function
+
+// task12 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function GoldReadCount(x1, y1, x2, y2)
+    GoldReadCount = TrialCountText(x1, y1, x2, y2)
+End Function
+
+Function GoldFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        GoldFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    GoldFilterText = output
+End Function
+Function GoldCountExhausted(value)
+    GoldCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function GoldSweepReady()
+    GoldSweepReady = True
+    If WorldMatch("012_P12") Then
+        Exit Function
+    End If
+    GoldSweepReady = WorldMatch("012_P13")
+End Function
+Function GoldEntryIcon()
+    GoldEntryIcon = True
+    If WorldMatch("012_P00") Then
+        Exit Function
+    End If
+    GoldEntryIcon = WorldMatch("012_P08")
+End Function
+Function GoldSweepResult()
+    GoldSweepResult = True
+    If WorldMatch("012_P26") Then
+        Exit Function
+    End If
+    GoldSweepResult = WorldMatch("012_P27")
+End Function
+Function GoldAutoTriple()
+    GoldAutoTriple = False
+    If WorldMatch("012_AutoReady") Then
+        GoldAutoTriple = True
+    ElseIf WorldMatch("012_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("012_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("012_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunGoldTrial()
+    Dim phase, movedAt, actionAt, overallAt, text, ax, ay, countRead
+    RunGoldTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetGoldTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("金币试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not GoldTrialScrollUp() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("012_P00") Then
+            ax = foundX
+            ay = foundY
+            text = GoldFilterText(GoldReadCount(ax - 400, ay + 105, ax - 330, ay + 145))
+            If GoldCountExhausted(text) Then
+                RunGoldTrial = ConfirmGoldExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunGoldTrial = ConfirmGoldExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // VM PC533: all other recognized readings continue; empty is never a terminal proof.
+            countRead = True
+        End If
+        If countRead Then
+            If GoldEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not GoldWait(50) Then
+                Exit Function
+            End If
+            If GoldSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not GoldWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("012_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not GoldWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetGoldTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("金币试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not GoldWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If GoldSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("012_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not GoldWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetGoldTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunGoldTrial = ConfirmGoldExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunGoldTrial = ConfirmGoldExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("012_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("012_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("012_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("012_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not GoldWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunGoldTrial = ConfirmGoldExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If GoldSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not GoldWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If GoldAutoTriple() Then
+            If Not ResetGoldTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not GoldWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunGoldTrial = ConfirmGoldExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// common/经验试炼状态.mq
+Sub LoadExperienceSettings()
+    experienceEnabled = WorldBoolean("SlJyan")
+End Sub
+Sub NewExperienceSession()
+    experienceDue = Time()
+    experienceDone = False
+    experienceAbandoned = False
+    experienceCount = 0
+    experienceRecoveries = 0
+    experienceRestarts = 0
+    experiencePhase = "未开始"
+    experienceReason = ""
+    experienceExitKind = 0
+    experienceFinishedAt = 0
+    experienceNativeTimeout = False
+End Sub
+Function SelectExperience()
+    SelectExperience = 0
+    If experienceEnabled And Not experienceDone And Not experienceAbandoned And Time() >= experienceDue Then
+        SelectExperience = 13
+    End If
+End Function
+Sub StartExperienceTask()
+    experienceReason = ""
+    experienceExitKind = 0
+    experienceFinishedAt = 0
+    experienceNativeTimeout = False
+    Call WorldStage("经验试炼启动")
+End Sub
+Sub RecoverExperienceTask()
+    experienceRecoveries = experienceRecoveries + 1
+    If experienceNativeTimeout Then
+        experienceCount = experienceCount + 1
+        experienceDue = experienceFinishedAt + 65
+        experienceAbandoned = experienceCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & experienceCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留13，不计次、不改期")
+    End If
+    If experienceAbandoned Then
+        resumeTask = 0
+    End If
+    experienceNativeTimeout = False
+    experienceExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartExperienceTask()
+    experienceRestarts = experienceRestarts + 1
+    Call WorldLog("公共重启恢复13 次数=" & experienceRestarts)
+End Sub
+Sub CommitExperienceTask()
+    If experienceExitKind = 1 Then
+        experienceDone = True
+    ElseIf experienceExitKind = 2 Then
+        experienceDue = experienceFinishedAt + 65
+    ElseIf experienceExitKind = 4 Then
+        experienceCount = experienceCount + 1
+        experienceDue = experienceFinishedAt + 65
+        experienceDone = experienceCount >= 5
+    End If
+    experienceExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & experienceCount & " 下次Unix=" & experienceDue)
+End Sub
+Function ResetExperienceTimer()
+    ResetExperienceTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetExperienceTimer = True
+End Function
+Function ConfirmExperienceExit(reason, exitKind)
+    ConfirmExperienceExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    experienceReason = reason
+    experienceExitKind = exitKind
+    experienceFinishedAt = Time()
+    If exitKind = 3 Then
+        experienceNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmExperienceExit = RESULT_OK
+End Function
+
+
+// flows/013_经验试炼/经验试炼.mq
+Function ExperienceWait(waitMs)
+    ExperienceWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    ExperienceWait = Not BusinessExpired()
+End Function
+Function ExperienceTrialScrollUp()
+    ExperienceTrialScrollUp = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 300, 370, 1000, 300
+    ExperienceTrialScrollUp = True
+End Function
+Function ExperienceTrialKnown()
+    ExperienceTrialKnown = True
+    If WorldMatch("013_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P34") Then
+        Exit Function
+    End If
+    ExperienceTrialKnown = False
+End Function
+Function ExperienceHallKnown()
+    ExperienceHallKnown = True
+    If WorldMatch("013_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P32") Then
+        Exit Function
+    End If
+    ExperienceHallKnown = False
+End Function
+Function ExperienceTrialIcon()
+    ExperienceTrialIcon = True
+    If WorldMatch("013_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P29") Then
+        Exit Function
+    End If
+    ExperienceTrialIcon = False
+End Function
+Function EnterExperienceTrial()
+    Dim started, result
+    EnterExperienceTrial = RESULT_TIMEOUT
+    Call WorldStage("经验试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If ExperienceTrialKnown() Then
+            EnterExperienceTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not ExperienceWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If ExperienceTrialKnown() Then
+            EnterExperienceTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If ExperienceHallKnown() Then
+            If ExperienceTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not ExperienceWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteExperienceTrial()
+    ExecuteExperienceTrial = RESULT_TIMEOUT
+    If EnterExperienceTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteExperienceTrial = RunExperienceTrial()
+End Function
+
+// task13 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function ExperienceFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        ExperienceFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    ExperienceFilterText = output
+End Function
+Function ExperienceCountExhausted(value)
+    ExperienceCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function ExperienceSweepReady()
+    ExperienceSweepReady = True
+    If WorldMatch("013_P12") Then
+        Exit Function
+    End If
+    ExperienceSweepReady = WorldMatch("013_P13")
+End Function
+Function ExperienceEntryIcon()
+    ExperienceEntryIcon = True
+    If WorldMatch("013_P01") Then
+        Exit Function
+    End If
+    ExperienceEntryIcon = WorldMatch("013_P09")
+End Function
+Function ExperienceSweepResult()
+    ExperienceSweepResult = True
+    If WorldMatch("013_P26") Then
+        Exit Function
+    End If
+    ExperienceSweepResult = WorldMatch("013_P27")
+End Function
+Function ExperienceAutoTriple()
+    ExperienceAutoTriple = False
+    If WorldMatch("013_AutoReady") Then
+        ExperienceAutoTriple = True
+    ElseIf WorldMatch("013_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("013_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("013_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunExperienceTrial()
+    Dim phase, movedAt, actionAt, overallAt, text, ax, ay, countRead
+    RunExperienceTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetExperienceTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("经验试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not ExperienceTrialScrollUp() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("013_P01") Then
+            ax = foundX
+            ay = foundY
+            text = ExperienceFilterText(TrialCountText(ax - 410, ay + 100, ax - 350, ay + 140))
+            If ExperienceCountExhausted(text) Then
+                RunExperienceTrial = ConfirmExperienceExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunExperienceTrial = ConfirmExperienceExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // VM PC533: all other recognized readings continue; empty is never a terminal proof.
+            countRead = True
+        End If
+        If countRead Then
+            If ExperienceEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not ExperienceWait(50) Then
+                Exit Function
+            End If
+            If ExperienceSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not ExperienceWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("013_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not ExperienceWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetExperienceTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("经验试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not ExperienceWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If ExperienceSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("013_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not ExperienceWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetExperienceTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunExperienceTrial = ConfirmExperienceExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunExperienceTrial = ConfirmExperienceExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("013_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("013_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("013_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("013_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not ExperienceWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunExperienceTrial = ConfirmExperienceExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If ExperienceSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not ExperienceWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If ExperienceAutoTriple() Then
+            If Not ResetExperienceTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not ExperienceWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunExperienceTrial = ConfirmExperienceExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// common/龙魂试炼状态.mq
+Sub LoadSoulSettings()
+    soulEnabled = WorldBoolean("SlLh")
+End Sub
+Sub NewSoulSession()
+    soulDue = Time()
+    soulDone = False
+    soulAbandoned = False
+    soulCount = 0
+    soulRecoveries = 0
+    soulRestarts = 0
+    soulPhase = "未开始"
+    soulReason = ""
+    soulExitKind = 0
+    soulFinishedAt = 0
+    soulNativeTimeout = False
+End Sub
+Function SelectSoul()
+    SelectSoul = 0
+    If soulEnabled And Not soulDone And Not soulAbandoned And Time() >= soulDue Then
+        SelectSoul = 14
+    End If
+End Function
+Sub StartSoulTask()
+    soulReason = ""
+    soulExitKind = 0
+    soulFinishedAt = 0
+    soulNativeTimeout = False
+    Call WorldStage("龙魂试炼启动")
+End Sub
+Sub RecoverSoulTask()
+    soulRecoveries = soulRecoveries + 1
+    If soulNativeTimeout Then
+        soulCount = soulCount + 1
+        soulDue = soulFinishedAt + 65
+        soulAbandoned = soulCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & soulCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留14，不计次、不改期")
+    End If
+    If soulAbandoned Then
+        resumeTask = 0
+    End If
+    soulNativeTimeout = False
+    soulExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartSoulTask()
+    soulRestarts = soulRestarts + 1
+    Call WorldLog("公共重启恢复14 次数=" & soulRestarts)
+End Sub
+Sub CommitSoulTask()
+    If soulExitKind = 1 Or soulExitKind = 5 Then
+        soulDone = True
+    ElseIf soulExitKind = 2 Then
+        soulDue = soulFinishedAt + 65
+    ElseIf soulExitKind = 4 Then
+        soulCount = soulCount + 1
+        soulDue = soulFinishedAt + 65
+        soulDone = soulCount >= 5
+    End If
+    soulExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & soulCount & " 下次Unix=" & soulDue)
+End Sub
+Function ResetSoulTimer()
+    ResetSoulTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetSoulTimer = True
+End Function
+Function ConfirmSoulExit(reason, exitKind)
+    ConfirmSoulExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    soulReason = reason
+    soulExitKind = exitKind
+    soulFinishedAt = Time()
+    If exitKind = 3 Then
+        soulNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 And exitKind <> 5 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmSoulExit = RESULT_OK
+End Function
+
+
+// flows/014_龙魂试炼/龙魂试炼.mq
+Function SoulWait(waitMs)
+    SoulWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    SoulWait = Not BusinessExpired()
+End Function
+Function SoulTrialKnown()
+    SoulTrialKnown = True
+    If WorldMatch("014_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P34") Then
+        Exit Function
+    End If
+    SoulTrialKnown = False
+End Function
+Function SoulHallKnown()
+    SoulHallKnown = True
+    If WorldMatch("014_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P32") Then
+        Exit Function
+    End If
+    SoulHallKnown = False
+End Function
+Function SoulTrialIcon()
+    SoulTrialIcon = True
+    If WorldMatch("014_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P29") Then
+        Exit Function
+    End If
+    SoulTrialIcon = False
+End Function
+Function EnterSoulTrial()
+    Dim started, result
+    EnterSoulTrial = RESULT_TIMEOUT
+    Call WorldStage("龙魂试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If SoulTrialKnown() Then
+            EnterSoulTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not SoulWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If SoulTrialKnown() Then
+            EnterSoulTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If SoulHallKnown() Then
+            If SoulTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not SoulWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteSoulTrial()
+    ExecuteSoulTrial = RESULT_TIMEOUT
+    If EnterSoulTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteSoulTrial = RunSoulTrial()
+End Function
+
+// task14 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function SoulFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        SoulFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    SoulFilterText = output
+End Function
+Function SoulCountExhausted(value)
+    SoulCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function SoulSweepReady()
+    SoulSweepReady = True
+    If WorldMatch("014_P12") Then
+        Exit Function
+    End If
+    SoulSweepReady = WorldMatch("014_P13")
+End Function
+Function SoulEntryIcon()
+    SoulEntryIcon = True
+    If WorldMatch("014_P02") Then
+        Exit Function
+    End If
+    SoulEntryIcon = False
+End Function
+Function SoulSweepResult()
+    SoulSweepResult = True
+    If WorldMatch("014_P26") Then
+        Exit Function
+    End If
+    SoulSweepResult = WorldMatch("014_P27")
+End Function
+Function SoulAutoTriple()
+    SoulAutoTriple = False
+    If WorldMatch("014_AutoReady") Then
+        SoulAutoTriple = True
+    ElseIf WorldMatch("014_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("014_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("014_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunSoulTrial()
+    Dim phase, actionAt, overallAt, text, ax, ay, countRead
+    RunSoulTrial = RESULT_TIMEOUT
+    phase = 0
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetSoulTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("龙魂试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("014_P02") Then
+            ax = foundX
+            ay = foundY
+            text = SoulFilterText(TrialCountText(ax - 115, ay + 108, ax - 62, ay + 134))
+            If SoulCountExhausted(text) Then
+                RunSoulTrial = ConfirmSoulExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00:") > 0 Then
+                    RunSoulTrial = ConfirmSoulExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // A0=2 VM PC250/251: missing OCR does not open the entry gate.
+            If text <> "" Then
+                countRead = True
+            End If
+        End If
+        If WorldMatch("014_P05") Then
+            RunSoulTrial = ConfirmSoulExit("原龙魂灰色入口结束", 5)
+            Exit Function
+        End If
+        If countRead Then
+            If SoulEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not SoulWait(50) Then
+                Exit Function
+            End If
+            If SoulSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not SoulWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("014_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not SoulWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetSoulTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("龙魂试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not SoulWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If SoulSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("014_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not SoulWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetSoulTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunSoulTrial = ConfirmSoulExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunSoulTrial = ConfirmSoulExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("014_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("014_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("014_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("014_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not SoulWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunSoulTrial = ConfirmSoulExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If SoulSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not SoulWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If SoulAutoTriple() Then
+            If Not ResetSoulTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not SoulWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunSoulTrial = ConfirmSoulExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// common/基因试炼状态.mq
+Sub LoadGeneSettings()
+    Dim raw
+    geneEnabled = WorldBoolean("SlJyin")
+    raw = ReadUIConfig("设置_重要_闪退", True)
+    geneRestartOnTimeout = True
+    If Not IsNull(raw) Then
+        geneRestartOnTimeout = LCase(Trim(CStr(raw))) = "true" Or Trim(CStr(raw)) = "1"
+    End If
+End Sub
+Sub NewGeneSession()
+    geneDue = Time()
+    geneDone = False
+    geneAbandoned = False
+    geneCount = 0
+    geneRecoveries = 0
+    geneRestarts = 0
+    genePhase = "未开始"
+    geneReason = ""
+    geneExitKind = 0
+    geneFinishedAt = 0
+    geneNativeTimeout = False
+    geneFailures = 0
+    geneForcedRecovery = False
+    geneNoRestartPending = False
+    genePickIndex = 0
+    geneClickAt = 0
+    geneActionAt = 0
+    geneSpecialExit = False
+End Sub
+Function SelectGene()
+    SelectGene = 0
+    If geneEnabled And Not geneDone And Not geneAbandoned And Time() >= geneDue Then
+        SelectGene = 15
+    End If
+End Function
+Sub StartGeneTask()
+    geneForcedRecovery = False
+    geneNoRestartPending = False
+    geneReason = ""
+    geneExitKind = 0
+    geneFinishedAt = 0
+    geneNativeTimeout = False
+    Call WorldStage("基因试炼启动")
+End Sub
+Sub RecoverGeneTask()
+    geneRecoveries = geneRecoveries + 1
+    If geneForcedRecovery Then
+        Call WorldLog("原公共超时失败次数=" & geneFailures & "；不按原业务出口计次")
+    ElseIf geneNativeTimeout Then
+        geneCount = geneCount + 1
+        geneDue = geneFinishedAt + 65
+        geneAbandoned = geneCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & geneCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留15，不计次、不改期")
+    End If
+    If geneAbandoned Then
+        resumeTask = 0
+    End If
+    geneForcedRecovery = False
+    geneNativeTimeout = False
+    geneExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartGeneTask()
+    geneRestarts = geneRestarts + 1
+    Call WorldLog("公共重启恢复15 次数=" & geneRestarts)
+End Sub
+Sub CommitGeneTask()
+    If geneExitKind = 1 Or geneExitKind = 5 Then
+        geneDone = True
+    ElseIf geneExitKind = 2 Then
+        geneDue = geneFinishedAt + 65
+    ElseIf geneExitKind = 4 Then
+        geneCount = geneCount + 1
+        geneDue = geneFinishedAt + 65
+        geneDone = geneCount >= 5
+    End If
+    geneExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & geneCount & " 下次Unix=" & geneDue)
+End Sub
+Function ResetGeneTimer()
+    ResetGeneTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetGeneTimer = True
+End Function
+Function ConfirmGeneExit(reason, exitKind)
+    ConfirmGeneExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    geneReason = reason
+    geneExitKind = exitKind
+    geneFinishedAt = Time()
+    If exitKind = 3 Then
+        geneNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 And exitKind <> 5 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmGeneExit = RESULT_OK
+End Function
+Function GeneForcedTimeout()
+    Dim hallResult
+    GeneForcedTimeout = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    geneFailures = geneFailures + 1
+    If geneFailures >= 3 Then
+        geneAbandoned = True
+    End If
+    Call WorldLog("原图色调用公共超时处理；失败次数=" & geneFailures & "；非成功出口")
+    If Not ResetGeneTimer() Then
+        Exit Function
+    End If
+    If Sys.IsRunning(GAME_PACKAGE) And Not geneRestartOnTimeout Then
+        hallResult = ReturnToHall()
+        If hallResult = RESULT_OK Then
+            GeneForcedTimeout = RESULT_OK
+            Exit Function
+        End If
+        geneNoRestartPending = True
+    End If
+    geneForcedRecovery = True
+End Function
+
+
+// flows/015_基因试炼/基因试炼.mq
+Function GenePointX(kind, pointIndex)
+    GenePointX = 0
+    If kind = 1 Then
+        If pointIndex = 1 Then
+            GenePointX = 45
+        ElseIf pointIndex = 2 Then
+            GenePointX = 145
+        ElseIf pointIndex = 3 Then
+            GenePointX = 240
+        ElseIf pointIndex = 4 Then
+            GenePointX = 330
+        ElseIf pointIndex = 5 Then
+            GenePointX = 430
+        ElseIf pointIndex = 6 Then
+            GenePointX = 515
+        ElseIf pointIndex = 7 Then
+            GenePointX = 45
+        ElseIf pointIndex = 8 Then
+            GenePointX = 145
+        ElseIf pointIndex = 9 Then
+            GenePointX = 240
+        ElseIf pointIndex = 10 Then
+            GenePointX = 330
+        ElseIf pointIndex = 11 Then
+            GenePointX = 430
+        ElseIf pointIndex = 12 Then
+            GenePointX = 515
+        ElseIf pointIndex = 13 Then
+            GenePointX = 45
+        ElseIf pointIndex = 14 Then
+            GenePointX = 145
+        ElseIf pointIndex = 15 Then
+            GenePointX = 240
+        ElseIf pointIndex = 16 Then
+            GenePointX = 330
+        ElseIf pointIndex = 17 Then
+            GenePointX = 430
+        ElseIf pointIndex = 18 Then
+            GenePointX = 515
+        End If
+    ElseIf kind = 2 Then
+        If pointIndex = 1 Then
+            GenePointX = 45
+        ElseIf pointIndex = 2 Then
+            GenePointX = 145
+        ElseIf pointIndex = 3 Then
+            GenePointX = 240
+        ElseIf pointIndex = 4 Then
+            GenePointX = 330
+        ElseIf pointIndex = 5 Then
+            GenePointX = 430
+        ElseIf pointIndex = 6 Then
+            GenePointX = 515
+        ElseIf pointIndex = 7 Then
+            GenePointX = 45
+        ElseIf pointIndex = 8 Then
+            GenePointX = 145
+        ElseIf pointIndex = 9 Then
+            GenePointX = 240
+        ElseIf pointIndex = 10 Then
+            GenePointX = 330
+        ElseIf pointIndex = 11 Then
+            GenePointX = 430
+        ElseIf pointIndex = 12 Then
+            GenePointX = 515
+        ElseIf pointIndex = 13 Then
+            GenePointX = 45
+        ElseIf pointIndex = 14 Then
+            GenePointX = 145
+        ElseIf pointIndex = 15 Then
+            GenePointX = 240
+        ElseIf pointIndex = 16 Then
+            GenePointX = 330
+        ElseIf pointIndex = 17 Then
+            GenePointX = 430
+        ElseIf pointIndex = 18 Then
+            GenePointX = 515
+        End If
+    ElseIf kind = 3 Then
+        If pointIndex = 1 Then
+            GenePointX = 45
+        ElseIf pointIndex = 2 Then
+            GenePointX = 145
+        ElseIf pointIndex = 3 Then
+            GenePointX = 240
+        ElseIf pointIndex = 4 Then
+            GenePointX = 330
+        ElseIf pointIndex = 5 Then
+            GenePointX = 430
+        ElseIf pointIndex = 6 Then
+            GenePointX = 515
+        ElseIf pointIndex = 7 Then
+            GenePointX = 45
+        ElseIf pointIndex = 8 Then
+            GenePointX = 145
+        ElseIf pointIndex = 9 Then
+            GenePointX = 240
+        ElseIf pointIndex = 10 Then
+            GenePointX = 330
+        ElseIf pointIndex = 11 Then
+            GenePointX = 430
+        ElseIf pointIndex = 12 Then
+            GenePointX = 515
+        ElseIf pointIndex = 13 Then
+            GenePointX = 45
+        ElseIf pointIndex = 14 Then
+            GenePointX = 145
+        ElseIf pointIndex = 15 Then
+            GenePointX = 240
+        ElseIf pointIndex = 16 Then
+            GenePointX = 330
+        ElseIf pointIndex = 17 Then
+            GenePointX = 430
+        ElseIf pointIndex = 18 Then
+            GenePointX = 515
+        End If
+    End If
+End Function
+Function GenePointY(kind, pointIndex)
+    GenePointY = 0
+    If kind = 1 Then
+        If pointIndex = 1 Then
+            GenePointY = -460
+        ElseIf pointIndex = 2 Then
+            GenePointY = -460
+        ElseIf pointIndex = 3 Then
+            GenePointY = -460
+        ElseIf pointIndex = 4 Then
+            GenePointY = -460
+        ElseIf pointIndex = 5 Then
+            GenePointY = -460
+        ElseIf pointIndex = 6 Then
+            GenePointY = -460
+        ElseIf pointIndex = 7 Then
+            GenePointY = -320
+        ElseIf pointIndex = 8 Then
+            GenePointY = -320
+        ElseIf pointIndex = 9 Then
+            GenePointY = -320
+        ElseIf pointIndex = 10 Then
+            GenePointY = -320
+        ElseIf pointIndex = 11 Then
+            GenePointY = -320
+        ElseIf pointIndex = 12 Then
+            GenePointY = -320
+        ElseIf pointIndex = 13 Then
+            GenePointY = -180
+        ElseIf pointIndex = 14 Then
+            GenePointY = -180
+        ElseIf pointIndex = 15 Then
+            GenePointY = -180
+        ElseIf pointIndex = 16 Then
+            GenePointY = -180
+        ElseIf pointIndex = 17 Then
+            GenePointY = -180
+        ElseIf pointIndex = 18 Then
+            GenePointY = -180
+        End If
+    ElseIf kind = 2 Then
+        If pointIndex = 1 Then
+            GenePointY = -320
+        ElseIf pointIndex = 2 Then
+            GenePointY = -320
+        ElseIf pointIndex = 3 Then
+            GenePointY = -320
+        ElseIf pointIndex = 4 Then
+            GenePointY = -320
+        ElseIf pointIndex = 5 Then
+            GenePointY = -320
+        ElseIf pointIndex = 6 Then
+            GenePointY = -320
+        ElseIf pointIndex = 7 Then
+            GenePointY = -460
+        ElseIf pointIndex = 8 Then
+            GenePointY = -460
+        ElseIf pointIndex = 9 Then
+            GenePointY = -460
+        ElseIf pointIndex = 10 Then
+            GenePointY = -460
+        ElseIf pointIndex = 11 Then
+            GenePointY = -460
+        ElseIf pointIndex = 12 Then
+            GenePointY = -460
+        ElseIf pointIndex = 13 Then
+            GenePointY = -180
+        ElseIf pointIndex = 14 Then
+            GenePointY = -180
+        ElseIf pointIndex = 15 Then
+            GenePointY = -180
+        ElseIf pointIndex = 16 Then
+            GenePointY = -180
+        ElseIf pointIndex = 17 Then
+            GenePointY = -180
+        ElseIf pointIndex = 18 Then
+            GenePointY = -180
+        End If
+    ElseIf kind = 3 Then
+        If pointIndex = 1 Then
+            GenePointY = -180
+        ElseIf pointIndex = 2 Then
+            GenePointY = -180
+        ElseIf pointIndex = 3 Then
+            GenePointY = -180
+        ElseIf pointIndex = 4 Then
+            GenePointY = -180
+        ElseIf pointIndex = 5 Then
+            GenePointY = -180
+        ElseIf pointIndex = 6 Then
+            GenePointY = -180
+        ElseIf pointIndex = 7 Then
+            GenePointY = -460
+        ElseIf pointIndex = 8 Then
+            GenePointY = -460
+        ElseIf pointIndex = 9 Then
+            GenePointY = -460
+        ElseIf pointIndex = 10 Then
+            GenePointY = -460
+        ElseIf pointIndex = 11 Then
+            GenePointY = -460
+        ElseIf pointIndex = 12 Then
+            GenePointY = -460
+        ElseIf pointIndex = 13 Then
+            GenePointY = -320
+        ElseIf pointIndex = 14 Then
+            GenePointY = -320
+        ElseIf pointIndex = 15 Then
+            GenePointY = -320
+        ElseIf pointIndex = 16 Then
+            GenePointY = -320
+        ElseIf pointIndex = 17 Then
+            GenePointY = -320
+        ElseIf pointIndex = 18 Then
+            GenePointY = -320
+        End If
+    End If
+End Function
+
+Function GenePick(kind)
+    GenePick = RESULT_TIMEOUT
+    genePickIndex = genePickIndex + 1
+    If genePickIndex <= 18 Then
+        If Not ResetGeneTimer() Then
+            Exit Function
+        End If
+        If Not WorldOffset(GenePointX(kind, genePickIndex), GenePointY(kind, genePickIndex), 1000) Then
+            Exit Function
+        End If
+    Else
+        If Not WorldOffset(249, -24, 0) Then
+            Exit Function
+        End If
+    End If
+    geneActionAt = TickCount()
+    GenePick = RESULT_OK
+End Function
+Function GeneRapidClicks()
+    Dim clickAt, ax, ay, i
+    GeneRapidClicks = RESULT_TIMEOUT
+    // The native operation is an auto-clicking Find2; capture and tap exactly once per hit.
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("015_P20") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            geneClickAt = TickCount()
+            geneActionAt = TickCount()
+            If Not GeneWait(10) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - geneClickAt > 3500 Then
+            Exit Do
+        End If
+    Loop
+    geneActionAt = TickCount()
+    geneClickAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("015_P21") Then
+            ax = foundX
+            ay = foundY
+            For i = 1 To 70
+                If Not WorldTap(ax, ay - 24, 0) Then
+                    Exit Function
+                End If
+                If Not GeneWait(70) Then
+                    Exit Function
+                End If
+                geneClickAt = TickCount()
+            Next
+            geneActionAt = TickCount()
+        End If
+        If TickCount() - geneClickAt > 12000 Then
+            geneActionAt = TickCount()
+            GeneRapidClicks = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function GeneSpecialEvents()
+    GeneSpecialEvents = RESULT_TIMEOUT
+    geneSpecialExit = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If WorldMatch("015_P15") Then
+        If GenePick(1) <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P16") Then
+        If GenePick(2) <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P17") Then
+        If GenePick(3) <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P18") Then
+        If Not WorldOffset(0, 0, 200) Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P19") Then
+        If GeneForcedTimeout() <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P20") Then
+        If GeneRapidClicks() <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P22") Then
+        If Not WorldTap(150, 50, 0) Then
+            Exit Function
+        End If
+        geneSpecialExit = True
+        geneActionAt = TickCount()
+    End If
+    GeneSpecialEvents = RESULT_OK
+End Function
+
+Function GeneTrialScrollDown()
+    GeneTrialScrollDown = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 1000, 370, 300, 300
+    GeneTrialScrollDown = True
+End Function
+Function GeneWait(waitMs)
+    GeneWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    GeneWait = Not BusinessExpired()
+End Function
+Function GeneTrialKnown()
+    GeneTrialKnown = True
+    If WorldMatch("015_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P34") Then
+        Exit Function
+    End If
+    GeneTrialKnown = False
+End Function
+Function GeneHallKnown()
+    GeneHallKnown = True
+    If WorldMatch("015_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P32") Then
+        Exit Function
+    End If
+    GeneHallKnown = False
+End Function
+Function GeneTrialIcon()
+    GeneTrialIcon = True
+    If WorldMatch("015_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P29") Then
+        Exit Function
+    End If
+    GeneTrialIcon = False
+End Function
+Function EnterGeneTrial()
+    Dim started, result
+    EnterGeneTrial = RESULT_TIMEOUT
+    Call WorldStage("基因试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If GeneTrialKnown() Then
+            EnterGeneTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not GeneWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If GeneTrialKnown() Then
+            EnterGeneTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If GeneHallKnown() Then
+            If GeneTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not GeneWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteGeneTrial()
+    ExecuteGeneTrial = RESULT_TIMEOUT
+    If EnterGeneTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteGeneTrial = RunGeneTrial()
+End Function
+
+// task15 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function GeneFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        GeneFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    GeneFilterText = output
+End Function
+Function GeneCountExhausted(value)
+    GeneCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function GeneSweepReady()
+    GeneSweepReady = True
+    If WorldMatch("015_P12") Then
+        Exit Function
+    End If
+    GeneSweepReady = WorldMatch("015_P13")
+End Function
+Function GeneEntryIcon()
+    GeneEntryIcon = True
+    If WorldMatch("015_P03") Then
+        Exit Function
+    End If
+    GeneEntryIcon = WorldMatch("015_P10")
+End Function
+Function GeneSweepResult()
+    GeneSweepResult = True
+    If WorldMatch("015_P26") Then
+        Exit Function
+    End If
+    GeneSweepResult = WorldMatch("015_P27")
+End Function
+Function GeneAutoTriple()
+    GeneAutoTriple = False
+    If WorldMatch("015_AutoReady") Then
+        GeneAutoTriple = True
+    ElseIf WorldMatch("015_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("015_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("015_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunGeneTrial()
+    Dim phase, movedAt, overallAt, text, ax, ay, countRead
+    RunGeneTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    genePickIndex = 0
+    geneClickAt = 0
+    geneSpecialExit = False
+    geneActionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetGeneTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("基因试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not GeneTrialScrollDown() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("015_P03") Then
+            ax = foundX
+            ay = foundY
+            text = GeneFilterText(TrialCountText(ax - 410, ay + 115, ax - 350, ay + 155))
+            If GeneCountExhausted(text) Then
+                RunGeneTrial = ConfirmGeneExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunGeneTrial = ConfirmGeneExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // A0=3: missing OCR is not terminal evidence and does not initially open entry.
+            If text <> "" Then
+                countRead = True
+            End If
+        End If
+        If WorldMatch("015_P06") Then
+            RunGeneTrial = ConfirmGeneExit("原基因灰色入口结束", 5)
+            Exit Function
+        End If
+        If countRead Then
+            If GeneEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not GeneWait(50) Then
+                Exit Function
+            End If
+            If GeneSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not GeneWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("015_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - geneActionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not GeneWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetGeneTimer() Then
+        Exit Function
+    End If
+    geneActionAt = TickCount()
+    geneClickAt = TickCount()
+    genePickIndex = 0
+    Call WorldStage("基因试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not GeneWait(50) Then
+            Exit Function
+        End If
+        If GeneSpecialEvents() <> RESULT_OK Then
+            Exit Function
+        End If
+        If geneSpecialExit Then
+            phase = 4
+        End If
+        If phase = 1 Then
+            If GeneSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("015_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not GeneWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetGeneTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunGeneTrial = ConfirmGeneExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunGeneTrial = ConfirmGeneExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("015_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("015_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            geneActionAt = TickCount()
+        End If
+        If WorldMatch("015_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            geneActionAt = TickCount()
+        End If
+        If WorldMatch("015_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not GeneWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunGeneTrial = ConfirmGeneExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If GeneSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not GeneWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If GeneAutoTriple() Then
+            If Not ResetGeneTimer() Then
+                Exit Function
+            End If
+            geneActionAt = TickCount()
+            If Not GeneWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - geneActionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunGeneTrial = ConfirmGeneExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// common/伙伴试炼状态.mq
+Sub LoadPartnerSettings()
+    partnerEnabled = WorldBoolean("SlHb")
+End Sub
+Sub NewPartnerSession()
+    partnerDue = Time()
+    partnerDone = False
+    partnerAbandoned = False
+    partnerCount = 0
+    partnerRecoveries = 0
+    partnerRestarts = 0
+    partnerPhase = "未开始"
+    partnerReason = ""
+    partnerExitKind = 0
+    partnerFinishedAt = 0
+    partnerNativeTimeout = False
+End Sub
+Function SelectPartner()
+    SelectPartner = 0
+    If partnerEnabled And Not partnerDone And Not partnerAbandoned And Time() >= partnerDue Then
+        SelectPartner = 16
+    End If
+End Function
+Sub StartPartnerTask()
+    partnerReason = ""
+    partnerExitKind = 0
+    partnerFinishedAt = 0
+    partnerNativeTimeout = False
+    Call WorldStage("伙伴试炼启动")
+End Sub
+Sub RecoverPartnerTask()
+    partnerRecoveries = partnerRecoveries + 1
+    If partnerNativeTimeout Then
+        partnerCount = partnerCount + 1
+        partnerDue = partnerFinishedAt + 65
+        partnerAbandoned = partnerCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & partnerCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留16，不计次、不改期")
+    End If
+    If partnerAbandoned Then
+        resumeTask = 0
+    End If
+    partnerNativeTimeout = False
+    partnerExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartPartnerTask()
+    partnerRestarts = partnerRestarts + 1
+    Call WorldLog("公共重启恢复16 次数=" & partnerRestarts)
+End Sub
+Sub CommitPartnerTask()
+    If partnerExitKind = 1 Or partnerExitKind = 5 Then
+        partnerDone = True
+    ElseIf partnerExitKind = 2 Then
+        partnerDue = partnerFinishedAt + 65
+    ElseIf partnerExitKind = 4 Then
+        partnerCount = partnerCount + 1
+        partnerDue = partnerFinishedAt + 65
+        partnerDone = partnerCount >= 5
+    End If
+    partnerExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & partnerCount & " 下次Unix=" & partnerDue)
+End Sub
+Function ResetPartnerTimer()
+    ResetPartnerTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetPartnerTimer = True
+End Function
+Function ConfirmPartnerExit(reason, exitKind)
+    ConfirmPartnerExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    partnerReason = reason
+    partnerExitKind = exitKind
+    partnerFinishedAt = Time()
+    If exitKind = 3 Then
+        partnerNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 And exitKind <> 5 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmPartnerExit = RESULT_OK
+End Function
+
+
+// flows/016_伙伴试炼/伙伴试炼.mq
+Function PartnerTrialScrollDown()
+    PartnerTrialScrollDown = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 1000, 370, 300, 300
+    PartnerTrialScrollDown = True
+End Function
+Function PartnerWait(waitMs)
+    PartnerWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    PartnerWait = Not BusinessExpired()
+End Function
+Function PartnerTrialKnown()
+    PartnerTrialKnown = True
+    If WorldMatch("016_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P34") Then
+        Exit Function
+    End If
+    PartnerTrialKnown = False
+End Function
+Function PartnerHallKnown()
+    PartnerHallKnown = True
+    If WorldMatch("016_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P32") Then
+        Exit Function
+    End If
+    PartnerHallKnown = False
+End Function
+Function PartnerTrialIcon()
+    PartnerTrialIcon = True
+    If WorldMatch("016_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P29") Then
+        Exit Function
+    End If
+    PartnerTrialIcon = False
+End Function
+Function EnterPartnerTrial()
+    Dim started, result
+    EnterPartnerTrial = RESULT_TIMEOUT
+    Call WorldStage("伙伴试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If PartnerTrialKnown() Then
+            EnterPartnerTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not PartnerWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If PartnerTrialKnown() Then
+            EnterPartnerTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If PartnerHallKnown() Then
+            If PartnerTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not PartnerWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecutePartnerTrial()
+    ExecutePartnerTrial = RESULT_TIMEOUT
+    If EnterPartnerTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecutePartnerTrial = RunPartnerTrial()
+End Function
+
+// task16 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function PartnerFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        PartnerFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    PartnerFilterText = output
+End Function
+Function PartnerCountExhausted(value)
+    PartnerCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function PartnerSweepReady()
+    PartnerSweepReady = True
+    If WorldMatch("016_P12") Then
+        Exit Function
+    End If
+    PartnerSweepReady = WorldMatch("016_P13")
+End Function
+Function PartnerEntryIcon()
+    PartnerEntryIcon = True
+    If WorldMatch("016_P04") Then
+        Exit Function
+    End If
+    PartnerEntryIcon = WorldMatch("016_P11")
+End Function
+Function PartnerSweepResult()
+    PartnerSweepResult = True
+    If WorldMatch("016_P26") Then
+        Exit Function
+    End If
+    PartnerSweepResult = WorldMatch("016_P27")
+End Function
+Function PartnerAutoTriple()
+    PartnerAutoTriple = False
+    If WorldMatch("016_AutoReady") Then
+        PartnerAutoTriple = True
+    ElseIf WorldMatch("016_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("016_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("016_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunPartnerTrial()
+    Dim phase, movedAt, actionAt, overallAt, text, ax, ay, countRead
+    RunPartnerTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetPartnerTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("伙伴试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not PartnerTrialScrollDown() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("016_P04") Then
+            ax = foundX
+            ay = foundY
+            text = PartnerFilterText(TrialCountText(ax - 410, ay + 30, ax - 350, ay + 70))
+            If PartnerCountExhausted(text) Then
+                RunPartnerTrial = ConfirmPartnerExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunPartnerTrial = ConfirmPartnerExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // A0=4: missing OCR is not terminal evidence and does not initially open entry.
+            If text <> "" Then
+                countRead = True
+            End If
+        End If
+        If WorldMatch("016_P07") Then
+            RunPartnerTrial = ConfirmPartnerExit("原伙伴灰色入口结束", 5)
+            Exit Function
+        End If
+        If countRead Then
+            If PartnerEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not PartnerWait(50) Then
+                Exit Function
+            End If
+            If PartnerSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not PartnerWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("016_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not PartnerWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetPartnerTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("伙伴试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not PartnerWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If PartnerSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("016_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not PartnerWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetPartnerTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunPartnerTrial = ConfirmPartnerExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunPartnerTrial = ConfirmPartnerExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("016_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("016_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("016_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("016_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not PartnerWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunPartnerTrial = ConfirmPartnerExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If PartnerSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not PartnerWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If PartnerAutoTriple() Then
+            If Not ResetPartnerTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not PartnerWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunPartnerTrial = ConfirmPartnerExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function
+
+
+// common/异时空试炼状态.mq
+Sub LoadYskSettings()
+    Dim raw
+    yskEnabled = WorldBoolean("SlYsk")
+    yskMinutes = -1
+    raw = ReadUIConfig("SlYsk挑战时长", "2")
+    If IsNumeric(raw) Then
+        yskMinutes = Int(CDbl(raw))
+    End If
+    yskInterval = -1
+    raw = ReadUIConfig("SlYsk间隔", "30")
+    If IsNumeric(raw) Then
+        yskInterval = Int(CDbl(raw))
+    End If
+    yskRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+End Sub
+Sub NewYskSession()
+    yskDue = Time()
+    yskDone = False
+    yskAbandoned = False
+    yskAttackAt = 0
+    yskAttackStarted = False
+    yskHasCoin = True
+    yskPhase = "未开始"
+    yskExitKind = 0
+    yskFailures = 0
+    yskRecoveries = 0
+    yskRestarts = 0
+    yskFinishedAt = 0
+    yskNativeTimeout = False
+    yskNoRestartPending = False
+End Sub
+Function SelectYsk()
+    SelectYsk = 0
+    If yskEnabled And Not yskDone And Not yskAbandoned And Time() >= yskDue Then
+        SelectYsk = 92
+    End If
+End Function
+Sub StartYskTask()
+    yskExitKind = 0
+    yskNativeTimeout = False
+    yskNoRestartPending = False
+    Call WorldStage("异时空试炼启动")
+End Sub
+Sub RecoverYskTask()
+    yskRecoveries = yskRecoveries + 1
+    If yskNativeTimeout Then
+        yskFailures = yskFailures + 1
+        yskAbandoned = yskFailures >= 3
+        If yskAbandoned Then
+            resumeTask = 0
+        End If
+    End If
+    If yskAbandoned Then
+        resumeTask = 0
+    End If
+    yskExitKind = 0
+    yskNativeTimeout = False
+    terminalConfirmed = False
+    Call WorldLog("保留原攻打时间恢复；失败次数=" & yskFailures)
+End Sub
+Sub RestartYskTask()
+    yskRestarts = yskRestarts + 1
+    Call WorldLog("公共重启恢复92 次数=" & yskRestarts)
+End Sub
+Sub CommitYskTask()
+    If yskExitKind = 1 Then
+        yskDone = True
+    ElseIf yskExitKind = 2 Then
+        If yskInterval = -1 Then
+            yskDue = yskFinishedAt + 300
+        Else
+            yskDue = yskFinishedAt + yskInterval * 60
+        End If
+        yskAttackAt = 0
+        yskAttackStarted = False
+        yskHasCoin = True
+        yskDone = False
+    End If
+    yskExitKind = 0
+    Call WorldLog("大厅连续确认后提交；下次Unix=" & yskDue)
+End Sub
+Function YskFinish(hasCoin)
+    YskFinish = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If Not YskWait(2000) Then
+        Exit Function
+    End If
+    yskFinishedAt = Time()
+    If hasCoin Then
+        yskExitKind = 2
+        Call WorldLog("仍有兑换币，本次结束，按原间隔再执行")
+    Else
+        yskExitKind = 1
+        Call WorldLog("原结算五次找色未见兑换币，今日结束")
+    End If
+    terminalConfirmed = True
+    YskFinish = RESULT_OK
+End Function
+
+
+// flows/092_异时空试炼/异时空试炼.mq
+Function YskTrialKnown()
+    YskTrialKnown = True
+    If WorldMatch("092_E33") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E34") Then
+        Exit Function
+    End If
+    YskTrialKnown = False
+End Function
+Function YskHallKnown()
+    YskHallKnown = True
+    If WorldMatch("092_E30") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E31") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E32") Then
+        Exit Function
+    End If
+    YskHallKnown = False
+End Function
+Function YskTrialIcon()
+    YskTrialIcon = True
+    If WorldMatch("092_E28") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E29") Then
+        Exit Function
+    End If
+    YskTrialIcon = False
+End Function
+Function EnterYskTrial()
+    Dim started, result
+    EnterYskTrial = RESULT_TIMEOUT
+    Call WorldStage("异时空试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If YskTrialKnown() Then
+            EnterYskTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not YskWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If YskTrialKnown() Then
+            EnterYskTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If YskHallKnown() Then
+            If YskTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not YskWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function YskWait(waitMs)
+    YskWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    YskWait = Not BusinessExpired()
+End Function
+Function YskNativeRecovery()
+    Dim result
+    YskNativeRecovery = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    yskNativeTimeout = True
+    If Sys.IsRunning(GAME_PACKAGE) And Not yskRestartOnTimeout Then
+        yskFailures = yskFailures + 1
+        yskAbandoned = yskFailures >= 3
+        yskNativeTimeout = False
+        result = ReturnToHall()
+        If result = RESULT_OK Then
+            YskNativeRecovery = RESULT_OK
+        Else
+            yskNoRestartPending = True
+        End If
+    End If
+End Function
+Function YskEnterMode()
+    Dim started
+    YskEnterMode = RESULT_TIMEOUT
+    Call WorldStage("异时空试炼入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If Sys.AppIsFront(GAME_PACKAGE) Then
+            Swipe 370, 1000, 370, 300, 300
+        Else
+            Exit Function
+        End If
+        If Not YskWait(1000) Then
+            Exit Function
+        End If
+        If WorldMatch("092_P00") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("092_P01") Then
+            If Not YskWait(200) Then
+                Exit Function
+            End If
+            YskEnterMode = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 30000 Then
+            If YskNativeRecovery() <> RESULT_OK Then
+                Exit Function
+            End If
+            If yskAbandoned Then
+                yskNoRestartPending = True
+                Exit Function
+            End If
+        End If
+    Loop
+End Function
+Function ExecuteYskTrial()
+    ExecuteYskTrial = RESULT_TIMEOUT
+    If EnterYskTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    If YskEnterMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteYskTrial = RunYskTrial()
+End Function
+Function RunYskTrial()
+    Dim durationMs, roleAt, hasCoin, sample, matched
+    RunYskTrial = RESULT_TIMEOUT
+    Call WorldStage("异时空试炼挑战")
+    If Not yskAttackStarted Then
+        yskAttackAt = TickCount()
+        yskAttackStarted = True
+    End If
+    durationMs = 20000
+    If yskMinutes >= 1 Then
+        durationMs = yskMinutes * 60000
+    End If
+    roleAt = TickCount()
+    hasCoin = yskHasCoin
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("092_P01") Then
+            If TickCount() - yskAttackAt > durationMs Or Not hasCoin Then
+                RunYskTrial = YskFinish(hasCoin)
+                Exit Function
+            End If
+            If Not WorldTap(370, 500, 250) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("092_P02") Then
+            Call WorldStage("异时空试炼选择角色")
+            If Not WorldOffset(-259, 625, 250) Then
+                Exit Function
+            End If
+            roleAt = TickCount()
+        End If
+        If WorldMatch("092_P03") Then
+            Call WorldStage("异时空试炼开始游戏")
+            If Not WorldOffset(0, 0, 250) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("092_P04") Then
+            Call WorldStage("异时空试炼加速")
+            If Not WorldTap(660, 120, 200) Then
+                Exit Function
+            End If
+            If Not WorldTap(660, 120, 500) Then
+                Exit Function
+            End If
+        ElseIf WorldMatch("092_P05") Then
+            Call WorldStage("异时空试炼加速")
+            If Not WorldTap(660, 120, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("092_P06") Then
+            Call WorldStage("异时空试炼结算检查兑换币")
+            hasCoin = False
+            For sample = 1 To 5
+                matched = WorldMatch("092_P07")
+                If Not matched Then
+                    matched = WorldMatch("092_P08")
+                End If
+                If matched Then
+                    hasCoin = True
+                End If
+                If Not YskWait(100) Then
+                    Exit Function
+                End If
+            Next
+            yskHasCoin = hasCoin
+            If TickCount() - yskAttackAt > durationMs Or Not hasCoin Then
+                If Not WorldTap(250, 1100, 250) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldTap(470, 1100, 250) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldMatch("092_P09") Then
+            Call WorldStage("异时空试炼离开商店")
+            If Not WorldOffset(0, 0, 250) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - roleAt > 300000 Then
+            Call WorldLog("原角色选择计时超过300秒；恢复，不提交成功")
+            Exit Function
+        End If
+        If Not YskWait(20) Then
+            Exit Function
+        End If
+    Loop
 End Function

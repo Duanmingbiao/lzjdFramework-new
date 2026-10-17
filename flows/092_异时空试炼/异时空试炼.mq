@@ -1,0 +1,271 @@
+﻿Function YskTrialKnown()
+    YskTrialKnown = True
+    If WorldMatch("092_E33") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E34") Then
+        Exit Function
+    End If
+    YskTrialKnown = False
+End Function
+Function YskHallKnown()
+    YskHallKnown = True
+    If WorldMatch("092_E30") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E31") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E32") Then
+        Exit Function
+    End If
+    YskHallKnown = False
+End Function
+Function YskTrialIcon()
+    YskTrialIcon = True
+    If WorldMatch("092_E28") Then
+        Exit Function
+    End If
+    If WorldMatch("092_E29") Then
+        Exit Function
+    End If
+    YskTrialIcon = False
+End Function
+Function EnterYskTrial()
+    Dim started, result
+    EnterYskTrial = RESULT_TIMEOUT
+    Call WorldStage("异时空试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If YskTrialKnown() Then
+            EnterYskTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not YskWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If YskTrialKnown() Then
+            EnterYskTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If YskHallKnown() Then
+            If YskTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not YskWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function YskWait(waitMs)
+    YskWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    YskWait = Not BusinessExpired()
+End Function
+Function YskNativeRecovery()
+    Dim result
+    YskNativeRecovery = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    yskNativeTimeout = True
+    If Sys.IsRunning(GAME_PACKAGE) And Not yskRestartOnTimeout Then
+        yskFailures = yskFailures + 1
+        yskAbandoned = yskFailures >= 3
+        yskNativeTimeout = False
+        result = ReturnToHall()
+        If result = RESULT_OK Then
+            YskNativeRecovery = RESULT_OK
+        Else
+            yskNoRestartPending = True
+        End If
+    End If
+End Function
+Function YskEnterMode()
+    Dim started
+    YskEnterMode = RESULT_TIMEOUT
+    Call WorldStage("异时空试炼入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If Sys.AppIsFront(GAME_PACKAGE) Then
+            Swipe 370, 1000, 370, 300, 300
+        Else
+            Exit Function
+        End If
+        If Not YskWait(1000) Then
+            Exit Function
+        End If
+        If WorldMatch("092_P00") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("092_P01") Then
+            If Not YskWait(200) Then
+                Exit Function
+            End If
+            YskEnterMode = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 30000 Then
+            If YskNativeRecovery() <> RESULT_OK Then
+                Exit Function
+            End If
+            If yskAbandoned Then
+                yskNoRestartPending = True
+                Exit Function
+            End If
+        End If
+    Loop
+End Function
+Function ExecuteYskTrial()
+    ExecuteYskTrial = RESULT_TIMEOUT
+    If EnterYskTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    If YskEnterMode() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteYskTrial = RunYskTrial()
+End Function
+Function RunYskTrial()
+    Dim durationMs, roleAt, hasCoin, sample, matched
+    RunYskTrial = RESULT_TIMEOUT
+    Call WorldStage("异时空试炼挑战")
+    If Not yskAttackStarted Then
+        yskAttackAt = TickCount()
+        yskAttackStarted = True
+    End If
+    durationMs = 20000
+    If yskMinutes >= 1 Then
+        durationMs = yskMinutes * 60000
+    End If
+    roleAt = TickCount()
+    hasCoin = yskHasCoin
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("092_P01") Then
+            If TickCount() - yskAttackAt > durationMs Or Not hasCoin Then
+                RunYskTrial = YskFinish(hasCoin)
+                Exit Function
+            End If
+            If Not WorldTap(370, 500, 250) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("092_P02") Then
+            Call WorldStage("异时空试炼选择角色")
+            If Not WorldOffset(-259, 625, 250) Then
+                Exit Function
+            End If
+            roleAt = TickCount()
+        End If
+        If WorldMatch("092_P03") Then
+            Call WorldStage("异时空试炼开始游戏")
+            If Not WorldOffset(0, 0, 250) Then
+                Exit Function
+            End If
+            businessStarted = TickCount()
+        End If
+        If WorldMatch("092_P04") Then
+            Call WorldStage("异时空试炼加速")
+            If Not WorldTap(660, 120, 200) Then
+                Exit Function
+            End If
+            If Not WorldTap(660, 120, 500) Then
+                Exit Function
+            End If
+        ElseIf WorldMatch("092_P05") Then
+            Call WorldStage("异时空试炼加速")
+            If Not WorldTap(660, 120, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("092_P06") Then
+            Call WorldStage("异时空试炼结算检查兑换币")
+            hasCoin = False
+            For sample = 1 To 5
+                matched = WorldMatch("092_P07")
+                If Not matched Then
+                    matched = WorldMatch("092_P08")
+                End If
+                If matched Then
+                    hasCoin = True
+                End If
+                If Not YskWait(100) Then
+                    Exit Function
+                End If
+            Next
+            yskHasCoin = hasCoin
+            If TickCount() - yskAttackAt > durationMs Or Not hasCoin Then
+                If Not WorldTap(250, 1100, 250) Then
+                    Exit Function
+                End If
+            Else
+                If Not WorldTap(470, 1100, 250) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldMatch("092_P09") Then
+            Call WorldStage("异时空试炼离开商店")
+            If Not WorldOffset(0, 0, 250) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - roleAt > 300000 Then
+            Call WorldLog("原角色选择计时超过300秒；恢复，不提交成功")
+            Exit Function
+        End If
+        If Not YskWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function

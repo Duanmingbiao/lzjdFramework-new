@@ -43,6 +43,13 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    trialRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+    Call LoadGoldSettings()
+    Call LoadSoulSettings()
+    Call LoadGeneSettings()
+    Call LoadPartnerSettings()
+    Call LoadYskSettings()
+    Call LoadExperienceSettings()
     Call LoadAdventureSettings()
     Call LoadSnakeSettings()
     Call LoadPlantSettings()

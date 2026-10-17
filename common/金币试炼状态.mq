@@ -1,0 +1,92 @@
+﻿Sub LoadGoldSettings()
+    goldEnabled = WorldBoolean("SlJb")
+End Sub
+Sub NewGoldSession()
+    goldDue = Time()
+    goldDone = False
+    goldAbandoned = False
+    goldCount = 0
+    goldRecoveries = 0
+    goldRestarts = 0
+    goldPhase = "未开始"
+    goldReason = ""
+    goldExitKind = 0
+    goldFinishedAt = 0
+    goldNativeTimeout = False
+End Sub
+Function SelectGold()
+    SelectGold = 0
+    If goldEnabled And Not goldDone And Not goldAbandoned And Time() >= goldDue Then
+        SelectGold = 12
+    End If
+End Function
+Sub StartGoldTask()
+    goldReason = ""
+    goldExitKind = 0
+    goldFinishedAt = 0
+    goldNativeTimeout = False
+    Call WorldStage("金币试炼启动")
+End Sub
+Sub RecoverGoldTask()
+    goldRecoveries = goldRecoveries + 1
+    If goldNativeTimeout Then
+        goldCount = goldCount + 1
+        goldDue = goldFinishedAt + 65
+        goldAbandoned = goldCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & goldCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留12，不计次、不改期")
+    End If
+    If goldAbandoned Then
+        resumeTask = 0
+    End If
+    goldNativeTimeout = False
+    goldExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartGoldTask()
+    goldRestarts = goldRestarts + 1
+    Call WorldLog("公共重启恢复12 次数=" & goldRestarts)
+End Sub
+Sub CommitGoldTask()
+    If goldExitKind = 1 Then
+        goldDone = True
+    ElseIf goldExitKind = 2 Then
+        goldDue = goldFinishedAt + 65
+    ElseIf goldExitKind = 4 Then
+        goldCount = goldCount + 1
+        goldDue = goldFinishedAt + 65
+        goldDone = goldCount >= 5
+    End If
+    goldExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & goldCount & " 下次Unix=" & goldDue)
+End Sub
+Function ResetGoldTimer()
+    ResetGoldTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetGoldTimer = True
+End Function
+Function ConfirmGoldExit(reason, exitKind)
+    ConfirmGoldExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    goldReason = reason
+    goldExitKind = exitKind
+    goldFinishedAt = Time()
+    If exitKind = 3 Then
+        goldNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmGoldExit = RESULT_OK
+End Function

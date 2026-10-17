@@ -137,6 +137,29 @@
         End If
     End If
     Call SaveRecovery()
+    If trialPublicRecoveryTask = currentTask And IsTrialTask(currentTask) Then
+        trialPublicRecoveryTask = 0
+        businessStarted = TickCount()
+        If Sys.IsRunning(GAME_PACKAGE) And Not trialRestartOnTimeout Then
+            Call WorldLog("原公共超时配置不重启；返回大厅后重新调度")
+            hallResult = ReturnToHall()
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            Call WorldLog("公共超时返回大厅结果=" & hallResult & "；非成功提交")
+            Call WorldWait(1000)
+            Exit Sub
+        End If
+    End If
+    If currentTask = 92 And yskNoRestartPending Then
+        yskNoRestartPending = False
+        Exit Sub
+    End If
+    If currentTask = 15 And geneNoRestartPending Then
+        geneNoRestartPending = False
+        Call WorldLog("原公共超时配置不重启；大厅未确认，保留公共恢复，不提交")
+        Exit Sub
+    End If
     Call Note("[流程] 调度出口 业务未提交成功，进入恢复")
     If currentTask = 81 And duelTimedOut And Not duelRestartOnTimeout Then
         If Sys.IsRunning(GAME_PACKAGE) Then

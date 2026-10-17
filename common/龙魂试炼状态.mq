@@ -1,0 +1,92 @@
+﻿Sub LoadSoulSettings()
+    soulEnabled = WorldBoolean("SlLh")
+End Sub
+Sub NewSoulSession()
+    soulDue = Time()
+    soulDone = False
+    soulAbandoned = False
+    soulCount = 0
+    soulRecoveries = 0
+    soulRestarts = 0
+    soulPhase = "未开始"
+    soulReason = ""
+    soulExitKind = 0
+    soulFinishedAt = 0
+    soulNativeTimeout = False
+End Sub
+Function SelectSoul()
+    SelectSoul = 0
+    If soulEnabled And Not soulDone And Not soulAbandoned And Time() >= soulDue Then
+        SelectSoul = 14
+    End If
+End Function
+Sub StartSoulTask()
+    soulReason = ""
+    soulExitKind = 0
+    soulFinishedAt = 0
+    soulNativeTimeout = False
+    Call WorldStage("龙魂试炼启动")
+End Sub
+Sub RecoverSoulTask()
+    soulRecoveries = soulRecoveries + 1
+    If soulNativeTimeout Then
+        soulCount = soulCount + 1
+        soulDue = soulFinishedAt + 65
+        soulAbandoned = soulCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & soulCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留14，不计次、不改期")
+    End If
+    If soulAbandoned Then
+        resumeTask = 0
+    End If
+    soulNativeTimeout = False
+    soulExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartSoulTask()
+    soulRestarts = soulRestarts + 1
+    Call WorldLog("公共重启恢复14 次数=" & soulRestarts)
+End Sub
+Sub CommitSoulTask()
+    If soulExitKind = 1 Or soulExitKind = 5 Then
+        soulDone = True
+    ElseIf soulExitKind = 2 Then
+        soulDue = soulFinishedAt + 65
+    ElseIf soulExitKind = 4 Then
+        soulCount = soulCount + 1
+        soulDue = soulFinishedAt + 65
+        soulDone = soulCount >= 5
+    End If
+    soulExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & soulCount & " 下次Unix=" & soulDue)
+End Sub
+Function ResetSoulTimer()
+    ResetSoulTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetSoulTimer = True
+End Function
+Function ConfirmSoulExit(reason, exitKind)
+    ConfirmSoulExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    soulReason = reason
+    soulExitKind = exitKind
+    soulFinishedAt = Time()
+    If exitKind = 3 Then
+        soulNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 And exitKind <> 5 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmSoulExit = RESULT_OK
+End Function

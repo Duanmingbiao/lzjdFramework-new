@@ -1,0 +1,19 @@
+{
+  "scope": "MQ source executed with mocked APIs; not official MQ compilation or device execution",
+  "tests": 1191,
+  "failures": [
+    {
+      "test": "test_build_and_assistant_protected_files_unchanged (test_duel.DuelTests.test_build_and_assistant_protected_files_unchanged)",
+      "detail": "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_duel.py\", line 256, in test_build_and_assistant_protected_files_unchanged\n    for p,h in base.items():self.assertEqual(hashlib.sha256(Path(p).read_bytes()).hexdigest(),h,p)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: '17ba26f2f61afdfe2e1e727f32735cfca6f4c979d0a8617fe63b460029dbd0b2' != '242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f'\n- 17ba26f2f61afdfe2e1e727f32735cfca6f4c979d0a8617fe63b460029dbd0b2\n+ 242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f\n : D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip\n"
+    },
+    {
+      "test": "test_protected_build_and_assistant_unchanged (test_frieza.FriezaTests.test_protected_build_and_assistant_unchanged)",
+      "detail": "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_frieza.py\", line 241, in test_protected_build_and_assistant_unchanged\n    for p,h in baseline.items():self.assertEqual(hashlib.sha256(Path(p).read_bytes()).hexdigest(),h,p)\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: '17ba26f2f61afdfe2e1e727f32735cfca6f4c979d0a8617fe63b460029dbd0b2' != '242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f'\n- 17ba26f2f61afdfe2e1e727f32735cfca6f4c979d0a8617fe63b460029dbd0b2\n+ 242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f\n : D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip\n"
+    },
+    {
+      "test": "test_no_build_or_sync_artifact_changed (test_memory.MemoryTests.test_no_build_or_sync_artifact_changed)",
+      "detail": "Traceback (most recent call last):\n  File \"D:\\game\\anjian-new\\validation\\test_memory.py\", line 226, in test_no_build_or_sync_artifact_changed\n    for path,digest in baseline.items():self.assertEqual(hashlib.sha256(Path(path).read_bytes()).hexdigest(),digest,path)\n                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: '17ba26f2f61afdfe2e1e727f32735cfca6f4c979d0a8617fe63b460029dbd0b2' != '242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f'\n- 17ba26f2f61afdfe2e1e727f32735cfca6f4c979d0a8617fe63b460029dbd0b2\n+ 242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f\n : D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).uip\n"
+    }
+  ],
+  "errors": []
+}

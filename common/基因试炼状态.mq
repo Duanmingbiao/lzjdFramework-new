@@ -1,0 +1,134 @@
+﻿Sub LoadGeneSettings()
+    Dim raw
+    geneEnabled = WorldBoolean("SlJyin")
+    raw = ReadUIConfig("设置_重要_闪退", True)
+    geneRestartOnTimeout = True
+    If Not IsNull(raw) Then
+        geneRestartOnTimeout = LCase(Trim(CStr(raw))) = "true" Or Trim(CStr(raw)) = "1"
+    End If
+End Sub
+Sub NewGeneSession()
+    geneDue = Time()
+    geneDone = False
+    geneAbandoned = False
+    geneCount = 0
+    geneRecoveries = 0
+    geneRestarts = 0
+    genePhase = "未开始"
+    geneReason = ""
+    geneExitKind = 0
+    geneFinishedAt = 0
+    geneNativeTimeout = False
+    geneFailures = 0
+    geneForcedRecovery = False
+    geneNoRestartPending = False
+    genePickIndex = 0
+    geneClickAt = 0
+    geneActionAt = 0
+    geneSpecialExit = False
+End Sub
+Function SelectGene()
+    SelectGene = 0
+    If geneEnabled And Not geneDone And Not geneAbandoned And Time() >= geneDue Then
+        SelectGene = 15
+    End If
+End Function
+Sub StartGeneTask()
+    geneForcedRecovery = False
+    geneNoRestartPending = False
+    geneReason = ""
+    geneExitKind = 0
+    geneFinishedAt = 0
+    geneNativeTimeout = False
+    Call WorldStage("基因试炼启动")
+End Sub
+Sub RecoverGeneTask()
+    geneRecoveries = geneRecoveries + 1
+    If geneForcedRecovery Then
+        Call WorldLog("原公共超时失败次数=" & geneFailures & "；不按原业务出口计次")
+    ElseIf geneNativeTimeout Then
+        geneCount = geneCount + 1
+        geneDue = geneFinishedAt + 65
+        geneAbandoned = geneCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & geneCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留15，不计次、不改期")
+    End If
+    If geneAbandoned Then
+        resumeTask = 0
+    End If
+    geneForcedRecovery = False
+    geneNativeTimeout = False
+    geneExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartGeneTask()
+    geneRestarts = geneRestarts + 1
+    Call WorldLog("公共重启恢复15 次数=" & geneRestarts)
+End Sub
+Sub CommitGeneTask()
+    If geneExitKind = 1 Or geneExitKind = 5 Then
+        geneDone = True
+    ElseIf geneExitKind = 2 Then
+        geneDue = geneFinishedAt + 65
+    ElseIf geneExitKind = 4 Then
+        geneCount = geneCount + 1
+        geneDue = geneFinishedAt + 65
+        geneDone = geneCount >= 5
+    End If
+    geneExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & geneCount & " 下次Unix=" & geneDue)
+End Sub
+Function ResetGeneTimer()
+    ResetGeneTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetGeneTimer = True
+End Function
+Function ConfirmGeneExit(reason, exitKind)
+    ConfirmGeneExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    geneReason = reason
+    geneExitKind = exitKind
+    geneFinishedAt = Time()
+    If exitKind = 3 Then
+        geneNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 And exitKind <> 5 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmGeneExit = RESULT_OK
+End Function
+Function GeneForcedTimeout()
+    Dim hallResult
+    GeneForcedTimeout = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    geneFailures = geneFailures + 1
+    If geneFailures >= 3 Then
+        geneAbandoned = True
+    End If
+    Call WorldLog("原图色调用公共超时处理；失败次数=" & geneFailures & "；非成功出口")
+    If Not ResetGeneTimer() Then
+        Exit Function
+    End If
+    If Sys.IsRunning(GAME_PACKAGE) And Not geneRestartOnTimeout Then
+        hallResult = ReturnToHall()
+        If hallResult = RESULT_OK Then
+            GeneForcedTimeout = RESULT_OK
+            Exit Function
+        End If
+        geneNoRestartPending = True
+    End If
+    geneForcedRecovery = True
+End Function

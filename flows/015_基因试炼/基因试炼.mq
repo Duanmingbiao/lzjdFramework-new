@@ -1,0 +1,723 @@
+﻿Function GenePointX(kind, pointIndex)
+    GenePointX = 0
+    If kind = 1 Then
+        If pointIndex = 1 Then
+            GenePointX = 45
+        ElseIf pointIndex = 2 Then
+            GenePointX = 145
+        ElseIf pointIndex = 3 Then
+            GenePointX = 240
+        ElseIf pointIndex = 4 Then
+            GenePointX = 330
+        ElseIf pointIndex = 5 Then
+            GenePointX = 430
+        ElseIf pointIndex = 6 Then
+            GenePointX = 515
+        ElseIf pointIndex = 7 Then
+            GenePointX = 45
+        ElseIf pointIndex = 8 Then
+            GenePointX = 145
+        ElseIf pointIndex = 9 Then
+            GenePointX = 240
+        ElseIf pointIndex = 10 Then
+            GenePointX = 330
+        ElseIf pointIndex = 11 Then
+            GenePointX = 430
+        ElseIf pointIndex = 12 Then
+            GenePointX = 515
+        ElseIf pointIndex = 13 Then
+            GenePointX = 45
+        ElseIf pointIndex = 14 Then
+            GenePointX = 145
+        ElseIf pointIndex = 15 Then
+            GenePointX = 240
+        ElseIf pointIndex = 16 Then
+            GenePointX = 330
+        ElseIf pointIndex = 17 Then
+            GenePointX = 430
+        ElseIf pointIndex = 18 Then
+            GenePointX = 515
+        End If
+    ElseIf kind = 2 Then
+        If pointIndex = 1 Then
+            GenePointX = 45
+        ElseIf pointIndex = 2 Then
+            GenePointX = 145
+        ElseIf pointIndex = 3 Then
+            GenePointX = 240
+        ElseIf pointIndex = 4 Then
+            GenePointX = 330
+        ElseIf pointIndex = 5 Then
+            GenePointX = 430
+        ElseIf pointIndex = 6 Then
+            GenePointX = 515
+        ElseIf pointIndex = 7 Then
+            GenePointX = 45
+        ElseIf pointIndex = 8 Then
+            GenePointX = 145
+        ElseIf pointIndex = 9 Then
+            GenePointX = 240
+        ElseIf pointIndex = 10 Then
+            GenePointX = 330
+        ElseIf pointIndex = 11 Then
+            GenePointX = 430
+        ElseIf pointIndex = 12 Then
+            GenePointX = 515
+        ElseIf pointIndex = 13 Then
+            GenePointX = 45
+        ElseIf pointIndex = 14 Then
+            GenePointX = 145
+        ElseIf pointIndex = 15 Then
+            GenePointX = 240
+        ElseIf pointIndex = 16 Then
+            GenePointX = 330
+        ElseIf pointIndex = 17 Then
+            GenePointX = 430
+        ElseIf pointIndex = 18 Then
+            GenePointX = 515
+        End If
+    ElseIf kind = 3 Then
+        If pointIndex = 1 Then
+            GenePointX = 45
+        ElseIf pointIndex = 2 Then
+            GenePointX = 145
+        ElseIf pointIndex = 3 Then
+            GenePointX = 240
+        ElseIf pointIndex = 4 Then
+            GenePointX = 330
+        ElseIf pointIndex = 5 Then
+            GenePointX = 430
+        ElseIf pointIndex = 6 Then
+            GenePointX = 515
+        ElseIf pointIndex = 7 Then
+            GenePointX = 45
+        ElseIf pointIndex = 8 Then
+            GenePointX = 145
+        ElseIf pointIndex = 9 Then
+            GenePointX = 240
+        ElseIf pointIndex = 10 Then
+            GenePointX = 330
+        ElseIf pointIndex = 11 Then
+            GenePointX = 430
+        ElseIf pointIndex = 12 Then
+            GenePointX = 515
+        ElseIf pointIndex = 13 Then
+            GenePointX = 45
+        ElseIf pointIndex = 14 Then
+            GenePointX = 145
+        ElseIf pointIndex = 15 Then
+            GenePointX = 240
+        ElseIf pointIndex = 16 Then
+            GenePointX = 330
+        ElseIf pointIndex = 17 Then
+            GenePointX = 430
+        ElseIf pointIndex = 18 Then
+            GenePointX = 515
+        End If
+    End If
+End Function
+Function GenePointY(kind, pointIndex)
+    GenePointY = 0
+    If kind = 1 Then
+        If pointIndex = 1 Then
+            GenePointY = -460
+        ElseIf pointIndex = 2 Then
+            GenePointY = -460
+        ElseIf pointIndex = 3 Then
+            GenePointY = -460
+        ElseIf pointIndex = 4 Then
+            GenePointY = -460
+        ElseIf pointIndex = 5 Then
+            GenePointY = -460
+        ElseIf pointIndex = 6 Then
+            GenePointY = -460
+        ElseIf pointIndex = 7 Then
+            GenePointY = -320
+        ElseIf pointIndex = 8 Then
+            GenePointY = -320
+        ElseIf pointIndex = 9 Then
+            GenePointY = -320
+        ElseIf pointIndex = 10 Then
+            GenePointY = -320
+        ElseIf pointIndex = 11 Then
+            GenePointY = -320
+        ElseIf pointIndex = 12 Then
+            GenePointY = -320
+        ElseIf pointIndex = 13 Then
+            GenePointY = -180
+        ElseIf pointIndex = 14 Then
+            GenePointY = -180
+        ElseIf pointIndex = 15 Then
+            GenePointY = -180
+        ElseIf pointIndex = 16 Then
+            GenePointY = -180
+        ElseIf pointIndex = 17 Then
+            GenePointY = -180
+        ElseIf pointIndex = 18 Then
+            GenePointY = -180
+        End If
+    ElseIf kind = 2 Then
+        If pointIndex = 1 Then
+            GenePointY = -320
+        ElseIf pointIndex = 2 Then
+            GenePointY = -320
+        ElseIf pointIndex = 3 Then
+            GenePointY = -320
+        ElseIf pointIndex = 4 Then
+            GenePointY = -320
+        ElseIf pointIndex = 5 Then
+            GenePointY = -320
+        ElseIf pointIndex = 6 Then
+            GenePointY = -320
+        ElseIf pointIndex = 7 Then
+            GenePointY = -460
+        ElseIf pointIndex = 8 Then
+            GenePointY = -460
+        ElseIf pointIndex = 9 Then
+            GenePointY = -460
+        ElseIf pointIndex = 10 Then
+            GenePointY = -460
+        ElseIf pointIndex = 11 Then
+            GenePointY = -460
+        ElseIf pointIndex = 12 Then
+            GenePointY = -460
+        ElseIf pointIndex = 13 Then
+            GenePointY = -180
+        ElseIf pointIndex = 14 Then
+            GenePointY = -180
+        ElseIf pointIndex = 15 Then
+            GenePointY = -180
+        ElseIf pointIndex = 16 Then
+            GenePointY = -180
+        ElseIf pointIndex = 17 Then
+            GenePointY = -180
+        ElseIf pointIndex = 18 Then
+            GenePointY = -180
+        End If
+    ElseIf kind = 3 Then
+        If pointIndex = 1 Then
+            GenePointY = -180
+        ElseIf pointIndex = 2 Then
+            GenePointY = -180
+        ElseIf pointIndex = 3 Then
+            GenePointY = -180
+        ElseIf pointIndex = 4 Then
+            GenePointY = -180
+        ElseIf pointIndex = 5 Then
+            GenePointY = -180
+        ElseIf pointIndex = 6 Then
+            GenePointY = -180
+        ElseIf pointIndex = 7 Then
+            GenePointY = -460
+        ElseIf pointIndex = 8 Then
+            GenePointY = -460
+        ElseIf pointIndex = 9 Then
+            GenePointY = -460
+        ElseIf pointIndex = 10 Then
+            GenePointY = -460
+        ElseIf pointIndex = 11 Then
+            GenePointY = -460
+        ElseIf pointIndex = 12 Then
+            GenePointY = -460
+        ElseIf pointIndex = 13 Then
+            GenePointY = -320
+        ElseIf pointIndex = 14 Then
+            GenePointY = -320
+        ElseIf pointIndex = 15 Then
+            GenePointY = -320
+        ElseIf pointIndex = 16 Then
+            GenePointY = -320
+        ElseIf pointIndex = 17 Then
+            GenePointY = -320
+        ElseIf pointIndex = 18 Then
+            GenePointY = -320
+        End If
+    End If
+End Function
+
+Function GenePick(kind)
+    GenePick = RESULT_TIMEOUT
+    genePickIndex = genePickIndex + 1
+    If genePickIndex <= 18 Then
+        If Not ResetGeneTimer() Then
+            Exit Function
+        End If
+        If Not WorldOffset(GenePointX(kind, genePickIndex), GenePointY(kind, genePickIndex), 1000) Then
+            Exit Function
+        End If
+    Else
+        If Not WorldOffset(249, -24, 0) Then
+            Exit Function
+        End If
+    End If
+    geneActionAt = TickCount()
+    GenePick = RESULT_OK
+End Function
+Function GeneRapidClicks()
+    Dim clickAt, ax, ay, i
+    GeneRapidClicks = RESULT_TIMEOUT
+    // The native operation is an auto-clicking Find2; capture and tap exactly once per hit.
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("015_P20") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            geneClickAt = TickCount()
+            geneActionAt = TickCount()
+            If Not GeneWait(10) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - geneClickAt > 3500 Then
+            Exit Do
+        End If
+    Loop
+    geneActionAt = TickCount()
+    geneClickAt = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("015_P21") Then
+            ax = foundX
+            ay = foundY
+            For i = 1 To 70
+                If Not WorldTap(ax, ay - 24, 0) Then
+                    Exit Function
+                End If
+                If Not GeneWait(70) Then
+                    Exit Function
+                End If
+                geneClickAt = TickCount()
+            Next
+            geneActionAt = TickCount()
+        End If
+        If TickCount() - geneClickAt > 12000 Then
+            geneActionAt = TickCount()
+            GeneRapidClicks = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function GeneSpecialEvents()
+    GeneSpecialEvents = RESULT_TIMEOUT
+    geneSpecialExit = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If WorldMatch("015_P15") Then
+        If GenePick(1) <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P16") Then
+        If GenePick(2) <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P17") Then
+        If GenePick(3) <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P18") Then
+        If Not WorldOffset(0, 0, 200) Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P19") Then
+        If GeneForcedTimeout() <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P20") Then
+        If GeneRapidClicks() <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If WorldMatch("015_P22") Then
+        If Not WorldTap(150, 50, 0) Then
+            Exit Function
+        End If
+        geneSpecialExit = True
+        geneActionAt = TickCount()
+    End If
+    GeneSpecialEvents = RESULT_OK
+End Function
+
+Function GeneTrialScrollDown()
+    GeneTrialScrollDown = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 1000, 370, 300, 300
+    GeneTrialScrollDown = True
+End Function
+Function GeneWait(waitMs)
+    GeneWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    GeneWait = Not BusinessExpired()
+End Function
+Function GeneTrialKnown()
+    GeneTrialKnown = True
+    If WorldMatch("015_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P34") Then
+        Exit Function
+    End If
+    GeneTrialKnown = False
+End Function
+Function GeneHallKnown()
+    GeneHallKnown = True
+    If WorldMatch("015_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P32") Then
+        Exit Function
+    End If
+    GeneHallKnown = False
+End Function
+Function GeneTrialIcon()
+    GeneTrialIcon = True
+    If WorldMatch("015_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("015_P29") Then
+        Exit Function
+    End If
+    GeneTrialIcon = False
+End Function
+Function EnterGeneTrial()
+    Dim started, result
+    EnterGeneTrial = RESULT_TIMEOUT
+    Call WorldStage("基因试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If GeneTrialKnown() Then
+            EnterGeneTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not GeneWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If GeneTrialKnown() Then
+            EnterGeneTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If GeneHallKnown() Then
+            If GeneTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not GeneWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteGeneTrial()
+    ExecuteGeneTrial = RESULT_TIMEOUT
+    If EnterGeneTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteGeneTrial = RunGeneTrial()
+End Function
+
+// task15 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function GeneFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        GeneFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    GeneFilterText = output
+End Function
+Function GeneCountExhausted(value)
+    GeneCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function GeneSweepReady()
+    GeneSweepReady = True
+    If WorldMatch("015_P12") Then
+        Exit Function
+    End If
+    GeneSweepReady = WorldMatch("015_P13")
+End Function
+Function GeneEntryIcon()
+    GeneEntryIcon = True
+    If WorldMatch("015_P03") Then
+        Exit Function
+    End If
+    GeneEntryIcon = WorldMatch("015_P10")
+End Function
+Function GeneSweepResult()
+    GeneSweepResult = True
+    If WorldMatch("015_P26") Then
+        Exit Function
+    End If
+    GeneSweepResult = WorldMatch("015_P27")
+End Function
+Function GeneAutoTriple()
+    GeneAutoTriple = False
+    If WorldMatch("015_AutoReady") Then
+        GeneAutoTriple = True
+    ElseIf WorldMatch("015_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("015_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("015_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunGeneTrial()
+    Dim phase, movedAt, overallAt, text, ax, ay, countRead
+    RunGeneTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    genePickIndex = 0
+    geneClickAt = 0
+    geneSpecialExit = False
+    geneActionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetGeneTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("基因试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not GeneTrialScrollDown() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("015_P03") Then
+            ax = foundX
+            ay = foundY
+            text = GeneFilterText(TrialCountText(ax - 410, ay + 115, ax - 350, ay + 155))
+            If GeneCountExhausted(text) Then
+                RunGeneTrial = ConfirmGeneExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunGeneTrial = ConfirmGeneExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // A0=3: missing OCR is not terminal evidence and does not initially open entry.
+            If text <> "" Then
+                countRead = True
+            End If
+        End If
+        If WorldMatch("015_P06") Then
+            RunGeneTrial = ConfirmGeneExit("原基因灰色入口结束", 5)
+            Exit Function
+        End If
+        If countRead Then
+            If GeneEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not GeneWait(50) Then
+                Exit Function
+            End If
+            If GeneSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not GeneWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("015_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - geneActionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not GeneWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetGeneTimer() Then
+        Exit Function
+    End If
+    geneActionAt = TickCount()
+    geneClickAt = TickCount()
+    genePickIndex = 0
+    Call WorldStage("基因试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not GeneWait(50) Then
+            Exit Function
+        End If
+        If GeneSpecialEvents() <> RESULT_OK Then
+            Exit Function
+        End If
+        If geneSpecialExit Then
+            phase = 4
+        End If
+        If phase = 1 Then
+            If GeneSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("015_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not GeneWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetGeneTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunGeneTrial = ConfirmGeneExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunGeneTrial = ConfirmGeneExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("015_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                geneActionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("015_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            geneActionAt = TickCount()
+        End If
+        If WorldMatch("015_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            geneActionAt = TickCount()
+        End If
+        If WorldMatch("015_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not GeneWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunGeneTrial = ConfirmGeneExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If GeneSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not GeneWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If GeneAutoTriple() Then
+            If Not ResetGeneTimer() Then
+                Exit Function
+            End If
+            geneActionAt = TickCount()
+            If Not GeneWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - geneActionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunGeneTrial = ConfirmGeneExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function

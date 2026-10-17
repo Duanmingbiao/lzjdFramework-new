@@ -1,7 +1,25 @@
 ﻿Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 150 Then
+    If taskId = 92 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteYskTrial()
+    ElseIf taskId = 16 Then
+        terminalConfirmed = False
+        DispatchTask = ExecutePartnerTrial()
+    ElseIf taskId = 15 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteGeneTrial()
+    ElseIf taskId = 14 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteSoulTrial()
+    ElseIf taskId = 13 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteExperienceTrial()
+    ElseIf taskId = 12 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteGoldTrial()
+    ElseIf taskId = 150 Then
         terminalConfirmed = False
         DispatchTask = ExecuteAdventure()
     ElseIf taskId = 155 Then

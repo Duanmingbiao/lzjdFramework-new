@@ -1,0 +1,290 @@
+[
+  {
+    "source": "root.637",
+    "line": 79,
+    "name": "012_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 106,
+    "name": "012_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 133,
+    "name": "012_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 160,
+    "name": "012_P03",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 187,
+    "name": "012_P04",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 543,
+    "name": "012_P05",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 562,
+    "name": "012_P06",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 581,
+    "name": "012_P07",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 609,
+    "name": "012_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 622,
+    "name": "012_P08",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 636,
+    "name": "012_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 649,
+    "name": "012_P09",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 663,
+    "name": "012_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 676,
+    "name": "012_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 690,
+    "name": "012_P03",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 703,
+    "name": "012_P10",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 717,
+    "name": "012_P04",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 730,
+    "name": "012_P11",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 796,
+    "name": "012_P12",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 809,
+    "name": "012_P13",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 861,
+    "name": "012_P14",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 936,
+    "name": "012_P15",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1014,
+    "name": "012_P16",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1092,
+    "name": "012_P17",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1170,
+    "name": "012_P18",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1198,
+    "name": "012_P19",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1216,
+    "name": "012_P20",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1238,
+    "name": "012_P20",
+    "autoclick": true
+  },
+  {
+    "source": "root.637",
+    "line": 1307,
+    "name": "012_P21",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1384,
+    "name": "012_P22",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1416,
+    "name": "012_P12",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1429,
+    "name": "012_P13",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1474,
+    "name": "012_P14",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1620,
+    "name": "012_P23",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1654,
+    "name": "012_P22",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1685,
+    "name": "012_P24",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1721,
+    "name": "012_P25",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1769,
+    "name": "012_P26",
+    "autoclick": false
+  },
+  {
+    "source": "root.637",
+    "line": 1782,
+    "name": "012_P27",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 21,
+    "name": "012_P28",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 34,
+    "name": "012_P29",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 47,
+    "name": "012_P30",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 60,
+    "name": "012_P31",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 73,
+    "name": "012_P32",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 84,
+    "name": "012_P33",
+    "autoclick": false
+  },
+  {
+    "source": "root.787试炼",
+    "line": 97,
+    "name": "012_P34",
+    "autoclick": false
+  },
+  {
+    "source": "root.783试炼",
+    "line": 11,
+    "name": "012_P33",
+    "autoclick": false
+  },
+  {
+    "source": "root.783试炼",
+    "line": 24,
+    "name": "012_P34",
+    "autoclick": false
+  }
+]

@@ -1,0 +1,149 @@
+﻿Function LoginExpired()
+    LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
+End Function
+Function BusinessExpired()
+    If currentTask = 92 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 16 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 15 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 14 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 13 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 12 Then
+        BusinessExpired = TrialWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 150 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 155 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 154 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 153 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 79 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 80 And friezaRunning Then
+        BusinessExpired = FriezaWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 81 And duelRunning Then
+        BusinessExpired = DuelWatchdogExpired()
+        Exit Function
+    End If
+    BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted >= businessLimit
+End Function
+Sub Progress()
+    progressAt = TickCount()
+End Sub
+
+Function IsTrialTask(taskId)
+    IsTrialTask = taskId = 12 Or taskId = 13 Or taskId = 14 Or taskId = 15 Or taskId = 16 Or taskId = 92
+End Function
+Sub NewTrialPublicSession()
+    trialPublicTimedOutTask = 0
+    trialPublicRecoveryTask = 0
+    goldFailures = 0
+    experienceFailures = 0
+    soulFailures = 0
+    partnerFailures = 0
+End Sub
+Sub BeginTrialPublicTask(taskId)
+    If IsTrialTask(taskId) Then
+        trialPublicTimedOutTask = 0
+        trialPublicRecoveryTask = 0
+    End If
+End Sub
+Function TrialWatchdogExpired()
+    TrialWatchdogExpired = False
+    If ForegroundInterrupted() Then
+        TrialWatchdogExpired = True
+        Exit Function
+    End If
+    If TickCount() - businessStarted > businessLimit Then
+        trialPublicTimedOutTask = currentTask
+        TrialWatchdogExpired = True
+    End If
+End Function
+Sub RecoverTrialPublicBoundary()
+    Dim failures
+    If Not IsTrialTask(currentTask) Then
+        Exit Sub
+    End If
+    If ForegroundInterrupted() Then
+        trialPublicTimedOutTask = 0
+        trialPublicRecoveryTask = 0
+        Exit Sub
+    End If
+    If trialPublicTimedOutTask <> currentTask Then
+        Exit Sub
+    End If
+    trialPublicTimedOutTask = 0
+    trialPublicRecoveryTask = currentTask
+    failures = 0
+    If currentTask = 12 Then
+        goldFailures = goldFailures + 1
+        failures = goldFailures
+        If failures >= 3 Then
+            goldAbandoned = True
+        End If
+    ElseIf currentTask = 13 Then
+        experienceFailures = experienceFailures + 1
+        failures = experienceFailures
+        If failures >= 3 Then
+            experienceAbandoned = True
+        End If
+    ElseIf currentTask = 14 Then
+        soulFailures = soulFailures + 1
+        failures = soulFailures
+        If failures >= 3 Then
+            soulAbandoned = True
+        End If
+    ElseIf currentTask = 15 Then
+        geneFailures = geneFailures + 1
+        failures = geneFailures
+        If failures >= 3 Then
+            geneAbandoned = True
+        End If
+    ElseIf currentTask = 16 Then
+        partnerFailures = partnerFailures + 1
+        failures = partnerFailures
+        If failures >= 3 Then
+            partnerAbandoned = True
+        End If
+    ElseIf currentTask = 92 Then
+        yskFailures = yskFailures + 1
+        failures = yskFailures
+        If failures >= 3 Then
+            yskAbandoned = True
+        End If
+    End If
+    If failures >= 3 Then
+        resumeTask = 0
+        Call WorldLog("原公共超时达到3次，失败放弃并释放后续调度；非成功")
+    End If
+    Call WorldLog("原公共超时失败次数=" & failures & "/3；不计业务完成次数、不改期65秒")
+End Sub

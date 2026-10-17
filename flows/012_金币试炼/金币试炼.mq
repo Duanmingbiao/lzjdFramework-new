@@ -1,0 +1,360 @@
+﻿Function GoldWait(waitMs)
+    GoldWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    GoldWait = Not BusinessExpired()
+End Function
+Function GoldTrialScrollUp()
+    GoldTrialScrollUp = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 300, 370, 1000, 300
+    GoldTrialScrollUp = True
+End Function
+Function GoldTrialKnown()
+    GoldTrialKnown = True
+    If WorldMatch("012_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P34") Then
+        Exit Function
+    End If
+    GoldTrialKnown = False
+End Function
+Function GoldHallKnown()
+    GoldHallKnown = True
+    If WorldMatch("012_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P32") Then
+        Exit Function
+    End If
+    GoldHallKnown = False
+End Function
+Function GoldTrialIcon()
+    GoldTrialIcon = True
+    If WorldMatch("012_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("012_P29") Then
+        Exit Function
+    End If
+    GoldTrialIcon = False
+End Function
+Function EnterGoldTrial()
+    Dim started, result
+    EnterGoldTrial = RESULT_TIMEOUT
+    Call WorldStage("金币试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If GoldTrialKnown() Then
+            EnterGoldTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not GoldWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If GoldTrialKnown() Then
+            EnterGoldTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If GoldHallKnown() Then
+            If GoldTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call AbandonTrialEntry()
+            Exit Function
+        End If
+        If Not GoldWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteGoldTrial()
+    ExecuteGoldTrial = RESULT_TIMEOUT
+    If EnterGoldTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteGoldTrial = RunGoldTrial()
+End Function
+
+// task12 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function GoldReadCount(x1, y1, x2, y2)
+    GoldReadCount = TrialCountText(x1, y1, x2, y2)
+End Function
+
+Function GoldFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        GoldFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    GoldFilterText = output
+End Function
+Function GoldCountExhausted(value)
+    GoldCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function GoldSweepReady()
+    GoldSweepReady = True
+    If WorldMatch("012_P12") Then
+        Exit Function
+    End If
+    GoldSweepReady = WorldMatch("012_P13")
+End Function
+Function GoldEntryIcon()
+    GoldEntryIcon = True
+    If WorldMatch("012_P00") Then
+        Exit Function
+    End If
+    GoldEntryIcon = WorldMatch("012_P08")
+End Function
+Function GoldSweepResult()
+    GoldSweepResult = True
+    If WorldMatch("012_P26") Then
+        Exit Function
+    End If
+    GoldSweepResult = WorldMatch("012_P27")
+End Function
+Function GoldAutoTriple()
+    GoldAutoTriple = False
+    If WorldMatch("012_AutoReady") Then
+        GoldAutoTriple = True
+    ElseIf WorldMatch("012_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("012_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("012_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunGoldTrial()
+    Dim phase, movedAt, actionAt, overallAt, text, ax, ay, countRead
+    RunGoldTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetGoldTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("金币试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not GoldTrialScrollUp() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("012_P00") Then
+            ax = foundX
+            ay = foundY
+            text = GoldFilterText(GoldReadCount(ax - 400, ay + 105, ax - 330, ay + 145))
+            If GoldCountExhausted(text) Then
+                RunGoldTrial = ConfirmGoldExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunGoldTrial = ConfirmGoldExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // VM PC533: all other recognized readings continue; empty is never a terminal proof.
+            countRead = True
+        End If
+        If countRead Then
+            If GoldEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not GoldWait(50) Then
+                Exit Function
+            End If
+            If GoldSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not GoldWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("012_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not GoldWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetGoldTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("金币试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not GoldWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If GoldSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("012_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not GoldWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetGoldTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunGoldTrial = ConfirmGoldExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunGoldTrial = ConfirmGoldExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("012_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("012_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("012_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("012_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not GoldWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunGoldTrial = ConfirmGoldExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If GoldSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not GoldWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If GoldAutoTriple() Then
+            If Not ResetGoldTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not GoldWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunGoldTrial = ConfirmGoldExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function

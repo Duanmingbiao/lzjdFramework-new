@@ -1,4 +1,10 @@
 ﻿Sub RegisterTasks()
+    Call Note("注册异时空试炼92；原SlYsk时长与间隔配置；原多点找色")
+    Call Note("注册伙伴试炼16；原SlHb配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册基因试炼15；原SlJyin配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册龙魂试炼14；原SlLh配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册经验试炼13；原SlJyan配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册金币试炼12；原SlJb配置；3.8旧OCR兼容，非同引擎")
     Call Note("注册龙珠大冒险150；原许愿和养成升级，原8小时间隔")
     Call Note("注册蛇道155；原配置、普通困难列表、雇佣旧OCR兼容")
     Call Note("注册种仙豆154；原单开关、06:00日程、收取及金币升级")
@@ -25,6 +31,30 @@ End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
+    If resumeTask = 13 Then
+        SelectDueTask = 13
+        Exit Function
+    End If
+    If resumeTask = 92 Then
+        SelectDueTask = 92
+        Exit Function
+    End If
+    If resumeTask = 16 Then
+        SelectDueTask = 16
+        Exit Function
+    End If
+    If resumeTask = 15 Then
+        SelectDueTask = 15
+        Exit Function
+    End If
+    If resumeTask = 14 Then
+        SelectDueTask = 14
+        Exit Function
+    End If
+    If resumeTask = 12 Then
+        SelectDueTask = 12
+        Exit Function
+    End If
     If resumeTask = 150 Then
         SelectDueTask = 150
         Exit Function
@@ -66,6 +96,31 @@ Function SelectDueTask()
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    selected = SelectGold()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectExperience()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectSoul()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectGene()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectPartner()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
     End If
     selected = SelectWorldBoss()
     If selected <> 0 Then
@@ -123,6 +178,11 @@ Function SelectDueTask()
         Exit Function
     End If
     selected = SelectMemory()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectYsk()
     If selected <> 0 Then
         SelectDueTask = selected
         Exit Function

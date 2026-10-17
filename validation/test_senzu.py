@@ -87,7 +87,7 @@ class SenzuTests(unittest.TestCase):
   self.assertLess(ui.index('日常功能:{'),ui.index('名称:"日常_悟空送仙豆"'))
  def test_catalog_append_only_and_original_raw_colors(self):
   before=json.loads((ROOT/'reports/悟空送仙豆接入-20261017/before/图色参数.json').read_text('utf8'))
-  now=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf8')) if not r['name'].startswith(('150_','155_','154_'))]
+  now=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf8')) if not r['name'].startswith(('092_','016_','015_','014_','013_','012_','150_','155_','154_'))]
   self.assertEqual(now[:-26],before)
   raw=(ROOT/'flows/153_悟空送仙豆/evidence/root711静态重建.txt').read_text('utf8')
   colors=re.findall(r'L\d+_1 = "([0-9A-F]{6}-[0-9A-F]{6})"\n\s*L\d+_1 = "([^"\n]+)"',raw)
@@ -96,8 +96,8 @@ class SenzuTests(unittest.TestCase):
  def test_business_integration_and_built_artifacts_unchanged(self):
   backup=ROOT/'reports/悟空送仙豆接入-20261017/before'
   cfg=json.loads((ROOT/'project.json').read_text('utf8'));old=json.loads((backup/'project.json').read_text('utf8'))
-  self.assertEqual([t for t in cfg['registeredTasks'] if t not in (150,154,155)],old['registeredTasks']+[153])
-  self.assertEqual([p for p in cfg['modules'] if p not in ['common/龙珠大冒险状态.mq','flows/150_龙珠大冒险/龙珠大冒险.mq','common/种仙豆状态.mq','flows/154_种仙豆/种仙豆.mq','common/蛇道状态.mq','flows/155_蛇道/蛇道.mq']],old['modules']+['common/悟空送仙豆状态.mq','flows/153_悟空送仙豆/悟空送仙豆.mq'])
+  self.assertEqual([t for t in cfg['registeredTasks'] if t not in (92,16,15,14,13,12,150,154,155)],old['registeredTasks']+[153])
+  self.assertEqual([p for p in cfg['modules'] if p not in ['common/异时空试炼状态.mq','flows/092_异时空试炼/异时空试炼.mq','common/伙伴试炼状态.mq','flows/016_伙伴试炼/伙伴试炼.mq','common/基因试炼状态.mq','flows/015_基因试炼/基因试炼.mq','common/龙魂试炼状态.mq','flows/014_龙魂试炼/龙魂试炼.mq','common/经验试炼状态.mq','flows/013_经验试炼/经验试炼.mq','common/金币试炼状态.mq','flows/012_金币试炼/金币试炼.mq','common/龙珠大冒险状态.mq','flows/150_龙珠大冒险/龙珠大冒险.mq','common/种仙豆状态.mq','flows/154_种仙豆/种仙豆.mq','common/蛇道状态.mq','flows/155_蛇道/蛇道.mq']],old['modules']+['common/悟空送仙豆状态.mq','flows/153_悟空送仙豆/悟空送仙豆.mq'])
  def test_consumption_exit_wins_over_fifth_refresh(self):
   self.f.visible={'153_P13'}
   def after(*a):
@@ -109,7 +109,7 @@ class SenzuTests(unittest.TestCase):
   before=controls((ROOT/'reports/悟空送仙豆接入-20261017/before/ui/最小配置.uip').read_text('utf-8-sig'))
   after=controls((ROOT/'ui/最小配置.uip').read_text('utf-8-sig'))
   self.assertEqual({k:after[k] for k in before},before)
-  self.assertEqual(set(after)-set(before),{'日常_悟空送仙豆','日常_种仙豆','Lzdmx','Lzdmx许愿'} | {'日常_蛇道_困难关卡', '日常_蛇道_跳过动画', '日常_蛇道_普通关卡', '日常_蛇道_补打', '日常_蛇道_特殊效果', '日常_蛇道', '日常_蛇道_雇佣战士_个', '日常_蛇道_时间', '日常_蛇道_分钟', '日常_蛇道_雇佣战士_位置', '日常_蛇道_模式', '日常_蛇道_失败次数', '日常_蛇道_雇佣战士_行'})
+  self.assertEqual(set(after)-set(before),{'SlYsk','SlYsk挑战时长','SlYsk间隔','SlHb','SlJyin','SlLh','SlJyan','SlJb','日常_悟空送仙豆','日常_种仙豆','Lzdmx','Lzdmx许愿'} | {'日常_蛇道_困难关卡', '日常_蛇道_跳过动画', '日常_蛇道_普通关卡', '日常_蛇道_补打', '日常_蛇道_特殊效果', '日常_蛇道', '日常_蛇道_雇佣战士_个', '日常_蛇道_时间', '日常_蛇道_分钟', '日常_蛇道_雇佣战士_位置', '日常_蛇道_模式', '日常_蛇道_失败次数', '日常_蛇道_雇佣战士_行'})
  def test_all_named_matches_exist_and_preserve_mq_definitions(self):
   records=json.loads((ROOT/'flows/153_悟空送仙豆/evidence/图色转换.json').read_text('utf8'));names={r['name'] for r in records}
   flow=(ROOT/'flows/153_悟空送仙豆/悟空送仙豆.mq').read_text('utf-8-sig')

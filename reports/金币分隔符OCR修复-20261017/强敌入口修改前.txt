@@ -1,0 +1,170 @@
+﻿Function WorldMatch(name)
+    Dim token, matched
+    matched = MatchPattern(name)
+    WorldMatch = matched
+    If matched Then
+        token = name & ":" & foundX & "," & foundY
+        If token <> worldLastMatch Then
+            Call WorldLog("命中模板=" & name & " 锚点=" & foundX & "," & foundY & " 图色区域方向相似度=见登记")
+            worldLastMatch = token
+        End If
+    End If
+End Function
+Function WorldPair(base)
+    Dim name
+    WorldPair = True
+    name = base & "一"
+    If WorldMatch(name) Then
+        Exit Function
+    End If
+    name = base & "二"
+    WorldPair = WorldMatch(name)
+End Function
+Function WorldTap(x, y, waitMs)
+    WorldTap = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldLog("点击坐标=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    WorldTap = Not BusinessExpired()
+End Function
+Sub WorldWait(waitMs)
+    Call WorldLog("等待毫秒=" & waitMs)
+    Delay waitMs
+End Sub
+Function WorldOffset(dx, dy, waitMs)
+    Call WorldLog("点击偏移=" & dx & "," & dy)
+    WorldOffset = WorldTap(foundX + dx, foundY + dy, waitMs)
+End Function
+Function WorldText(x1, y1, x2, y2)
+    Dim text, token
+    ReleaseCapture
+    text = Image.OcrText(x1, y1, x2, y2, 0, 0)
+    If IsNull(text) Then
+        text = ""
+    End If
+    token = x1 & "," & y1 & "," & x2 & "," & y2 & ":" & text
+    If token <> worldLastOcr Then
+        Call WorldLog("OCR区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 文本=" & text)
+        worldLastOcr = token
+    End If
+    WorldText = text
+End Function
+Sub WorldResourcePrompt()
+    Dim x, y, text, clicked
+    If Not worldKeepDownload Then
+        If WorldMatch("强敌_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = WorldText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                clicked = WorldTap(x, y, 0)
+            End If
+            text = WorldText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                clicked = WorldTap(x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function EnemyHallKnown()
+    EnemyHallKnown = True
+    If WorldPair("强敌_大厅") Then
+        Exit Function
+    End If
+    EnemyHallKnown = WorldMatch("强敌_大厅底部")
+End Function
+Function EnterEnemyHall()
+    Dim started, result, clicked
+    EnterEnemyHall = RESULT_TIMEOUT
+    started = TickCount()
+    Call WorldStage("强敌入侵入口")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=强敌入口公共超时或前台中断；未提交")
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldPair("强敌_目标") Then
+            EnterEnemyHall = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        Call WorldLog("入口公共返回大厅结果=" & result)
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If EnemyHallKnown() Then
+            If WorldPair("强敌_入口") Then
+                clicked = WorldOffset(0, 0, 1500)
+                If Not clicked Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If Not Sys.AppIsFront(GAME_PACKAGE) Or BusinessExpired() Then
+                    Exit Function
+                End If
+                ReleaseCapture
+                Call WorldLog("大厅滑动=150,545到500,545 时长=300 等待毫秒=0")
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("超时原因=强敌入口60秒；恢复原任务，不标完成")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+
+// 3.8 compatible numeric fallback, original trial ROI and original red color only.
+// Keep general OCR first: numeric OCR must not replace cooldown/title text OCR.
+Function TrialCountText(x1, y1, x2, y2)
+    Dim text, raw
+    TrialCountText = ""
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    text = WorldText(x1, y1, x2, y2)
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialCountText = text
+    If Not IsNull(text) Then
+        If text <> "" Then
+            Exit Function
+        End If
+    End If
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    ReleaseCapture
+    raw = SmartOcr(x1, y1, x2, y2, "0000E9-101010")
+    TrialCountText = ""
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    If Not IsNull(raw) Then
+        TrialCountText = CStr(raw)
+    End If
+    text = ""
+    If Not IsNull(raw) Then
+        text = CStr(raw)
+    End If
+    Call WorldLog("3.8数字OCR补识别 区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " BGR=0000E9-101010 文本=[" & text & "]；空值不是耗尽")
+End Function

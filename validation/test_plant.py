@@ -75,7 +75,7 @@ class PlantTests(unittest.TestCase):
   self.assertEqual((fg.e['plantCount'],fg.e['plantRecoveries'],fg.e['plantRestarts']),(0,1,1))
  def test_raw_colors_append_only_and_coin_similarity095(self):
   records=json.loads((ROOT/'flows/154_种仙豆/evidence/图色转换.json').read_text('utf8'));self.assertEqual(len(records),9)
-  old=json.loads((ROOT/'reports/种仙豆接入-20261017/before/图色参数.json').read_text('utf8'));now=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf8')) if not r['name'].startswith(('150_','155_'))];self.assertEqual(now,old+records)
+  old=json.loads((ROOT/'reports/种仙豆接入-20261017/before/图色参数.json').read_text('utf8'));now=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf8')) if not r['name'].startswith(('092_','016_','015_','014_','013_','012_','150_','155_'))];self.assertEqual(now,old+records)
   raw=(ROOT/'flows/154_种仙豆/evidence/root713静态重建.txt').read_text('utf8')
   colors=list(dict.fromkeys(re.findall(r'L\d+_1 = "([0-9A-F]{6}-[0-9A-F]{6})"\n\s*L\d+_1 = "([^"\n]+)"',raw)))
   self.assertEqual([(r['definition'][4],r['definition'][5]) for r in records[:7]],colors)
@@ -83,7 +83,7 @@ class PlantTests(unittest.TestCase):
  def test_ui_only_original_checkbox_added_default_off(self):
   def controls(t):return {re.search('名称:"([^"]+)"',body)[1]:(kind,body) for kind,body in re.findall(r'(输入框|下拉框|多选框):\{([^{}]+)\}',t)}
   before=controls((ROOT/'reports/种仙豆接入-20261017/before/ui/最小配置.uip').read_text('utf-8-sig'));after=controls((ROOT/'ui/最小配置.uip').read_text('utf-8-sig'))
-  self.assertEqual({k:after[k] for k in before},before);self.assertEqual(set(after)-set(before),{'日常_种仙豆','Lzdmx','Lzdmx许愿'} | {'日常_蛇道_困难关卡', '日常_蛇道_跳过动画', '日常_蛇道_普通关卡', '日常_蛇道_补打', '日常_蛇道_特殊效果', '日常_蛇道', '日常_蛇道_雇佣战士_个', '日常_蛇道_时间', '日常_蛇道_分钟', '日常_蛇道_雇佣战士_位置', '日常_蛇道_模式', '日常_蛇道_失败次数', '日常_蛇道_雇佣战士_行'});self.assertIn('选中:false',after['日常_种仙豆'][1])
+  self.assertEqual({k:after[k] for k in before},before);self.assertEqual(set(after)-set(before),{'SlYsk','SlYsk挑战时长','SlYsk间隔','SlHb','SlJyin','SlLh','SlJyan','SlJb','日常_种仙豆','Lzdmx','Lzdmx许愿'} | {'日常_蛇道_困难关卡', '日常_蛇道_跳过动画', '日常_蛇道_普通关卡', '日常_蛇道_补打', '日常_蛇道_特殊效果', '日常_蛇道', '日常_蛇道_雇佣战士_个', '日常_蛇道_时间', '日常_蛇道_分钟', '日常_蛇道_雇佣战士_位置', '日常_蛇道_模式', '日常_蛇道_失败次数', '日常_蛇道_雇佣战士_行'});self.assertIn('选中:false',after['日常_种仙豆'][1])
  def test_no_new_apis_or_public_mutation_and_unique_registration(self):
   flow=(ROOT/'flows/154_种仙豆/种仙豆.mq').read_text('utf-8-sig');self.assertNotRegex(flow,r'OcrEx|paddle|Image\.Ocr|CommitTask|KillApp|RunApp|businessStarted\s*=')
   cfg=json.loads((ROOT/'project.json').read_text('utf8'));self.assertEqual(cfg['registeredTasks'].count(154),1)

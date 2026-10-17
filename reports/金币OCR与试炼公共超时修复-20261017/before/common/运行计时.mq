@@ -1,0 +1,61 @@
+﻿Function LoginExpired()
+    LoginExpired = ForegroundInterrupted() Or TickCount() - loginStarted >= loginLimit
+End Function
+Function BusinessExpired()
+    If currentTask = 92 Then
+        BusinessExpired = ForegroundInterrupted()
+        Exit Function
+    End If
+    If currentTask = 16 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 15 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 14 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 13 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 12 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 150 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 155 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 154 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 153 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 79 Then
+        BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted > businessLimit
+        Exit Function
+    End If
+    If currentTask = 80 And friezaRunning Then
+        BusinessExpired = FriezaWatchdogExpired()
+        Exit Function
+    End If
+    If currentTask = 81 And duelRunning Then
+        BusinessExpired = DuelWatchdogExpired()
+        Exit Function
+    End If
+    BusinessExpired = ForegroundInterrupted() Or TickCount() - businessStarted >= businessLimit
+End Function
+Sub Progress()
+    progressAt = TickCount()
+End Sub

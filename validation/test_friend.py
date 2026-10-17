@@ -39,6 +39,6 @@ class FriendFlow(unittest.TestCase):
    for p in (ROOT/'flows'/folder).glob('*.mq'):
     old=E/'before'/p.relative_to(ROOT).with_suffix('.txt');self.assertEqual(p.read_bytes(),old.read_bytes())
  def test_catalog_append_only_exact_conversion(self):
-  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('150_','155_','154_','153_','081_','080_','082_','079_','078_','056_','050_','151_','152_','070_','032_','强敌_','083_','084_','085_'))]
+  old=json.loads((E/'before/evidence/图色参数.json').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('092_','016_','015_','014_','013_','012_','150_','155_','154_','153_','081_','080_','082_','079_','078_','056_','050_','151_','152_','070_','032_','强敌_','083_','084_','085_'))]
   self.assertEqual(now[:-2],old)
   converted=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual([x['definition'] for x in now[-2:]],[x['definition'] for x in converted])

@@ -140,7 +140,7 @@ class SnakeTests(unittest.TestCase):
   load(['common/蛇道状态.mq'],fg.e);fg.e['NewSnakeSession']();fg.e['SaveCurrentTask'](155);fg.request()
   self.assertTrue(fg.e['HandleForegroundRecovery']());self.assertEqual(fg.e['SelectDueTask'](),155);self.assertEqual((fg.e['snakeCount'],fg.e['snakeRecoveries'],fg.e['snakeRestarts']),(0,1,1))
  def test_catalog_append_only_and_all_actual_definitions(self):
-  records=json.loads((E/'图色转换.json').read_text('utf8'));before=json.loads((ROOT/'reports/蛇道接入-20261017/before/图色参数-安装前恢复用.json').read_text('utf8'));now=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf8')) if not r['name'].startswith('150_')]
+  records=json.loads((E/'图色转换.json').read_text('utf8'));before=json.loads((ROOT/'reports/蛇道接入-20261017/before/图色参数-安装前恢复用.json').read_text('utf8'));now=[r for r in json.loads((ROOT/'evidence/图色参数.json').read_text('utf8')) if not r['name'].startswith(('092_','016_','015_','014_','013_','012_','150_'))]
   self.assertEqual(now,before+records);self.assertEqual(len(records),64)
   mq=(ROOT/'common/图色参数.mq').read_text('utf-8-sig')
   for r in records:
@@ -156,7 +156,7 @@ class SnakeTests(unittest.TestCase):
   self.assertEqual(sorted(map(int,re.findall(r'snakeFloor = (\d+)',flow))),[1]+list(range(1,16)))
  def test_original_ui13_no_changes_to_previous_controls(self):
   def controls(t):return {re.search('名称:"([^"]+)"',body)[1]:(kind,body) for kind,body in re.findall(r'(输入框|下拉框|多选框):\{([^{}]+)\}',t)}
-  before=controls((ROOT/'reports/蛇道接入-20261017/before/ui/最小配置.uip').read_text('utf-8-sig'));after={k:v for k,v in controls((ROOT/'ui/最小配置.uip').read_text('utf-8-sig')).items() if k not in ['Lzdmx','Lzdmx许愿']};original=controls((E/'原界面配置.uip.txt').read_text('utf8'))
+  before=controls((ROOT/'reports/蛇道接入-20261017/before/ui/最小配置.uip').read_text('utf-8-sig'));after={k:v for k,v in controls((ROOT/'ui/最小配置.uip').read_text('utf-8-sig')).items() if k not in ['SlYsk','SlYsk挑战时长','SlYsk间隔','SlHb','SlJyin','SlLh','SlJyan','SlJb','Lzdmx','Lzdmx许愿']};original=controls((E/'原界面配置.uip.txt').read_text('utf8'))
   self.assertEqual({k:after[k] for k in before},before);self.assertEqual(set(after)-set(before),set(KEYS));self.assertEqual({k:after[k] for k in KEYS},original)
   self.assertTrue(all('选中:false' in body for kind,body in after.values() if kind=='多选框'))
  def test_only_registered_once_no_new_engine_or_external_actions(self):

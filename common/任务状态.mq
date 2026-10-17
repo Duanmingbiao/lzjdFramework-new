@@ -1,4 +1,11 @@
 ﻿Sub NewSession()
+    Call NewTrialPublicSession()
+    Call NewGoldSession()
+    Call NewSoulSession()
+    Call NewGeneSession()
+    Call NewPartnerSession()
+    Call NewYskSession()
+    Call NewExperienceSession()
     Call NewAdventureSession()
     Call NewSnakeSession()
     Call NewPlantSession()
@@ -84,9 +91,28 @@
 End Sub
 Sub SaveCurrentTask(taskId)
     Call Note("[流程] 入口 SaveCurrentTask")
+    Call BeginTrialPublicTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 13 Then
+        Call StartExperienceTask()
+    End If
+    If taskId = 92 Then
+        Call StartYskTask()
+    End If
+    If taskId = 16 Then
+        Call StartPartnerTask()
+    End If
+    If taskId = 15 Then
+        Call StartGeneTask()
+    End If
+    If taskId = 14 Then
+        Call StartSoulTask()
+    End If
+    If taskId = 12 Then
+        Call StartGoldTask()
+    End If
     If taskId = 150 Then
         Call StartAdventureTask()
     End If
@@ -172,6 +198,25 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
+    Call RecoverTrialPublicBoundary()
+    If currentTask = 13 Then
+        Call RecoverExperienceTask()
+    End If
+    If currentTask = 92 Then
+        Call RecoverYskTask()
+    End If
+    If currentTask = 16 Then
+        Call RecoverPartnerTask()
+    End If
+    If currentTask = 15 Then
+        Call RecoverGeneTask()
+    End If
+    If currentTask = 14 Then
+        Call RecoverSoulTask()
+    End If
+    If currentTask = 12 Then
+        Call RecoverGoldTask()
+    End If
     If currentTask = 150 Then
         Call RecoverAdventureTask()
     End If
@@ -263,7 +308,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
+    If currentTask <> 92 And currentTask <> 16 And currentTask <> 15 And currentTask <> 14 And currentTask <> 13 And currentTask <> 12 And currentTask <> 150 And currentTask <> 155 And currentTask <> 154 And currentTask <> 153 And currentTask <> 81 And currentTask <> 80 And currentTask <> 82 And currentTask <> 79 And currentTask <> 78 And currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -279,7 +324,19 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 150 Then
+    If currentTask = 92 Then
+        Call CommitYskTask()
+    ElseIf currentTask = 16 Then
+        Call CommitPartnerTask()
+    ElseIf currentTask = 15 Then
+        Call CommitGeneTask()
+    ElseIf currentTask = 14 Then
+        Call CommitSoulTask()
+    ElseIf currentTask = 13 Then
+        Call CommitExperienceTask()
+    ElseIf currentTask = 12 Then
+        Call CommitGoldTask()
+    ElseIf currentTask = 150 Then
         Call CommitAdventureTask()
     ElseIf currentTask = 155 Then
         Call CommitSnakeTask()

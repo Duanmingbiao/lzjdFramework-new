@@ -1,0 +1,68 @@
+[
+  {
+    "source": "root.638",
+    "line": 50,
+    "name": "092_P00",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 96,
+    "name": "092_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 295,
+    "name": "092_P01",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 357,
+    "name": "092_P02",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 415,
+    "name": "092_P03",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 468,
+    "name": "092_P04",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 531,
+    "name": "092_P05",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 583,
+    "name": "092_P06",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 610,
+    "name": "092_P07",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 623,
+    "name": "092_P08",
+    "autoclick": false
+  },
+  {
+    "source": "root.638",
+    "line": 708,
+    "name": "092_P09",
+    "autoclick": false
+  }
+]

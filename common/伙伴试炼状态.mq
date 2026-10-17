@@ -1,0 +1,92 @@
+﻿Sub LoadPartnerSettings()
+    partnerEnabled = WorldBoolean("SlHb")
+End Sub
+Sub NewPartnerSession()
+    partnerDue = Time()
+    partnerDone = False
+    partnerAbandoned = False
+    partnerCount = 0
+    partnerRecoveries = 0
+    partnerRestarts = 0
+    partnerPhase = "未开始"
+    partnerReason = ""
+    partnerExitKind = 0
+    partnerFinishedAt = 0
+    partnerNativeTimeout = False
+End Sub
+Function SelectPartner()
+    SelectPartner = 0
+    If partnerEnabled And Not partnerDone And Not partnerAbandoned And Time() >= partnerDue Then
+        SelectPartner = 16
+    End If
+End Function
+Sub StartPartnerTask()
+    partnerReason = ""
+    partnerExitKind = 0
+    partnerFinishedAt = 0
+    partnerNativeTimeout = False
+    Call WorldStage("伙伴试炼启动")
+End Sub
+Sub RecoverPartnerTask()
+    partnerRecoveries = partnerRecoveries + 1
+    If partnerNativeTimeout Then
+        partnerCount = partnerCount + 1
+        partnerDue = partnerFinishedAt + 65
+        partnerAbandoned = partnerCount >= 5
+        resumeTask = 0
+        Call WorldLog("原业务超时计次并延后65秒；非胜利、非成功提交 次数=" & partnerCount)
+    Else
+        Call WorldLog("前台或公共边界恢复；保留16，不计次、不改期")
+    End If
+    If partnerAbandoned Then
+        resumeTask = 0
+    End If
+    partnerNativeTimeout = False
+    partnerExitKind = 0
+    terminalConfirmed = False
+End Sub
+Sub RestartPartnerTask()
+    partnerRestarts = partnerRestarts + 1
+    Call WorldLog("公共重启恢复16 次数=" & partnerRestarts)
+End Sub
+Sub CommitPartnerTask()
+    If partnerExitKind = 1 Or partnerExitKind = 5 Then
+        partnerDone = True
+    ElseIf partnerExitKind = 2 Then
+        partnerDue = partnerFinishedAt + 65
+    ElseIf partnerExitKind = 4 Then
+        partnerCount = partnerCount + 1
+        partnerDue = partnerFinishedAt + 65
+        partnerDone = partnerCount >= 5
+    End If
+    partnerExitKind = 0
+    Call WorldLog("大厅连续确认后提交原出口；次数=" & partnerCount & " 下次Unix=" & partnerDue)
+End Sub
+Function ResetPartnerTimer()
+    ResetPartnerTimer = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    businessStarted = TickCount()
+    ResetPartnerTimer = True
+End Function
+Function ConfirmPartnerExit(reason, exitKind)
+    ConfirmPartnerExit = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    partnerReason = reason
+    partnerExitKind = exitKind
+    partnerFinishedAt = Time()
+    If exitKind = 3 Then
+        partnerNativeTimeout = True
+        Call WorldLog("原超时出口=" & reason & "；交公共恢复，不标成功")
+        Exit Function
+    End If
+    If exitKind <> 1 And exitKind <> 2 And exitKind <> 4 And exitKind <> 5 Then
+        Exit Function
+    End If
+    terminalConfirmed = True
+    Call WorldLog("原出口=" & reason & "；尚未提交，等待大厅连续确认")
+    ConfirmPartnerExit = RESULT_OK
+End Function

@@ -1,0 +1,100 @@
+﻿Sub LoadYskSettings()
+    Dim raw
+    yskEnabled = WorldBoolean("SlYsk")
+    yskMinutes = -1
+    raw = ReadUIConfig("SlYsk挑战时长", "2")
+    If IsNumeric(raw) Then
+        yskMinutes = Int(CDbl(raw))
+    End If
+    yskInterval = -1
+    raw = ReadUIConfig("SlYsk间隔", "30")
+    If IsNumeric(raw) Then
+        yskInterval = Int(CDbl(raw))
+    End If
+    yskRestartOnTimeout = WorldBoolean("设置_重要_闪退")
+End Sub
+Sub NewYskSession()
+    yskDue = Time()
+    yskDone = False
+    yskAbandoned = False
+    yskAttackAt = 0
+    yskAttackStarted = False
+    yskHasCoin = True
+    yskPhase = "未开始"
+    yskExitKind = 0
+    yskFailures = 0
+    yskRecoveries = 0
+    yskRestarts = 0
+    yskFinishedAt = 0
+    yskNativeTimeout = False
+    yskNoRestartPending = False
+End Sub
+Function SelectYsk()
+    SelectYsk = 0
+    If yskEnabled And Not yskDone And Not yskAbandoned And Time() >= yskDue Then
+        SelectYsk = 92
+    End If
+End Function
+Sub StartYskTask()
+    yskExitKind = 0
+    yskNativeTimeout = False
+    yskNoRestartPending = False
+    Call WorldStage("异时空试炼启动")
+End Sub
+Sub RecoverYskTask()
+    yskRecoveries = yskRecoveries + 1
+    If yskNativeTimeout Then
+        yskFailures = yskFailures + 1
+        yskAbandoned = yskFailures >= 3
+        If yskAbandoned Then
+            resumeTask = 0
+        End If
+    End If
+    If yskAbandoned Then
+        resumeTask = 0
+    End If
+    yskExitKind = 0
+    yskNativeTimeout = False
+    terminalConfirmed = False
+    Call WorldLog("保留原攻打时间恢复；失败次数=" & yskFailures)
+End Sub
+Sub RestartYskTask()
+    yskRestarts = yskRestarts + 1
+    Call WorldLog("公共重启恢复92 次数=" & yskRestarts)
+End Sub
+Sub CommitYskTask()
+    If yskExitKind = 1 Then
+        yskDone = True
+    ElseIf yskExitKind = 2 Then
+        If yskInterval = -1 Then
+            yskDue = yskFinishedAt + 300
+        Else
+            yskDue = yskFinishedAt + yskInterval * 60
+        End If
+        yskAttackAt = 0
+        yskAttackStarted = False
+        yskHasCoin = True
+        yskDone = False
+    End If
+    yskExitKind = 0
+    Call WorldLog("大厅连续确认后提交；下次Unix=" & yskDue)
+End Sub
+Function YskFinish(hasCoin)
+    YskFinish = RESULT_TIMEOUT
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If Not YskWait(2000) Then
+        Exit Function
+    End If
+    yskFinishedAt = Time()
+    If hasCoin Then
+        yskExitKind = 2
+        Call WorldLog("仍有兑换币，本次结束，按原间隔再执行")
+    Else
+        yskExitKind = 1
+        Call WorldLog("原结算五次找色未见兑换币，今日结束")
+    End If
+    terminalConfirmed = True
+    YskFinish = RESULT_OK
+End Function

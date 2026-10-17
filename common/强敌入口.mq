@@ -128,3 +128,243 @@ Function EnterEnemyHall()
         Delay 20
     Loop
 End Function
+
+// 3.8 compatible numeric fallback, original trial ROI and original red color only.
+// Keep general OCR first: numeric OCR must not replace cooldown/title text OCR.
+Function TrialCountText(x1, y1, x2, y2)
+    Dim text, raw, verified
+    TrialCountText = ""
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    text = WorldText(x1, y1, x2, y2)
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialCountText = text
+    If Not IsNull(text) Then
+        If text <> "" And Not TrialMayBeExhausted(text) Then
+            Exit Function
+        End If
+    End If
+    // Discard the unverified candidate before any interrupt/deadline early return.
+    TrialCountText = ""
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    ReleaseCapture
+    KeepCapture
+    raw = SmartOcr(x1, y1, x2, y2, "0000E9-101010")
+    verified = TrialSeparatedCount(x1, y1, x2, y2)
+    ReleaseCapture
+    TrialCountText = ""
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialCountText = verified
+    text = ""
+    If Not IsNull(raw) Then
+        text = CStr(raw)
+    End If
+    Call WorldLog("3.8分隔符OCR 区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 原数字OCR=[" & text & "] 核验结果=[" & verified & "]；空值或无斜线证据不是耗尽")
+End Function
+
+Function TrialMayBeExhausted(value)
+    Dim text, digits, i
+    text = Replace(value, "/", "")
+    text = Replace(text, "|", "")
+    text = Replace(text, " ", "")
+    text = Replace(text, Chr(9), "")
+    text = Replace(text, Chr(10), "")
+    text = Replace(text, Chr(13), "")
+    TrialMayBeExhausted = text = "02" Or text = "03" Or text = "04" Or text = "05" Or text = "012" Or text = "013" Or text = "014" Or text = "015"
+    // Preserve original cooldowns and explicit positive fractions, but a bare
+    // number (073, 65465, missing denominator, etc.) also needs segmentation.
+    If InStr(1, text, "00") > 0 Or InStr(1, value, "/") > 0 Or InStr(1, value, "|") > 0 Then
+        Exit Function
+    End If
+    digits = text
+    For i = 0 To 9
+        digits = Replace(digits, Chr(48 + i), "")
+    Next
+    If text <> "" And digits = "" Then
+        TrialMayBeExhausted = True
+    End If
+End Function
+
+// All probes below use the caller's one frozen frame, original ROI and red tolerance.
+// A whole-ROI SmartOcr value (including 073) is diagnostic only, never terminal proof.
+Function TrialRedColumn(x, y1, y2)
+    Dim px, py, hit
+    px = -1
+    py = -1
+    hit = FindColor(x, y1, x, y2, "0000E9-101010", 0, 1, px, py)
+    TrialRedColumn = hit > -1
+End Function
+Function TrialRedPixel(x, y)
+    Dim color, r, g, b
+    color = GetPixelColor(x, y, 1)
+    r = color Mod 256
+    g = Int(color / 256) Mod 256
+    b = Int(color / 65536)
+    TrialRedPixel = r >= 217 And r <= 249 And g >= 0 And g <= 16 And b >= 0 And b <= 16
+End Function
+Function TrialSlashKnown(x1, y1, x2, y2)
+    Dim x, y, hits, firstX, lastX, firstY, lastY, rowX, rows
+    TrialSlashKnown = False
+    firstY = -1
+    lastY = -1
+    firstX = -1
+    lastX = -1
+    rows = 0
+    If x2 - x1 < 1 Or x2 - x1 > 6 Then
+        Exit Function
+    End If
+    For y = y1 To y2
+        hits = 0
+        rowX = -1
+        For x = x1 To x2
+            If TrialRedPixel(x, y) Then
+                hits = hits + 1
+                If rowX = -1 Then
+                    rowX = x
+                End If
+            End If
+        Next
+        If hits > 3 Then
+            Exit Function
+        End If
+        If hits > 0 Then
+            If firstY = -1 Then
+                firstY = y
+                firstX = rowX
+            End If
+            lastY = y
+            lastX = rowX
+            rows = rows + 1
+        End If
+    Next
+    If rows < 8 Or rows <> lastY - firstY + 1 Then
+        Exit Function
+    End If
+    If lastY - firstY > 23 Then
+        Exit Function
+    End If
+    TrialSlashKnown = firstX - lastX >= 2
+End Function
+Function TrialSeparatedCount(x1, y1, x2, y2)
+    Dim x, groups, occupied, inside, leftStart, leftEnd, slashStart, slashEnd, rightStart, rightEnd, numerator, denominator
+    TrialSeparatedCount = ""
+    groups = 0
+    inside = False
+    leftStart = -1
+    leftEnd = -1
+    slashStart = -1
+    slashEnd = -1
+    rightStart = -1
+    rightEnd = -1
+    For x = x1 To x2
+        If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+            Exit Function
+        End If
+        occupied = TrialRedColumn(x, y1, y2)
+        If occupied Then
+            If Not inside Then
+                groups = groups + 1
+            End If
+            If groups = 1 Then
+                If leftStart = -1 Then
+                    leftStart = x
+                End If
+                leftEnd = x
+            ElseIf groups = 2 Then
+                If slashStart = -1 Then
+                    slashStart = x
+                End If
+                slashEnd = x
+            Else
+                If rightStart = -1 Then
+                    rightStart = x
+                End If
+                rightEnd = x
+            End If
+        End If
+        inside = occupied
+    Next
+    If groups <> 3 And groups <> 4 Then
+        Exit Function
+    End If
+    If Not TrialSlashKnown(slashStart, y1, slashEnd, y2) Then
+        Exit Function
+    End If
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    numerator = SmartOcr(leftStart, y1, leftEnd, y2, "0000E9-101010")
+    denominator = SmartOcr(rightStart, y1, rightEnd, y2, "0000E9-101010")
+    If IsNull(numerator) Or IsNull(denominator) Then
+        Exit Function
+    End If
+    If denominator <> "2" And denominator <> "3" And denominator <> "4" And denominator <> "5" And denominator <> "12" And denominator <> "13" And denominator <> "14" And denominator <> "15" Then
+        Exit Function
+    End If
+    If numerator <> "0" And numerator <> "1" And numerator <> "2" And numerator <> "3" And numerator <> "4" And numerator <> "5" And numerator <> "6" And numerator <> "7" And numerator <> "8" And numerator <> "9" Then
+        Exit Function
+    End If
+    If numerator = "0" Then
+        If Not TrialZeroKnown(leftStart, y1, leftEnd, y2) Then
+            Exit Function
+        End If
+    End If
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    TrialSeparatedCount = numerator & "/" & denominator
+End Function
+
+// Exhaustion additionally needs a closed zero outline, not just an OCR zero.
+// Reject broken/clipped glyphs and an 8/6/9 misread as zero; unknown stays unknown.
+Function TrialZeroKnown(x1, y1, x2, y2)
+    Dim x, y, firstY, lastY, runs, inside, occupied, middle
+    TrialZeroKnown = False
+    firstY = -1
+    lastY = -1
+    If x2 - x1 < 5 Or x2 - x1 > 13 Then
+        Exit Function
+    End If
+    For y = y1 To y2
+        For x = x1 To x2
+            If TrialRedPixel(x, y) Then
+                If firstY = -1 Then
+                    firstY = y
+                End If
+                lastY = y
+            End If
+        Next
+    Next
+    If lastY - firstY < 8 Or lastY - firstY > 21 Then
+        Exit Function
+    End If
+    middle = Int((x1 + x2) / 2)
+    If Not TrialRedPixel(middle, firstY) Or Not TrialRedPixel(middle, lastY) Then
+        Exit Function
+    End If
+    For y = firstY + 2 To lastY - 2
+        runs = 0
+        inside = False
+        For x = x1 To x2
+            occupied = TrialRedPixel(x, y)
+            If occupied And Not inside Then
+                runs = runs + 1
+            End If
+            inside = occupied
+        Next
+        If runs <> 2 Or TrialRedPixel(middle, y) Then
+            Exit Function
+        End If
+    Next
+    TrialZeroKnown = True
+End Function

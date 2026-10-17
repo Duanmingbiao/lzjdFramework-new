@@ -1,0 +1,282 @@
+﻿Sub RegisterTasks()
+    Call Note("注册金币试炼12；原SlJb配置；3.8旧OCR兼容，非同引擎")
+    Call Note("注册龙珠大冒险150；原许愿和养成升级，原8小时间隔")
+    Call Note("注册蛇道155；原配置、普通困难列表、雇佣旧OCR兼容")
+    Call Note("注册种仙豆154；原单开关、06:00日程、收取及金币升级")
+    Call Note("注册悟空送仙豆153；专业版协助、运送与一小时日程")
+    earthRegisteredTask = 71
+    Call Note("注册异时空冒险：强者对决81；刷新、挑战与预言；专业版配置及公共恢复")
+    Call Note("注册异时空冒险：弗利萨军团80；旧关、新关、基地；按专业版公共超时与失败上限")
+    Call Note("注册异时空冒险：战士记忆82；专业版单勾选配置；复用公共开战失败处理")
+    namekRegisteredTask = 88
+    beyondRegisteredTask = 87
+    legendRegisteredTask = 86
+    coopRegisteredTask = 152
+    wukongRegisteredTask = 151
+    qfriendRegisteredTask = 56
+    friendRegisteredTask = 55
+    registeredTask = 168
+    rewardRegisteredTask = 169
+    signRegisteredTask = 167
+    monthRegisteredTask = 166
+    Call Note("注册异时空冒险：超宇宙战士79；可选胶囊任务；开战失败按配置处理")
+    Call Note("注册异时空冒险：战士集结78；双倍与扫荡按各自配置；复用唯一串行调度器")
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55、Q友体力56；定时体力50至54；悟空的冒险151；合作大冒险152；世界首领70和打沙鲁32；跨服世界首领83；消灭红绸军84/85；超战士传说86；激战超越极限87；那美克星组队战88；地球保卫战71；使用唯一串行调度器")
+End Sub
+Function SelectDueTask()
+    Dim selected, selectedDue
+    SelectDueTask = 0
+    If resumeTask = 12 Then
+        SelectDueTask = 12
+        Exit Function
+    End If
+    If resumeTask = 150 Then
+        SelectDueTask = 150
+        Exit Function
+    End If
+    If resumeTask = 155 Then
+        SelectDueTask = 155
+        Exit Function
+    End If
+    If resumeTask = 154 Then
+        SelectDueTask = 154
+        Exit Function
+    End If
+    If resumeTask = 153 Then
+        SelectDueTask = 153
+        Exit Function
+    End If
+    If resumeTask = 81 Then
+        SelectDueTask = 81
+        Exit Function
+    End If
+    If resumeTask = 80 Then
+        SelectDueTask = 80
+        Exit Function
+    End If
+    If resumeTask = 82 Then
+        SelectDueTask = 82
+        Exit Function
+    End If
+    If resumeTask = 79 Then
+        SelectDueTask = 79
+        Exit Function
+    End If
+    If resumeTask = 78 Then
+        SelectDueTask = 78
+        Exit Function
+    End If
+    If resumeTask = earthRegisteredTask Or resumeTask = namekRegisteredTask Or resumeTask = beyondRegisteredTask Or resumeTask = legendRegisteredTask Or resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Or resumeTask = qfriendRegisteredTask Or IsTimedStamina(resumeTask) Or resumeTask = wukongRegisteredTask Or resumeTask = coopRegisteredTask Or IsWorldBoss(resumeTask) Or resumeTask = 83 Or IsRedArmy(resumeTask) Then
+        If resumeTask <> 0 Then
+            SelectDueTask = resumeTask
+            Exit Function
+        End If
+    End If
+    selected = SelectGold()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectWorldBoss()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectEarth()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectCrossBoss()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectRedArmy()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectLegend()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectBeyond()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectNamek()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectGather()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectUniverse()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectFrieza()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectDuel()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectMemory()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectAdventure()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectSenzu()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectPlant()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectSnake()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectTimedStamina()
+    If selected <> 0 Then
+        If wukongEnabled Then
+        If TickCount() >= wukongDue Then
+            If selected = 0 Or wukongDue < selectedDue Then
+                selected = wukongRegisteredTask
+                selectedDue = wukongDue
+            End If
+        End If
+    End If
+    If coopEnabled Then
+        If TickCount() >= coopDue Then
+            If CoopTimeEligible() Then
+                If selected = 0 Or coopDue < selectedDue Then
+                    selected = coopRegisteredTask
+                End If
+            End If
+        End If
+    End If
+    SelectDueTask = selected
+        Exit Function
+    End If
+    If mailEnabled And mailFirst Then
+        SelectDueTask = registeredTask
+        Exit Function
+    End If
+    If rewardEnabled And rewardFirst Then
+        SelectDueTask = rewardRegisteredTask
+        Exit Function
+    End If
+    If signEnabled And signFirst Then
+        SelectDueTask = signRegisteredTask
+        Exit Function
+    End If
+    If monthEnabled And monthFirst Then
+        SelectDueTask = monthRegisteredTask
+        Exit Function
+    End If
+    If friendEnabled And friendFirst Then
+        SelectDueTask = friendRegisteredTask
+        Exit Function
+    End If
+    If qfriendEnabled And qfriendFirst Then
+        SelectDueTask = qfriendRegisteredTask
+        Exit Function
+    End If
+    If wukongEnabled And wukongFirst Then
+        SelectDueTask = wukongRegisteredTask
+        Exit Function
+    End If
+    If coopEnabled And coopFirst Then
+        If CoopTimeEligible() Then
+            SelectDueTask = coopRegisteredTask
+            Exit Function
+        End If
+    End If
+    selected = 0
+    selectedDue = 0
+    If mailEnabled Then
+        If TickCount() >= mailDue Then
+            selected = registeredTask
+            selectedDue = mailDue
+        End If
+    End If
+    If rewardEnabled Then
+        If TickCount() >= rewardDue Then
+            If selected = 0 Or rewardDue < selectedDue Then
+                selected = rewardRegisteredTask
+                selectedDue = rewardDue
+            End If
+        End If
+    End If
+    If signEnabled Then
+        If TickCount() >= signDue Then
+            If selected = 0 Or signDue < selectedDue Then
+                selected = signRegisteredTask
+                selectedDue = signDue
+            End If
+        End If
+    End If
+    If monthEnabled Then
+        If TickCount() >= monthDue Then
+            If selected = 0 Or monthDue < selectedDue Then
+                selected = monthRegisteredTask
+                selectedDue = monthDue
+            End If
+        End If
+    End If
+    If friendEnabled Then
+        If TickCount() >= friendDue Then
+            If selected = 0 Or friendDue < selectedDue Then
+                selected = friendRegisteredTask
+                selectedDue = friendDue
+            End If
+        End If
+    End If
+    If qfriendEnabled Then
+        If TickCount() >= qfriendDue Then
+            If selected = 0 Or qfriendDue < selectedDue Then
+                selected = qfriendRegisteredTask
+                selectedDue = qfriendDue
+            End If
+        End If
+    End If
+    If wukongEnabled Then
+        If TickCount() >= wukongDue Then
+            If selected = 0 Or wukongDue < selectedDue Then
+                selected = wukongRegisteredTask
+                selectedDue = wukongDue
+            End If
+        End If
+    End If
+    If coopEnabled Then
+        If TickCount() >= coopDue Then
+            If CoopTimeEligible() Then
+                If selected = 0 Or coopDue < selectedDue Then
+                    selected = coopRegisteredTask
+                End If
+            End If
+        End If
+    End If
+    SelectDueTask = selected
+End Function

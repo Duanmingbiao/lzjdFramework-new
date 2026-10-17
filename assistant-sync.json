@@ -3,9 +3,9 @@
   "id": "f36a80cf-4e0e-4492-ab30-c8035f412569",
   "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
   "lastSynced": {
-    ".mq": "17a0eef38ce03d74be738405ff1417f232890d73d947f44ff7314a59180fef97",
-    ".uip": "242a2e9a7172a0eea79fb20f6eb31d8417e6aeb2040c79c01a5e0831e3c64a8f",
+    ".mq": "529b9dfab1745fc6e2f642dade3971d28255c452f404852c1c480d854adbd578",
+    ".uip": "e50bad562e09feaa35dc182d5dbf106367a81325d13bd206c4398359960a6b32",
     ".prop": "ce6592ce7be925f6a8e6d4c9b4a3e923a886c43b26908adc84650d17694fe9ab"
   },
-  "validation": "Task155 and task150 entry swipe direction fixed to professional 500,545 -> 150,545 at 300ms; SHA256 sync; all checkbox defaults false; not official compilation or device execution."
+  "validation": "Legacy OCR separator and independent numerator/denominator recognition synced by SHA256; all checkbox defaults false. Existing project ID, metadata and caches preserved. Captured-pixel replay passed; native digit OCR and packaged behavior still require user testing."
 }

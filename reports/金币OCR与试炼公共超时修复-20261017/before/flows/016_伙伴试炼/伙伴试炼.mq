@@ -1,0 +1,362 @@
+﻿Function PartnerTrialScrollDown()
+    PartnerTrialScrollDown = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 1000, 370, 300, 300
+    PartnerTrialScrollDown = True
+End Function
+Function PartnerWait(waitMs)
+    PartnerWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    PartnerWait = Not BusinessExpired()
+End Function
+Function PartnerTrialKnown()
+    PartnerTrialKnown = True
+    If WorldMatch("016_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P34") Then
+        Exit Function
+    End If
+    PartnerTrialKnown = False
+End Function
+Function PartnerHallKnown()
+    PartnerHallKnown = True
+    If WorldMatch("016_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P32") Then
+        Exit Function
+    End If
+    PartnerHallKnown = False
+End Function
+Function PartnerTrialIcon()
+    PartnerTrialIcon = True
+    If WorldMatch("016_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("016_P29") Then
+        Exit Function
+    End If
+    PartnerTrialIcon = False
+End Function
+Function EnterPartnerTrial()
+    Dim started, result
+    EnterPartnerTrial = RESULT_TIMEOUT
+    Call WorldStage("伙伴试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If PartnerTrialKnown() Then
+            EnterPartnerTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not PartnerWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If PartnerTrialKnown() Then
+            EnterPartnerTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If PartnerHallKnown() Then
+            If PartnerTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("原试炼入口60秒未确认；交公共恢复，不写完成")
+            Exit Function
+        End If
+        If Not PartnerWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecutePartnerTrial()
+    ExecutePartnerTrial = RESULT_TIMEOUT
+    If EnterPartnerTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecutePartnerTrial = RunPartnerTrial()
+End Function
+
+// task16 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function PartnerFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        PartnerFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    PartnerFilterText = output
+End Function
+Function PartnerCountExhausted(value)
+    PartnerCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function PartnerSweepReady()
+    PartnerSweepReady = True
+    If WorldMatch("016_P12") Then
+        Exit Function
+    End If
+    PartnerSweepReady = WorldMatch("016_P13")
+End Function
+Function PartnerEntryIcon()
+    PartnerEntryIcon = True
+    If WorldMatch("016_P04") Then
+        Exit Function
+    End If
+    PartnerEntryIcon = WorldMatch("016_P11")
+End Function
+Function PartnerSweepResult()
+    PartnerSweepResult = True
+    If WorldMatch("016_P26") Then
+        Exit Function
+    End If
+    PartnerSweepResult = WorldMatch("016_P27")
+End Function
+Function PartnerAutoTriple()
+    PartnerAutoTriple = False
+    If WorldMatch("016_AutoReady") Then
+        PartnerAutoTriple = True
+    ElseIf WorldMatch("016_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("016_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("016_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunPartnerTrial()
+    Dim phase, movedAt, actionAt, overallAt, text, ax, ay, countRead
+    RunPartnerTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetPartnerTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("伙伴试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not PartnerTrialScrollDown() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("016_P04") Then
+            ax = foundX
+            ay = foundY
+            text = PartnerFilterText(WorldText(ax - 410, ay + 30, ax - 350, ay + 70))
+            If PartnerCountExhausted(text) Then
+                RunPartnerTrial = ConfirmPartnerExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunPartnerTrial = ConfirmPartnerExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // A0=4: missing OCR is not terminal evidence and does not initially open entry.
+            If text <> "" Then
+                countRead = True
+            End If
+        End If
+        If WorldMatch("016_P07") Then
+            RunPartnerTrial = ConfirmPartnerExit("原伙伴灰色入口结束", 5)
+            Exit Function
+        End If
+        If countRead Then
+            If PartnerEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not PartnerWait(50) Then
+                Exit Function
+            End If
+            If PartnerSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not PartnerWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("016_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not PartnerWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetPartnerTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("伙伴试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not PartnerWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If PartnerSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("016_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not PartnerWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetPartnerTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunPartnerTrial = ConfirmPartnerExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunPartnerTrial = ConfirmPartnerExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("016_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("016_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("016_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("016_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not PartnerWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunPartnerTrial = ConfirmPartnerExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If PartnerSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not PartnerWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If PartnerAutoTriple() Then
+            If Not ResetPartnerTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not PartnerWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunPartnerTrial = ConfirmPartnerExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function

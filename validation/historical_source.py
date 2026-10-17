@@ -53,6 +53,19 @@ def before_boss_native_exits_bytes(path):
  Any additional source change still fails the original hash assertion.
  """
  data=Path(path).read_bytes()
+ if Path(path)==ROOT/'common/强敌入口.mq':
+  # Undo only the exact authorized separator implementation before the existing
+  # historical OCR-addition check; unknown changes still fail the pinned hash.
+  import hashlib
+  marker=b'// 3.8 compatible numeric fallback'
+  split=data.index(marker)
+  assert hashlib.sha256(data[split:]).hexdigest()=='9ed95606c9aeb43e2cd008ac55e5f54e31bd40676ebfe44690aabaa7f78b6ecf','Unexpected separator OCR helper drift'
+  prior=(ROOT/'reports/金币分隔符OCR修复-20261017/强敌入口修改前.txt').read_bytes()
+  assert prior[:prior.index(marker)]==data[:split],'Unexpected nontrial helper drift'
+  data=prior
+  addition='\n// 3.8 compatible numeric fallback, original trial ROI and original red color only.\n// Keep general OCR first: numeric OCR must not replace cooldown/title text OCR.\nFunction TrialCountText(x1, y1, x2, y2)\n    Dim text, raw\n    TrialCountText = ""\n    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then\n        Exit Function\n    End If\n    text = WorldText(x1, y1, x2, y2)\n    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then\n        Exit Function\n    End If\n    TrialCountText = text\n    If Not IsNull(text) Then\n        If text <> "" Then\n            Exit Function\n        End If\n    End If\n    If BusinessExpired() Then\n        Exit Function\n    End If\n    If Not Sys.AppIsFront(GAME_PACKAGE) Then\n        Exit Function\n    End If\n    ReleaseCapture\n    raw = SmartOcr(x1, y1, x2, y2, "0000E9-101010")\n    TrialCountText = ""\n    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then\n        Exit Function\n    End If\n    If Not IsNull(raw) Then\n        TrialCountText = CStr(raw)\n    End If\n    text = ""\n    If Not IsNull(raw) Then\n        text = CStr(raw)\n    End If\n    Call WorldLog("3.8数字OCR补识别 区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " BGR=0000E9-101010 文本=[" & text & "]；空值不是耗尽")\nEnd Function\n'.replace('\n','\r\n').encode('utf8')
+  assert data.count(addition)==1,'Unexpected trial OCR helper drift'
+  data=data.replace(addition,b'')
  changes=[
   ('            Call WorldLog("专业版阶段出口=扫荡30秒无进展，停止扫荡并进入领奖；不是业务完成")\n            Call Progress()\n            SweepWorldBoss = RESULT_OK',
    '            Call WorldLog("超时原因=扫荡30秒无进展；不沿用原版超时后继续成功路径")'),

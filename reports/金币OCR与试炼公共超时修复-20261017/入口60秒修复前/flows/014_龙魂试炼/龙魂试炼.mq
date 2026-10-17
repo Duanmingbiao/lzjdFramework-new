@@ -1,0 +1,347 @@
+﻿Function SoulWait(waitMs)
+    SoulWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    SoulWait = Not BusinessExpired()
+End Function
+Function SoulTrialKnown()
+    SoulTrialKnown = True
+    If WorldMatch("014_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P34") Then
+        Exit Function
+    End If
+    SoulTrialKnown = False
+End Function
+Function SoulHallKnown()
+    SoulHallKnown = True
+    If WorldMatch("014_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P32") Then
+        Exit Function
+    End If
+    SoulHallKnown = False
+End Function
+Function SoulTrialIcon()
+    SoulTrialIcon = True
+    If WorldMatch("014_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("014_P29") Then
+        Exit Function
+    End If
+    SoulTrialIcon = False
+End Function
+Function EnterSoulTrial()
+    Dim started, result
+    EnterSoulTrial = RESULT_TIMEOUT
+    Call WorldStage("龙魂试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If SoulTrialKnown() Then
+            EnterSoulTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not SoulWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If SoulTrialKnown() Then
+            EnterSoulTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If SoulHallKnown() Then
+            If SoulTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("原试炼入口60秒未确认；交公共恢复，不写完成")
+            Exit Function
+        End If
+        If Not SoulWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteSoulTrial()
+    ExecuteSoulTrial = RESULT_TIMEOUT
+    If EnterSoulTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteSoulTrial = RunSoulTrial()
+End Function
+
+// task14 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function SoulFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        SoulFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    SoulFilterText = output
+End Function
+Function SoulCountExhausted(value)
+    SoulCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function SoulSweepReady()
+    SoulSweepReady = True
+    If WorldMatch("014_P12") Then
+        Exit Function
+    End If
+    SoulSweepReady = WorldMatch("014_P13")
+End Function
+Function SoulEntryIcon()
+    SoulEntryIcon = True
+    If WorldMatch("014_P02") Then
+        Exit Function
+    End If
+    SoulEntryIcon = False
+End Function
+Function SoulSweepResult()
+    SoulSweepResult = True
+    If WorldMatch("014_P26") Then
+        Exit Function
+    End If
+    SoulSweepResult = WorldMatch("014_P27")
+End Function
+Function SoulAutoTriple()
+    SoulAutoTriple = False
+    If WorldMatch("014_AutoReady") Then
+        SoulAutoTriple = True
+    ElseIf WorldMatch("014_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("014_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("014_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunSoulTrial()
+    Dim phase, actionAt, overallAt, text, ax, ay, countRead
+    RunSoulTrial = RESULT_TIMEOUT
+    phase = 0
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetSoulTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("龙魂试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("014_P02") Then
+            ax = foundX
+            ay = foundY
+            text = SoulFilterText(TrialCountText(ax - 115, ay + 108, ax - 62, ay + 134))
+            If SoulCountExhausted(text) Then
+                RunSoulTrial = ConfirmSoulExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00:") > 0 Then
+                    RunSoulTrial = ConfirmSoulExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // A0=2 VM PC250/251: missing OCR does not open the entry gate.
+            If text <> "" Then
+                countRead = True
+            End If
+        End If
+        If WorldMatch("014_P05") Then
+            RunSoulTrial = ConfirmSoulExit("原龙魂灰色入口结束", 5)
+            Exit Function
+        End If
+        If countRead Then
+            If SoulEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not SoulWait(50) Then
+                Exit Function
+            End If
+            If SoulSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not SoulWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("014_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not SoulWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetSoulTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("龙魂试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not SoulWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If SoulSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("014_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not SoulWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetSoulTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunSoulTrial = ConfirmSoulExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunSoulTrial = ConfirmSoulExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("014_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("014_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("014_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("014_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not SoulWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunSoulTrial = ConfirmSoulExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If SoulSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not SoulWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If SoulAutoTriple() Then
+            If Not ResetSoulTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not SoulWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunSoulTrial = ConfirmSoulExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function

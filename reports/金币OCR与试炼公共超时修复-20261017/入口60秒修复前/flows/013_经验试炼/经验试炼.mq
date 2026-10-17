@@ -1,0 +1,356 @@
+﻿Function ExperienceWait(waitMs)
+    ExperienceWait = False
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldWait(waitMs)
+    ExperienceWait = Not BusinessExpired()
+End Function
+Function ExperienceTrialScrollUp()
+    ExperienceTrialScrollUp = False
+    If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Exit Function
+    End If
+    Swipe 370, 300, 370, 1000, 300
+    ExperienceTrialScrollUp = True
+End Function
+Function ExperienceTrialKnown()
+    ExperienceTrialKnown = True
+    If WorldMatch("013_P33") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P34") Then
+        Exit Function
+    End If
+    ExperienceTrialKnown = False
+End Function
+Function ExperienceHallKnown()
+    ExperienceHallKnown = True
+    If WorldMatch("013_P30") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P31") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P32") Then
+        Exit Function
+    End If
+    ExperienceHallKnown = False
+End Function
+Function ExperienceTrialIcon()
+    ExperienceTrialIcon = True
+    If WorldMatch("013_P28") Then
+        Exit Function
+    End If
+    If WorldMatch("013_P29") Then
+        Exit Function
+    End If
+    ExperienceTrialIcon = False
+End Function
+Function EnterExperienceTrial()
+    Dim started, result
+    EnterExperienceTrial = RESULT_TIMEOUT
+    Call WorldStage("经验试炼公共入口")
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If ExperienceTrialKnown() Then
+            EnterExperienceTrial = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 1000 Then
+            Exit Do
+        End If
+        If Not ExperienceWait(20) Then
+            Exit Function
+        End If
+    Loop
+    result = ReturnToHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    started = TickCount()
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If ExperienceTrialKnown() Then
+            EnterExperienceTrial = RESULT_OK
+            Exit Function
+        End If
+        result = ReturnToHall()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If ExperienceHallKnown() Then
+            If ExperienceTrialIcon() Then
+                If Not WorldOffset(0, 0, 1500) Then
+                    Exit Function
+                End If
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                If BusinessExpired() Or Not Sys.AppIsFront(GAME_PACKAGE) Then
+                    Exit Function
+                End If
+                Swipe 150, 545, 500, 545, 300
+            End If
+        End If
+        If TickCount() - started > 60000 Then
+            Call WorldWait(2000)
+            Call WorldLog("原试炼入口60秒未确认；交公共恢复，不写完成")
+            Exit Function
+        End If
+        If Not ExperienceWait(20) Then
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteExperienceTrial()
+    ExecuteExperienceTrial = RESULT_TIMEOUT
+    If EnterExperienceTrial() <> RESULT_OK Then
+        Exit Function
+    End If
+    ExecuteExperienceTrial = RunExperienceTrial()
+End Function
+
+// task13 only. Original OCR regions/conditions retained; 3.8 OcrText is not paddleV5.
+Function ExperienceFilterText(value)
+    Dim output
+    output = ""
+    If IsNull(value) Then
+        ExperienceFilterText = output
+        Exit Function
+    End If
+    // Conservative old-OCR separator normalization, not the original ssUtil engine.
+    // Keep all other characters: e.g. error02 must never become an exhausted token.
+    output = Replace(value, "/", "")
+    output = Replace(output, "|", "")
+    output = Replace(output, " ", "")
+    output = Replace(output, Chr(9), "")
+    output = Replace(output, Chr(10), "")
+    output = Replace(output, Chr(13), "")
+    ExperienceFilterText = output
+End Function
+Function ExperienceCountExhausted(value)
+    ExperienceCountExhausted = value = "02" Or value = "03" Or value = "04" Or value = "05" Or value = "012" Or value = "013" Or value = "014" Or value = "015"
+End Function
+Function ExperienceSweepReady()
+    ExperienceSweepReady = True
+    If WorldMatch("013_P12") Then
+        Exit Function
+    End If
+    ExperienceSweepReady = WorldMatch("013_P13")
+End Function
+Function ExperienceEntryIcon()
+    ExperienceEntryIcon = True
+    If WorldMatch("013_P01") Then
+        Exit Function
+    End If
+    ExperienceEntryIcon = WorldMatch("013_P09")
+End Function
+Function ExperienceSweepResult()
+    ExperienceSweepResult = True
+    If WorldMatch("013_P26") Then
+        Exit Function
+    End If
+    ExperienceSweepResult = WorldMatch("013_P27")
+End Function
+Function ExperienceAutoTriple()
+    ExperienceAutoTriple = False
+    If WorldMatch("013_AutoReady") Then
+        ExperienceAutoTriple = True
+    ElseIf WorldMatch("013_AutoOff") Then
+        Call WorldOffset(-310, 170, 50)
+    ElseIf WorldMatch("013_TripleOff") Then
+        Call WorldOffset(318, 92, 50)
+    ElseIf WorldMatch("013_BattleBase") Then
+        Call WorldOffset(318, 16, 50)
+    End If
+End Function
+Function RunExperienceTrial()
+    Dim phase, movedAt, actionAt, overallAt, text, ax, ay, countRead
+    RunExperienceTrial = RESULT_TIMEOUT
+    phase = 0
+    movedAt = TickCount()
+    actionAt = TickCount()
+    overallAt = TickCount()
+    countRead = False
+    If Not ResetExperienceTimer() Then
+        Exit Function
+    End If
+    Call WorldStage("经验试炼次数与入口")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If TickCount() - movedAt > 1500 Then
+            If Not ExperienceTrialScrollUp() Then
+                Exit Function
+            End If
+            movedAt = TickCount()
+        End If
+        If WorldMatch("013_P01") Then
+            ax = foundX
+            ay = foundY
+            text = ExperienceFilterText(TrialCountText(ax - 410, ay + 100, ax - 350, ay + 140))
+            If ExperienceCountExhausted(text) Then
+                RunExperienceTrial = ConfirmExperienceExit("原次数耗尽", 1)
+                Exit Function
+            End If
+            If text <> "" Then
+                If InStr(1, text, "00") > 0 Then
+                    RunExperienceTrial = ConfirmExperienceExit("原冷却改期", 2)
+                    Exit Function
+                End If
+            End If
+            // VM PC533: all other recognized readings continue; empty is never a terminal proof.
+            countRead = True
+        End If
+        If countRead Then
+            If ExperienceEntryIcon() Then
+                If Not WorldOffset(0, 0, 50) Then
+                    Exit Function
+                End If
+            End If
+            If Not ExperienceWait(50) Then
+                Exit Function
+            End If
+            If ExperienceSweepReady() Then
+                phase = 1
+                Exit Do
+            End If
+            If Not ExperienceWait(50) Then
+                Exit Function
+            End If
+            If WorldMatch("013_P14") Then
+                phase = 2
+                Exit Do
+            End If
+            If TickCount() - actionAt > 20000 Then
+                phase = 3
+            End If
+        End If
+        If Not ExperienceWait(50) Then
+            Exit Function
+        End If
+    Loop
+    If Not ResetExperienceTimer() Then
+        Exit Function
+    End If
+    actionAt = TickCount()
+    Call WorldStage("经验试炼扫荡或挑战")
+    Do
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        If Not ExperienceWait(50) Then
+            Exit Function
+        End If
+        If phase = 1 Then
+            If ExperienceSweepReady() Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 2 Then
+            If WorldMatch("013_P14") Then
+                If Not WorldOffset(180, -252, 500) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+            If WorldMatch("152_开战图标6") Then
+                If Not WorldTap(398, 982, 500) Then
+                    Exit Function
+                End If
+                If Not WorldTap(587, 982, 500) Then
+                    Exit Function
+                End If
+                If Not ExperienceWait(500) Then
+                    Exit Function
+                End If
+                If Not ResetExperienceTimer() Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("032_少人提示") Then
+                If Not WorldOffset(0, 0, 0) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        ElseIf phase = 3 Then
+            RunExperienceTrial = ConfirmExperienceExit("原入页20秒边界", 3)
+            Exit Function
+        ElseIf phase = 4 Then
+            text = WorldText(65, 7, 247, 59)
+            If text = "试炼" Then
+                RunExperienceTrial = ConfirmExperienceExit("原试炼标题返回", 4)
+                Exit Function
+            End If
+            If WorldMatch("013_P23") Then
+                If Not WorldTap(128, 1228, 1000) Then
+                    Exit Function
+                End If
+                actionAt = TickCount()
+            End If
+        End If
+        If WorldMatch("013_P22") Then
+            If Not WorldOffset(-98, -361, 0) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("013_P24") Then
+            If Not WorldOffset(-116, -315, 500) Then
+                Exit Function
+            End If
+            phase = 4
+            actionAt = TickCount()
+        End If
+        If WorldMatch("013_P25") Then
+            ax = foundX
+            ay = foundY
+            If Not ExperienceWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            RunExperienceTrial = ConfirmExperienceExit("原战斗失败退出", 4)
+            Exit Function
+        End If
+        If ExperienceSweepResult() Then
+            ax = foundX
+            ay = foundY
+            If Not ExperienceWait(1000) Then
+                Exit Function
+            End If
+            If Not WorldTap(ax, ay, 0) Then
+                Exit Function
+            End If
+            phase = 4
+        End If
+        If ExperienceAutoTriple() Then
+            If Not ResetExperienceTimer() Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+            If Not ExperienceWait(500) Then
+                Exit Function
+            End If
+        End If
+        If TickCount() - actionAt > 35000 Or TickCount() - overallAt > 300000 Then
+            RunExperienceTrial = ConfirmExperienceExit("原35秒或300秒超时", 3)
+            Exit Function
+        End If
+    Loop
+End Function

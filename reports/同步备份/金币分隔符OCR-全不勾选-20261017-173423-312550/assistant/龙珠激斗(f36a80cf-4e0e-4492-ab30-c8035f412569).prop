@@ -1,0 +1,18 @@
+{
+   "BestResolution" : {
+      "X" : 720,
+      "Y" : 1280
+   },
+   "ChangeFileList" : 0,
+   "Description" : "完整开发工程；待助手官方编译与打包验证",
+   "FileVersion" : {
+      ".atc" : 0,
+      ".mq" : 0,
+      ".prop" : 0,
+      ".rtd" : 0,
+      ".uip" : 0,
+      ".uis" : 0
+   },
+   "Name" : "龙珠激斗",
+   "id" : "f36a80cf-4e0e-4492-ab30-c8035f412569"
+}

@@ -14,6 +14,24 @@
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If currentTask = 13 Then
+        Call RestartExperienceTask()
+    End If
+    If currentTask = 92 Then
+        Call RestartYskTask()
+    End If
+    If currentTask = 16 Then
+        Call RestartPartnerTask()
+    End If
+    If currentTask = 15 Then
+        Call RestartGeneTask()
+    End If
+    If currentTask = 14 Then
+        Call RestartSoulTask()
+    End If
+    If currentTask = 12 Then
+        Call RestartGoldTask()
+    End If
     If currentTask = 150 Then
         Call RestartAdventureTask()
     End If

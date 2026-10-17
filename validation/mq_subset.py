@@ -4,10 +4,18 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def expression(s):
  s=re.sub(r'\bAnd\b','and',s);s=re.sub(r'\bOr\b','or',s);s=re.sub(r'\bNot\b','not',s)
- s=s.replace(' & ',' + ');s=s.replace('<>','!=');s=re.sub(r'(?<![<>=!])=(?!=)','==',s)
+ s=s.replace(' & ',' + ');s=s.replace(' Mod ',' % ');s=s.replace('<>','!=');s=re.sub(r'(?<![<>=!])=(?!=)','==',s)
  return s
 
 def load(paths, env):
+ for key,value in {'KeepCapture':lambda:None,'FindColor':lambda *a:-1,'GetPixelColor':lambda *a:0,'Int':int}.items():env.setdefault(key,value)
+ for key,value in {'SmartOcr':lambda *a:'','trialPublicTimedOutTask':0,'trialPublicRecoveryTask':0,'trialRestartOnTimeout':False,'goldFailures':0,'experienceFailures':0,'soulFailures':0,'partnerFailures':0,'NewTrialPublicSession':lambda:None,'BeginTrialPublicTask':lambda *a:None,'RecoverTrialPublicBoundary':lambda:None,'IsTrialTask':lambda t:t in (12,13,14,15,16,92)}.items():env.setdefault(key,value)
+ for key,value in {'experienceEnabled':False,'NewExperienceSession':lambda:None,'LoadExperienceSettings':lambda:None,'SelectExperience':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'yskEnabled':False,'yskNoRestartPending':False,'NewYskSession':lambda:None,'LoadYskSettings':lambda:None,'SelectYsk':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'partnerEnabled':False,'NewPartnerSession':lambda:None,'LoadPartnerSettings':lambda:None,'SelectPartner':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'geneEnabled':False,'geneNoRestartPending':False,'NewGeneSession':lambda:None,'LoadGeneSettings':lambda:None,'SelectGene':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'soulEnabled':False,'NewSoulSession':lambda:None,'LoadSoulSettings':lambda:None,'SelectSoul':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'goldEnabled':False,'NewGoldSession':lambda:None,'LoadGoldSettings':lambda:None,'SelectGold':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'advEnabled':False,'NewAdventureSession':lambda:None,'LoadAdventureSettings':lambda:None,'SelectAdventure':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'snakeEnabled':False,'NewSnakeSession':lambda:None,'LoadSnakeSettings':lambda:None,'SelectSnake':lambda:0}.items():env.setdefault(key,value)
  for key,value in {'plantEnabled':False,'NewPlantSession':lambda:None,'LoadPlantSettings':lambda:None,'SelectPlant':lambda:0}.items():env.setdefault(key,value)
@@ -60,7 +68,7 @@ def load(paths, env):
    elif s.startswith('KillApp '):s='KillApp('+s[8:]+')'
    elif s.startswith(fn+' ='):s='mq_result'+s[len(fn):]
    if s.startswith('TracePrint '):s='TracePrint('+s[11:]+')'
-   if s=='ReleaseCapture':s='ReleaseCapture()'
+   if s in ('ReleaseCapture','KeepCapture'):s=s+'()'
    if s.startswith('Swipe '):s='Swipe('+s[6:]+')'
    if s.startswith('Tap '):s='Tap('+s[4:]+')'
    assignment=re.match(r'^(\w+) = (.*)$',s)
