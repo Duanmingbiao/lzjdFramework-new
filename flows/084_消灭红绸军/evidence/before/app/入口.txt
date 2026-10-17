@@ -1,0 +1,57 @@
+﻿Dim crossEnabled, crossSundayStop, crossBuyConfig, crossBuyRuntime, crossHour, crossMinute, crossDue, crossDone, crossFailed, crossCount, crossFailures, crossRestarts, crossRecoveries, crossPhase, crossTerminal, crossTerminalReason, crossFinishedAt, crossMode, crossActionAt
+Dim worldFinishedAt, cellFinishedAt
+Dim cellEncounterEnded
+Dim worldEnabled, cellEnabled, worldKeepDownload, worldBuyConfig, worldBuyRuntime, worldHour, worldMinute, worldLastMatch, worldLastOcr, worldTerminalReason, worldDue, worldDone, worldFailed, worldCount, worldFailures, worldRestarts, worldRecoveries, worldPhase, worldTerminal, cellDue, cellDone, cellFailed, cellCount, cellFailures, cellRestarts, cellRecoveries, cellPhase, cellTerminal
+Dim coopEnabled, coopKeepDownload, coopTeamMode, coopInterval, coopRegisteredTask, coopFirst, coopDue, coopDone, coopFailed, coopCount, coopFailures, coopRestarts, coopRecoveries, coopPhase, coopTerminal, coopTerminalReason, coopLastMatch, coopLastOcr, coopTimeKey
+Dim wukongLastOcr, wukongLastMatch
+Dim wukongEnabled, wukongKeepDownload, wukongHidden, wukongSweep, wukongInterval, wukongRegisteredTask, wukongFirst, wukongDue, wukongDone, wukongFailed, wukongCount, wukongFailures, wukongRestarts, wukongRecoveries, wukongPhase, wukongTerminal, wukongTerminalReason
+Dim stamina50Failed, stamina50Phase, stamina50Restarts, stamina50Recoveries, stamina51Failed, stamina51Phase, stamina51Restarts, stamina51Recoveries, stamina52Failed, stamina52Phase, stamina52Restarts, stamina52Recoveries, stamina53Failed, stamina53Phase, stamina53Restarts, stamina53Recoveries, stamina54Failed, stamina54Phase, stamina54Restarts, stamina54Recoveries
+Dim staminaKeepDownload
+Dim staminaEnabled, staminaGem, staminaRecover, staminaExchange, staminaPhase, staminaRestartCount, staminaRecoveryCount, staminaTerminal, stamina50Due, stamina50Count, stamina50Failures, stamina50Done, stamina51Due, stamina51Count, stamina51Failures, stamina51Done, stamina52Due, stamina52Count, stamina52Failures, stamina52Done, stamina53Due, stamina53Count, stamina53Failures, stamina53Done, stamina54Due, stamina54Count, stamina54Failures, stamina54Done
+Dim qfriendEnabled, qfriendOneClick, qfriendInterval, qfriendRegisteredTask, qfriendDone, qfriendFailed, qfriendCount, qfriendFailures, qfriendDue, qfriendFirst, qfriendPhase, qfriendTerminal, qfriendRecovery
+Dim friendEnabled, friendInterval, friendRegisteredTask, friendDone, friendFailed, friendCount, friendFailures, friendDue, friendFirst, friendPhase
+// 龙珠激斗脚本: independent MQ implementation. Mail168 and task rewards169 share one scheduler.
+Dim RESULT_OK, RESULT_WAIT, RESULT_FAIL, RESULT_TIMEOUT
+Dim GAME_PACKAGE, QQ_PACKAGE, stageName, foundX, foundY
+Dim mailEnabled, mailInterval, loginLimit, businessLimit, messageMode
+Dim currentTask, resumeTask, registeredTask, mailDone, mailFailed
+Dim mailCount, mailFailures, mailDue, mailFirst, mailPhase
+Dim loginStarted, businessStarted, progressAt, loginFailures
+Dim hallFrames, hallSampleAt, terminalConfirmed
+Dim qqLastForeground, qqLastDiagnosticAt
+Dim hallMisses, hallExtended, hallActionIndex, hallReturnDelaySeconds
+Dim rewardEnabled, rewardInterval, rewardRegisteredTask
+Dim rewardDone, rewardFailed, rewardCount, rewardFailures
+Dim rewardDue, rewardFirst, rewardPhase
+Dim foregroundThread, foregroundLoginPending, foregroundStartupAt
+Dim signEnabled, signInterval, signRegisteredTask
+Dim signDone, signFailed, signCount, signFailures, signDue, signFirst, signPhase
+Dim monthEnabled, monthInterval, monthRegisteredTask, monthKeepDownload
+Dim monthDone, monthFailed, monthCount, monthFailures, monthDue, monthFirst, monthPhase
+Dim monthCardType, monthlySearchDirection, activityOcrLast, activityOcrLogAt
+Call InitConstants()
+Call LoadSettings()
+Call NewSession()
+Call InitForegroundMonitor()
+Call RegisterTasks()
+If GetScreenX() <> 720 Or GetScreenY() <> 1280 Then
+    TracePrint "需要720x1280；请同时在MuMu确认320 DPI"
+    EndScript
+End If
+Call Note("新会话启动；已勾选普通任务先执行一次")
+Call Note("线程启动R2：准备调用Thread.Start")
+foregroundThread = Thread.Start(ForegroundMonitor)
+Call Note("线程启动R2：Thread.Start已返回")
+foregroundStartupAt = TickCount()
+Do While Not Thread.GetShareVar("fg.ready")
+    If TickCount() - foregroundStartupAt >= 3000 Then
+        Call Note("线程启动R2：3秒未完成首次采样，停止；检查前台日志最后一步")
+        ExitScript
+    End If
+    Delay 20
+Loop
+Call Note("线程启动R2：首次采样已确认，进入公共调度")
+Do
+    Call SchedulerStep()
+    Delay 200
+Loop

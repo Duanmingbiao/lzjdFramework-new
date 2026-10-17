@@ -1,0 +1,50 @@
+﻿{
+  "task": 83,
+  "implemented": true,
+  "staticCheck": {
+    "modules": 37,
+    "passed": true
+  },
+  "mockControlFlow": {
+    "tests": 406,
+    "crossBossTests": 38,
+    "passed": true
+  },
+  "officialCompile": false,
+  "emulatorRun": false,
+  "assistantUiOperated": false,
+  "gitCommitPush": false,
+  "protectedFilesUnchanged": {
+    "common/合作冒险状态.mq": true,
+    "common/悟空冒险状态.mq": true,
+    "common/定时体力状态.mq": true,
+    "flows/001_游戏重连/QQ登录.mq": true,
+    "flows/001_游戏重连/登录游戏.mq": true,
+    "flows/168_领邮件奖励/领邮件奖励.mq": true,
+    "flows/169_领任务奖励/领任务奖励.mq": true,
+    "flows/167_日常签到/日常签到.mq": true,
+    "flows/166_领月卡龙石/领月卡龙石.mq": true,
+    "flows/055_好友体力/好友体力.mq": true,
+    "flows/056_Q友体力/Q友体力.mq": true,
+    "flows/050_定时领取体力/定时领取体力.mq": true,
+    "flows/151_悟空的冒险/悟空的冒险.mq": true,
+    "flows/152_合作大冒险/合作大冒险.mq": true,
+    "flows/070_世界首领/世界首领.mq": true,
+    "flows/032_世界首领沙鲁/打沙鲁.mq": true
+  },
+  "worldStateOnlyNameAndStageRoutesAdded": true,
+  "sync": {
+    "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+    "exactBytesMatchAfterDelay": {
+      ".mq": true,
+      ".uip": true
+    },
+    "sha256": {
+      ".mq": "0bc91c72eb60fbfe7288afc5178252d8aaf6526a09cd59dd5362befb370c59b2",
+      ".uip": "33ab725f88b7819d3d40780e3c14b379ab618e34508d0f29aa032216b273067c"
+    }
+  },
+  "approvedTerminalCount": 4,
+  "minuteConfigFix": "root823/-1 ignores minute A1; new independent MQ honors both hour and minute as explicitly documented",
+  "professionalWeekdayProof": "root800 PC1502..1534; WeekDay7 false continues to business; not decompiler else text"
+}

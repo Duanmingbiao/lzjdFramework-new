@@ -1,0 +1,102 @@
+﻿Sub LoadEarthSettings()
+    earthEnabled = WorldBoolean("地球保卫战启用")
+    earthBuyConfig = WorldNumber("地球保卫买次数", 0, 5)
+    earthTimeMode = WorldNumber("地球保卫执行时间", 0, 4)
+End Sub
+
+Function EarthConfiguredDue(dayStart)
+    EarthConfiguredDue = dayStart + 64800
+    If earthTimeMode = 1 Then
+        EarthConfiguredDue = dayStart + 68400
+    ElseIf earthTimeMode = 2 Then
+        EarthConfiguredDue = dayStart + 72000
+    ElseIf earthTimeMode = 3 Then
+        EarthConfiguredDue = dayStart + 75000
+    ElseIf earthTimeMode = 4 Then
+        EarthConfiguredDue = dayStart
+        If dayStart = WorldDayStart(Time()) Then
+            EarthConfiguredDue = Time()
+        End If
+    End If
+End Function
+
+Sub NewEarthSession()
+    earthDue = EarthConfiguredDue(WorldDayStart(Time()))
+    earthBuyRuntime = earthBuyConfig
+    earthRuntimeDay = WorldDayStart(Time())
+    earthDone = False
+    earthFailed = False
+    earthCount = 0
+    earthFailures = 0
+    earthRestarts = 0
+    earthRecoveries = 0
+    earthPhase = "未开始"
+    earthTerminal = False
+    earthReason = ""
+    earthPrestart = False
+    earthMode = 0
+End Sub
+
+Function SelectEarth()
+    Dim dayStart
+    SelectEarth = 0
+    If Not earthEnabled Then
+        Exit Function
+    End If
+    dayStart = WorldDayStart(Time())
+    If earthRuntimeDay <> dayStart Then
+        earthBuyRuntime = earthBuyConfig
+        earthRuntimeDay = dayStart
+    End If
+    If earthDue < dayStart Then
+        earthDue = EarthConfiguredDue(dayStart)
+        earthBuyRuntime = earthBuyConfig
+    End If
+    If DateTime.WeekDay() = 1 Then
+        Exit Function
+    End If
+    If Time() >= earthDue Then
+        SelectEarth = 71
+    End If
+End Function
+
+Sub StartEarthTask()
+    earthDone = False
+    earthFailed = False
+    earthTerminal = False
+    earthReason = ""
+    earthPrestart = False
+    earthMode = 0
+    earthPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & earthRestarts & " 恢复次数=" & earthRecoveries)
+End Sub
+
+Sub RecoverEarthTask()
+    earthTerminal = False
+    earthFailed = True
+    earthFailures = earthFailures + 1
+    earthRecoveries = earthRecoveries + 1
+    earthPhase = "等待恢复"
+    Call WorldLog("保存恢复原任务=71 阶段=" & earthPhase & " 失败次数=" & earthFailures & " 恢复次数=" & earthRecoveries & " 是否提交完成=否")
+End Sub
+
+Sub RestartEarthTask()
+    earthRestarts = earthRestarts + 1
+    Call WorldLog("重启原任务=71 重启次数=" & earthRestarts & " 恢复次数=" & earthRecoveries)
+End Sub
+
+Sub CommitEarthTask()
+    Dim dayStart
+    dayStart = WorldDayStart(Time())
+    earthDone = True
+    earthFailed = False
+    earthCount = earthCount + 1
+    If Not earthPrestart And earthDue < WorldDayStart(earthDue) + 64800 Then
+        earthDue = dayStart + 64800
+    Else
+        earthDue = EarthConfiguredDue(dayStart + 86400)
+    End If
+    earthPhase = "本轮已结束"
+    Call WorldLog("是否提交完成=是 次数=" & earthCount & " 终态=" & earthReason & " 下一次执行时间Unix=" & earthDue & " 重启次数=" & earthRestarts & " 恢复次数=" & earthRecoveries)
+End Sub

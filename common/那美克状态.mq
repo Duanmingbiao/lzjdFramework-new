@@ -1,0 +1,94 @@
+﻿Sub LoadNamekSettings()
+    namekEnabled = WorldBoolean("那美克星组队战启用")
+End Sub
+
+Sub NewNamekSession()
+    namekDue = WorldDayStart(Time()) + 36005
+    namekDone = False
+    namekFailed = False
+    namekCount = 0
+    namekFailures = 0
+    namekRestarts = 0
+    namekRecoveries = 0
+    namekPhase = "未开始"
+    namekTerminal = False
+    namekReason = ""
+    namekDeferred = False
+    namekRetryAt = 0
+End Sub
+
+Function SelectNamek()
+    Dim nowStamp, dayStart
+    SelectNamek = 0
+    If Not namekEnabled Then
+        Exit Function
+    End If
+    nowStamp = Time()
+    dayStart = WorldDayStart(nowStamp)
+    If namekDue < dayStart Then
+        namekDue = dayStart + 36005
+    End If
+    If nowStamp > dayStart + 86370 Then
+        namekDue = dayStart + 122405
+        Exit Function
+    End If
+    If nowStamp >= namekDue Then
+        SelectNamek = 88
+    End If
+End Function
+
+Sub StartNamekTask()
+    namekDone = False
+    namekFailed = False
+    namekTerminal = False
+    namekDeferred = False
+    namekReason = ""
+    namekPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & namekRestarts & " 恢复次数=" & namekRecoveries)
+End Sub
+
+Sub RecoverNamekTask()
+    namekTerminal = False
+    namekDeferred = False
+    namekFailed = True
+    namekFailures = namekFailures + 1
+    namekRecoveries = namekRecoveries + 1
+    namekPhase = "等待恢复"
+    Call WorldLog("保存恢复原任务=88 阶段=" & namekPhase & " 失败次数=" & namekFailures & " 恢复次数=" & namekRecoveries & " 是否提交完成=否")
+End Sub
+
+Sub RestartNamekTask()
+    namekRestarts = namekRestarts + 1
+    Call WorldLog("重启原任务=88 重启次数=" & namekRestarts & " 恢复次数=" & namekRecoveries)
+End Sub
+
+Sub CommitNamekTask()
+    namekDone = True
+    namekFailed = False
+    namekCount = namekCount + 1
+    namekDue = WorldDayStart(Time()) + 122405
+    namekPhase = "本轮结束，等待次日10:00:05"
+    Call WorldLog("是否提交完成=是 次数=" & namekCount & " 终态=" & namekReason & " 下一次执行时间Unix=" & namekDue)
+End Sub
+
+Function ScheduleNamekRetry(hallConfirmed)
+    ScheduleNamekRetry = False
+    If currentTask <> 88 Or Not namekDeferred Or Not hallConfirmed Then
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Exit Function
+    End If
+    namekDue = namekRetryAt
+    namekDeferred = False
+    namekFailed = True
+    namekFailures = namekFailures + 1
+    namekPhase = "专业版一小时后重试"
+    Call WorldLog("待重试原因=" & namekReason & " 下一次执行时间Unix=" & namekDue & " 是否提交完成=否 完成次数=" & namekCount)
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    ScheduleNamekRetry = True
+    Call EndForegroundCommit()
+End Function

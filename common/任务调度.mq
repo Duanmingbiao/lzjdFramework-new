@@ -34,6 +34,21 @@
     businessStarted = TickCount()
     result = DispatchTask(selected)
     Call Note("[流程] DispatchTask(selected) 返回=" & result)
+    If currentTask = 88 And result = RESULT_WAIT Then
+        If namekDeferred Then
+            hallResult = ReturnToHall()
+            Call WorldLog("待重试返回大厅结果=" & hallResult & " 是否提交完成=否")
+            If HandleForegroundRecovery() Then
+                Call Note("[流程] 出口 SchedulerStep 待重试时前台恢复")
+                Exit Sub
+            End If
+            If ScheduleNamekRetry(hallResult = RESULT_OK) Then
+                Call Note("[流程] 出口 SchedulerStep 任务88已安排一小时后重试，未提交完成")
+                Exit Sub
+            End If
+            result = RESULT_TIMEOUT
+        End If
+    End If
     Do While result = RESULT_WAIT
         If BusinessExpired() Then
             result = RESULT_TIMEOUT
@@ -49,6 +64,27 @@
     If result = RESULT_OK And terminalConfirmed Then
         hallResult = ReturnToHall()
         Call Note("[流程] ReturnToHall() 返回=" & hallResult)
+        If currentTask = 71 Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If currentTask = 88 Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If currentTask = 87 Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If currentTask = 86 Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If IsRedArmy(currentTask) Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If currentTask = 83 Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If IsWorldBoss(currentTask) Then
+            Call WorldLog("返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
         If currentTask = 152 Then
             Call Note("[合作大冒险152] 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
         End If

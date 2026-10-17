@@ -1,0 +1,39 @@
+﻿Sub StartGame()
+    Call Note("[流程] 入口 StartGame")
+    If Sys.AppIsFront(QQ_PACKAGE) Or Sys.GetFront() = "com.tencent.mobileqq:openSdk" Then
+        If Sys.IsRunning(GAME_PACKAGE) Then
+            Call Note("[流程] 出口 StartGame 分支1 路径条件 Sys.IsRunning(GAME_PACKAGE)")
+            Exit Sub
+        End If
+    End If
+    If Not Sys.AppIsFront(GAME_PACKAGE) Then
+        Call BeginForegroundRecovery()
+        RunApp GAME_PACKAGE
+        Call EndForegroundRecovery()
+    End If
+    Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
+End Sub
+Sub RestartGame()
+    If currentTask = 152 Then
+        coopRestarts = coopRestarts + 1
+        Call Note("[合作大冒险152] 重启原任务=152 重启次数=" & coopRestarts & " 恢复次数=" & coopRecoveries)
+    End If
+    If currentTask = 151 Then
+        wukongRestarts = wukongRestarts + 1
+        Call Note("[悟空的冒险151] 重启原任务=151 重启次数=" & wukongRestarts & " 恢复次数=" & wukongRecoveries)
+    End If
+    If IsTimedStamina(currentTask) Then
+        Call RestartTimedStamina(currentTask)
+    End If
+    Call Note("[流程] 入口 RestartGame")
+    Call BeginForegroundRecovery()
+    foregroundLoginPending = True
+    Call Note("重启游戏；保持同一会话及待恢复业务=" & resumeTask)
+    KillApp GAME_PACKAGE
+    // New-engine process shutdown settling delay, not a recovered task delay.
+    Delay 1000
+    loginStarted = TickCount()
+    RunApp GAME_PACKAGE
+    Call EndForegroundRecovery()
+    Call Note("[流程] 出口 RestartGame 到达函数末尾（不代表任务已提交）")
+End Sub

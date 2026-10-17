@@ -1,0 +1,253 @@
+﻿Function EarthExpired()
+    Dim expired
+    expired = BusinessExpired()
+    EarthExpired = expired
+    If expired Then
+        Call WorldLog("失败或超时原因=公共业务总超时或前台中断；保存原任务=71 是否提交完成=否")
+    End If
+End Function
+
+Function ConfirmEarthTerminal(reason)
+    ConfirmEarthTerminal = RESULT_TIMEOUT
+    If EarthExpired() Then
+        Exit Function
+    End If
+    earthReason = reason
+    earthTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("正常终态=" & reason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    ConfirmEarthTerminal = RESULT_OK
+End Function
+
+Function EnterEarth()
+    Dim started, slideEnabled
+    EnterEarth = RESULT_TIMEOUT
+    started = TickCount()
+    slideEnabled = True
+    Call WorldStage("地球保卫战入口与扫荡勾选")
+    Do
+        If EarthExpired() Then
+            Exit Function
+        End If
+        If slideEnabled Then
+            Do While Not Sys.AppIsFront(GAME_PACKAGE)
+                If EarthExpired() Then
+                    Exit Function
+                End If
+                Delay 20
+            Loop
+            Call WorldLog("入口滑动=370,1000到370,300 时长=300 等待毫秒=1000")
+            Swipe 370, 1000, 370, 300, 300
+            Call WorldWait(1000)
+        End If
+        If WorldMatch("071_入口") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            started = TickCount()
+            slideEnabled = False
+        End If
+        If WorldMatch("071_未开始") Then
+            earthPrestart = True
+            EnterEarth = ConfirmEarthTerminal("专业版明确地球保卫战未开始")
+            Exit Function
+        End If
+        If WorldMatch("071_快速加入") Then
+            If Not WorldTap(360, 1100, 500) Then
+                Exit Function
+            End If
+            started = TickCount()
+        End If
+        If WorldMatch("071_聊天") Then
+            If Not WorldTap(25, 1111, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("071_未勾扫荡") Then
+            If Not WorldTap(600, 1200, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("071_已勾扫荡") Then
+            earthMode = 1
+            EnterEarth = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 20000 Then
+            Call WorldLog("失败原因=专业版入口20秒无确认；恢复71，不提交")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function BuyEarthAttempts()
+    Dim started, configured, adds, expected, popupConfigured, attempts, i, text, priceOK, x, y
+    BuyEarthAttempts = RESULT_TIMEOUT
+    If earthBuyRuntime = 0 Then
+        BuyEarthAttempts = RESULT_OK
+        Exit Function
+    End If
+    Call WorldStage("地球保卫战购买次数")
+    started = TickCount()
+    configured = earthBuyRuntime
+    adds = configured * 2 - 1
+    expected = 40
+    If configured = 2 Then
+        expected = 100
+    ElseIf configured = 3 Then
+        expected = 200
+    ElseIf configured = 4 Then
+        expected = 360
+    ElseIf configured = 5 Then
+        expected = 560
+    End If
+    popupConfigured = False
+    attempts = 0
+    Do
+        If EarthExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("071_已勾扫荡") Then
+            If Not popupConfigured Then
+                If Not WorldTap(600, 1150, 1000) Then
+                    Exit Function
+                End If
+            Else
+                BuyEarthAttempts = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If WorldMatch("071_购买弹窗") Then
+            x = foundX
+            y = foundY
+            If Not popupConfigured Then
+                For i = 1 To adds
+                    If Not WorldTap(x - 285, y + 145, 200) Then
+                        Exit Function
+                    End If
+                Next
+                Call WorldWait(1000)
+                For i = 1 To 2
+                    text = WorldText(364, 774, 422, 800)
+                    Call WorldWait(200)
+                Next
+                popupConfigured = True
+            Else
+                text = WorldText(364, 774, 422, 800)
+                priceOK = False
+                If IsNumeric(text) Then
+                    priceOK = Int(CDbl(text)) = expected
+                End If
+                If priceOK And attempts = 0 Then
+                    If Not WorldTap(x - 310, y + 324, 0) Then
+                        Exit Function
+                    End If
+                    Call WorldLog("购买确认次数=" & configured * 2 & " 识别金额=" & text)
+                Else
+                    If Not WorldTap(x - 11, y + 17, 0) Then
+                        Exit Function
+                    End If
+                    Call WorldLog("关闭购买 原始金额=" & text & " 期望金额=" & expected & " 已尝试次数=" & attempts)
+                End If
+                attempts = attempts + 1
+                Call WorldWait(1000)
+                earthBuyRuntime = 0
+            End If
+        End If
+        If TickCount() - started > 20000 Then
+            Call WorldLog("失败原因=专业版购买20秒未返回业务页面；恢复71，不提交")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function RunEarth()
+    Dim actionAt
+    RunEarth = RESULT_TIMEOUT
+    actionAt = TickCount()
+    Call WorldStage("地球保卫战扫荡与挑战")
+    Do
+        If EarthExpired() Then
+            Exit Function
+        End If
+        If earthMode = 1 Then
+            If WorldMatch("071_可扫荡") Then
+                If Not WorldTap(500, 1100, 3000) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("071_扫荡灰色") Then
+                earthMode = 2
+                Call WorldLog("扫荡灰色，进入挑战阶段；是否提交完成=否")
+            End If
+        ElseIf earthMode = 2 Then
+            If WorldMatch("071_可挑战") Then
+                If Not WorldTap(200, 1100, 3000) Then
+                    Exit Function
+                End If
+            End If
+            If WorldMatch("071_挑战灰色") Then
+                RunEarth = ConfirmEarthTerminal("专业版明确挑战灰色没有次数")
+                Exit Function
+            End If
+        End If
+        If WorldPair("071_开战") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("071_少人") Then
+            If Not WorldOffset(0, 0, 2000) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If WorldMatch("071_暂停") Then
+            If Not WorldOffset(-311, 10, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If WorldMatch("071_退出") Then
+            // Professional Find2(..., true) sends the anchor click itself.
+            If Not WorldOffset(0, 0, 2000) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If WorldMatch("071_战斗结束") Then
+            If Not WorldTap(145, 58, 200) Then
+                Exit Function
+            End If
+            actionAt = TickCount()
+        End If
+        If TickCount() - actionAt > 150000 Then
+            Call WorldLog("失败原因=专业版战斗150秒无进展；恢复71，不提交")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ExecuteEarth()
+    Dim result
+    ExecuteEarth = RESULT_TIMEOUT
+    terminalConfirmed = False
+    earthTerminal = False
+    earthPrestart = False
+    earthMode = 0
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterEarth()
+    If result <> RESULT_OK Or earthTerminal Then
+        ExecuteEarth = result
+        Exit Function
+    End If
+    result = BuyEarthAttempts()
+    If result <> RESULT_OK Then
+        ExecuteEarth = result
+        Exit Function
+    End If
+    ExecuteEarth = RunEarth()
+End Function

@@ -1,0 +1,30 @@
+{
+  "task": 86,
+  "name": "超战士传说",
+  "professionalEvidence": "V5.510 root.634",
+  "moduleCount": 41,
+  "pythonTests": 465,
+  "staticCheck": "passed",
+  "build": "passed; standard MQ/UI text only",
+  "assistantSync": {
+    "status": "verified after delayed recheck",
+    "mqSha256": "6b0e2e03876bc668816178d01adff94a9a35ebaac25207f1b8ea0f22d98a2f8f",
+    "uiSha256": "54cd5f513df1a6c769915d439a4223a984a4248bb059a31d1585fd5133962579"
+  },
+  "boundaries": {
+    "professionalBattleFailure": "recovery without commit",
+    "singleChallengeSuccess": "progress only",
+    "businessTerminals": [
+      "disabled entry",
+      "no task after one hard-mode switch",
+      "no fighter after one hard-mode switch"
+    ],
+    "autoTriple": "external professional helper parameters unavailable in root.634; pending device confirmation"
+  },
+  "notVerified": [
+    "Key Wizard Mobile Assistant 3.8 official compilation",
+    "assistant UI loading",
+    "LDPlayer real-device execution",
+    "game reward/account result"
+  ]
+}

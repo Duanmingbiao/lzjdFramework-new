@@ -1,0 +1,409 @@
+﻿Sub WukongStage(value)
+    wukongPhase = value
+    wukongLastMatch = ""
+    Call SetStage(value)
+    Call Note("[悟空的冒险151] 当前阶段=" & value)
+End Sub
+Function WukongMatch(name)
+    Dim matched, token
+    matched = MatchPattern(name)
+    WukongMatch = matched
+    If matched Then
+        token = name & ":" & foundX & "," & foundY
+        If token <> wukongLastMatch Then
+        Call Note("[悟空的冒险151] 命中模板=" & name & " 区域=见151图色登记 相似度0.9 锚点=" & foundX & "," & foundY)
+            wukongLastMatch = token
+        End If
+    End If
+End Function
+Function WukongTap(x, y, waitMs)
+    WukongTap = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Call Note("[悟空的冒险151] 失败原因=等待游戏前台时公共超时或中断；未提交")
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Call Note("[悟空的冒险151] 失败原因=动作前公共超时或中断；未提交")
+        Exit Function
+    End If
+    Call Note("[悟空的冒险151] 点击坐标=" & x & "," & y & " 等待毫秒=" & waitMs)
+    Call TouchPoint(x, y, waitMs)
+    WukongTap = Not BusinessExpired()
+End Function
+Function WukongAction(name, waitMs)
+    WukongAction = False
+    If WukongMatch(name) Then
+        Call Note("[悟空的冒险151] 点击偏移=0,0")
+        WukongAction = WukongTap(foundX, foundY, waitMs)
+    End If
+End Function
+Function WukongSwipe(x1, y1, x2, y2, duration, waitMs)
+    WukongSwipe = False
+    Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BusinessExpired() Then
+            Exit Function
+        End If
+        Delay 20
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    ReleaseCapture
+    Call Note("[悟空的冒险151] 固定滑动=" & x1 & "," & y1 & "到" & x2 & "," & y2 & " 时长=" & duration & " 等待毫秒=" & waitMs)
+    Swipe x1, y1, x2, y2, duration
+    Delay waitMs
+    WukongSwipe = Not BusinessExpired()
+End Function
+Function WukongReadText(x1, y1, x2, y2)
+    Dim text, token
+    ReleaseCapture
+    text = Image.OcrText(x1, y1, x2, y2, 0, 0)
+    If IsNull(text) Then
+        text = ""
+    End If
+    token = x1 & "," & y1 & "," & x2 & "," & y2 & ":" & text
+    If token <> wukongLastOcr Then
+    Call Note("[悟空的冒险151] OCR区域=" & x1 & "," & y1 & "," & x2 & "," & y2 & " 文本=" & text)
+        wukongLastOcr = token
+    End If
+    WukongReadText = text
+End Function
+Sub WukongResourcePrompt()
+    Dim x, y, text, clicked
+    If Not wukongKeepDownload Then
+        If WukongMatch("151_资源下载提示") Then
+            x = foundX
+            y = foundY
+            text = WukongReadText(100, 395, 317, 448)
+            If text = "下载新功能" Then
+                Call Note("[悟空的冒险151] 资源下载提示 点击偏移=0,0")
+                clicked = WukongTap(x, y, 0)
+            End If
+            text = WukongReadText(230, 615, 479, 654)
+            If text = "请在稳定网络下进行" Then
+                clicked = WukongTap(x, y, 0)
+            End If
+        End If
+    End If
+End Sub
+Function WukongEntryReached()
+    WukongEntryReached = True
+    If WukongMatch("151_入口已到一") Then
+        Exit Function
+    End If
+    If WukongMatch("151_入口已到二") Then
+        Exit Function
+    End If
+    WukongEntryReached = WukongMatch("151_隐藏界面")
+End Function
+Function WukongHallKnown()
+    WukongHallKnown = True
+    If WukongMatch("151_大厅条件一") Then
+        Exit Function
+    End If
+    If WukongMatch("151_大厅条件二") Then
+        Exit Function
+    End If
+    WukongHallKnown = WukongMatch("151_大厅底部条件")
+End Function
+Function WukongHallIcon()
+    WukongHallIcon = True
+    If WukongMatch("151_大厅入口一") Then
+        Exit Function
+    End If
+    WukongHallIcon = WukongMatch("151_大厅入口二")
+End Function
+Function EnterWukongAdventure()
+    Dim started, misses, x, y, result
+    EnterWukongAdventure = RESULT_TIMEOUT
+    started = TickCount()
+    misses = 0
+    Call WukongStage("151大厅入口")
+    Do
+        If BusinessExpired() Then
+            Call Note("[悟空的冒险151] 超时原因=大厅入口公共超时或前台中断")
+            Exit Function
+        End If
+        Call WukongResourcePrompt()
+        If WukongEntryReached() Then
+            EnterWukongAdventure = RESULT_OK
+            Exit Function
+        ElseIf misses > 10 Then
+            result = ReturnToHall()
+            Call Note("[悟空的冒险151] 入口补救返回大厅结果=" & result)
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            misses = 0
+        Else
+            misses = misses + 1
+        End If
+        If WukongHallKnown() Then
+            If WukongHallIcon() Then
+                x = foundX
+                y = foundY
+                Call Note("[悟空的冒险151] 大厅入口点击偏移=160,-60")
+                If Not WukongTap(x + 160, y - 60, 1500) Then
+                    Exit Function
+                End If
+                misses = 0
+            Else
+                result = ReturnToHall()
+                If result <> RESULT_OK Then
+                    Call Note("[悟空的冒险151] 大厅无入口时返回失败，未提交")
+                    Exit Function
+                End If
+                If Not WukongSwipe(150, 545, 500, 545, 300, 0) Then
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 300
+        If TickCount() - started > 60000 Then
+            Call Note("[悟空的冒险151] 超时原因=专业版大厅入口60秒，等待2000后恢复原151，不沿用标完成")
+            Delay 2000
+            Exit Function
+        End If
+    Loop
+End Function
+Function DetectWukongMode()
+    Dim checkedAt, oldAttempts, text
+    // Internal mode: 0 timeout, 1 sweep, 2 hidden, 3 explicit terminal.
+    DetectWukongMode = 0
+    Call WukongStage("151确认冒险界面")
+    Do
+        If BusinessExpired() Then
+            Call Note("[悟空的冒险151] 超时原因=业务页面确认未知或前台中断")
+            Exit Function
+        End If
+        Call WukongResourcePrompt()
+        If WukongMatch("151_冒险主界面") Then
+            Call Note("[悟空的冒险151] 主页面确认 等待毫秒=2000")
+            Delay 2000
+            Exit Do
+        End If
+        If WukongMatch("151_隐藏界面") Then
+            Exit Do
+        End If
+        If WukongMatch("151_过场") Then
+            Call Note("[悟空的冒险151] 过场固定点击150,50")
+            If Not WukongTap(150, 50, 200) Then
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+    Call Progress()
+    checkedAt = TickCount()
+    oldAttempts = 0
+    Call WukongStage("151扫荡资格与旧关回退")
+    Do
+        If BusinessExpired() Then
+            Call Note("[悟空的冒险151] 超时原因=扫荡资格未知或前台中断")
+            Exit Function
+        End If
+        If WukongMatch("151_可扫荡") Then
+            Delay 500
+            DetectWukongMode = 1
+            Exit Function
+        End If
+        If WukongMatch("151_隐藏界面") Then
+            DetectWukongMode = 2
+            Exit Function
+        End If
+        If WukongMatch("151_过场") Then
+            If Not WukongTap(150, 50, 200) Then
+                Exit Function
+            End If
+        End If
+        If WukongMatch("151_冒险主界面") Then
+            text = WukongReadText(361, 814, 654, 848)
+
+            If InStr(1, text, "度") > 0 Or InStr(1, text, "通关") > 0 Then
+                If wukongSweep <> 1 Or oldAttempts > 5 Then
+                    Delay 2000
+                    wukongTerminalReason = "专业版已确认当前不可扫荡；不回退或旧关回退已结束"
+                    DetectWukongMode = 3
+                    Exit Function
+                ElseIf oldAttempts = 1 Or oldAttempts = 2 Then
+                    If Not WukongSwipe(70, 150, 342, 152, 2000, 500) Then
+                        Exit Function
+                    End If
+                    oldAttempts = oldAttempts + 1
+                Else
+                    Call Note("[悟空的冒险151] 旧关回退固定点击70,150")
+                    If Not WukongTap(70, 150, 2000) Then
+                        Exit Function
+                    End If
+                    oldAttempts = oldAttempts + 1
+                End If
+            End If
+        End If
+        If TickCount() - checkedAt > 2000 Then
+            If WukongMatch("151_扫荡灰色") Then
+                Delay 500
+                wukongTerminalReason = "专业版扫荡资格阶段明确灰色终态"
+                DetectWukongMode = 3
+                Exit Function
+            End If
+        End If
+        Delay 20
+    Loop
+End Function
+Function SweepWukongAdventure()
+    Dim lastAction, grayCount
+    SweepWukongAdventure = 0
+    lastAction = TickCount()
+    grayCount = 0
+    Call WukongStage("151扫荡")
+    Do
+        If BusinessExpired() Then
+            Call Note("[悟空的冒险151] 超时原因=扫荡公共超时或前台中断")
+            Exit Function
+        End If
+        If TickCount() - lastAction > 30000 Then
+            Call Note("[悟空的冒险151] 超时原因=扫荡30秒无动作进展；未提交，恢复151")
+            Exit Function
+        End If
+        If WukongMatch("151_可扫荡") Then
+            Call Note("[悟空的冒险151] 扫荡固定点击567,800")
+            If Not WukongTap(567, 800, 500) Then
+                Exit Function
+            End If
+            lastAction = TickCount()
+        End If
+        If WukongAction("151_下一步", 500) Then
+            lastAction = TickCount()
+        End If
+        If WukongAction("151_扫荡确认", 1500) Then
+            lastAction = TickCount()
+        End If
+        If WukongMatch("151_隐藏界面") Then
+            SweepWukongAdventure = 2
+            Exit Function
+        End If
+        If TickCount() - lastAction > 2000 Then
+            If WukongMatch("151_扫荡灰色") Then
+                Delay 500
+                grayCount = grayCount + 1
+                Call Note("[悟空的冒险151] 扫荡灰色终态累计=" & grayCount)
+            End If
+        End If
+        If grayCount > 1 Then
+            wukongTerminalReason = "专业版扫荡阶段累计两次灰色终态"
+            SweepWukongAdventure = 3
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function CollectWukongAdventure()
+    Dim started, grayCount, firstClaim, acted, x, y
+    CollectWukongAdventure = RESULT_TIMEOUT
+    started = TickCount()
+    grayCount = 0
+    firstClaim = True
+    Call WukongStage("151隐藏收集")
+    Do
+        If BusinessExpired() Then
+            Call Note("[悟空的冒险151] 超时原因=隐藏收集公共超时或前台中断，未提交")
+            Exit Function
+        End If
+        acted = WukongAction("151_极品1", 1700)
+        acted = WukongAction("151_极品2", 1700)
+        acted = WukongAction("151_极品3", 1700)
+        acted = WukongAction("151_极品4", 1700)
+        acted = WukongAction("151_极品5", 1700)
+        If wukongHidden = 1 Then
+            acted = WukongAction("151_上品1", 1700)
+            acted = WukongAction("151_上品2", 1700)
+            acted = WukongAction("151_上品3", 1700)
+            acted = WukongAction("151_上品4", 1700)
+        End If
+        acted = WukongAction("151_隐藏界面", 0)
+        acted = WukongAction("151_返回弹窗一", 500)
+        If Not acted Then
+            acted = WukongAction("151_返回弹窗二", 500)
+        End If
+        If firstClaim Then
+            If WukongMatch("151_隐藏领取") Then
+                x = foundX
+                y = foundY
+                Call Note("[悟空的冒险151] 隐藏领取沿用同一锚点 点击偏移=0,0 三次等待200/200/200")
+                If Not WukongTap(x, y, 200) Then
+                    Exit Function
+                End If
+                If Not WukongTap(x, y, 200) Then
+                    Exit Function
+                End If
+                If Not WukongTap(x, y, 200) Then
+                    Exit Function
+                End If
+                firstClaim = False
+            End If
+        End If
+        If TickCount() - started > 4000 Then
+            If WukongMatch("151_扫荡灰色") Then
+                Delay 500
+                grayCount = grayCount + 1
+                Call Note("[悟空的冒险151] 隐藏灰色终态累计=" & grayCount)
+                // User-approved repair of root.712 PC1050/1051 missing exit.
+                If grayCount > 1 Then
+                    wukongTerminalReason = "用户批准的隐藏阶段累计两次灰色终态"
+                    CollectWukongAdventure = RESULT_OK
+                    Exit Function
+                End If
+            End If
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteWukongAdventure()
+    Dim mode, result, earlyTerminal
+    ExecuteWukongAdventure = RESULT_TIMEOUT
+    terminalConfirmed = False
+    wukongTerminal = False
+    wukongTerminalReason = ""
+    earlyTerminal = False
+    Call Note("[悟空的冒险151] 业务入口 开始时间Unix=" & Time() & " 隐藏选项=" & wukongHidden & " 扫荡选项=" & wukongSweep)
+    result = EnterWukongAdventure()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    mode = DetectWukongMode()
+    If mode = 0 Then
+        Exit Function
+    End If
+    If mode = 3 Then
+        earlyTerminal = True
+    Else
+        Call Progress()
+        If mode = 1 Then
+            mode = SweepWukongAdventure()
+            If mode = 0 Then
+                Exit Function
+            End If
+        End If
+        Call Progress()
+        If mode = 2 Then
+            If CollectWukongAdventure() <> RESULT_OK Then
+                Exit Function
+            End If
+        End If
+    End If
+    If Not earlyTerminal Then
+        Delay 500
+    End If
+    If BusinessExpired() Then
+        Call Note("[悟空的冒险151] 终态前公共超时或中断；不返回成功")
+        Exit Function
+    End If
+    wukongTerminal = True
+    terminalConfirmed = True
+    ExecuteWukongAdventure = RESULT_OK
+    Call WukongStage("151业务终态确认")
+    Call Note("[悟空的冒险151] 正常终态=" & wukongTerminalReason & " 等待公共返回大厅；是否提交完成=否")
+End Function

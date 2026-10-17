@@ -1,4 +1,8 @@
 ﻿Sub RegisterTasks()
+    earthRegisteredTask = 71
+    namekRegisteredTask = 88
+    beyondRegisteredTask = 87
+    legendRegisteredTask = 86
     coopRegisteredTask = 152
     wukongRegisteredTask = 151
     qfriendRegisteredTask = 56
@@ -7,16 +11,51 @@
     rewardRegisteredTask = 169
     signRegisteredTask = 167
     monthRegisteredTask = 166
-    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55、Q友体力56；定时体力50至54；悟空的冒险151；合作大冒险152；使用唯一串行调度器")
+    Call Note("注册邮件168、任务奖励169、日常签到167和月卡龙石166、好友体力55、Q友体力56；定时体力50至54；悟空的冒险151；合作大冒险152；世界首领70和打沙鲁32；跨服世界首领83；消灭红绸军84/85；超战士传说86；激战超越极限87；那美克星组队战88；地球保卫战71；使用唯一串行调度器")
 End Sub
 Function SelectDueTask()
     Dim selected, selectedDue
     SelectDueTask = 0
-    If resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Or resumeTask = qfriendRegisteredTask Or IsTimedStamina(resumeTask) Or resumeTask = wukongRegisteredTask Or resumeTask = coopRegisteredTask Then
+    If resumeTask = earthRegisteredTask Or resumeTask = namekRegisteredTask Or resumeTask = beyondRegisteredTask Or resumeTask = legendRegisteredTask Or resumeTask = registeredTask Or resumeTask = rewardRegisteredTask Or resumeTask = signRegisteredTask Or resumeTask = monthRegisteredTask Or resumeTask = friendRegisteredTask Or resumeTask = qfriendRegisteredTask Or IsTimedStamina(resumeTask) Or resumeTask = wukongRegisteredTask Or resumeTask = coopRegisteredTask Or IsWorldBoss(resumeTask) Or resumeTask = 83 Or IsRedArmy(resumeTask) Then
         If resumeTask <> 0 Then
             SelectDueTask = resumeTask
             Exit Function
         End If
+    End If
+    selected = SelectWorldBoss()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectEarth()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectCrossBoss()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectRedArmy()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectLegend()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectBeyond()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
+    End If
+    selected = SelectNamek()
+    If selected <> 0 Then
+        SelectDueTask = selected
+        Exit Function
     End If
     selected = SelectTimedStamina()
     If selected <> 0 Then

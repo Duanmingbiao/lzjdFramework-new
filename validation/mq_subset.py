@@ -4,12 +4,15 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def expression(s):
  s=re.sub(r'\bAnd\b','and',s);s=re.sub(r'\bOr\b','or',s);s=re.sub(r'\bNot\b','not',s)
- s=s.replace('<>','!=');s=re.sub(r'(?<![<>=!])=(?!=)','==',s)
+ s=s.replace(' & ',' + ');s=s.replace('<>','!=');s=re.sub(r'(?<![<>=!])=(?!=)','==',s)
  return s
 
 def load(paths, env):
+ for key,value in {'earthEnabled':False,'earthRegisteredTask':71,'NewEarthSession':lambda:None,'LoadEarthSettings':lambda:None,'SelectEarth':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'namekEnabled':False,'namekRegisteredTask':88,'namekDeferred':False,'NewNamekSession':lambda:None,'LoadNamekSettings':lambda:None,'SelectNamek':lambda:0}.items():env.setdefault(key,value)
  # Unit fixtures without the monitor model the no-interruption dependency explicitly.
- for key,value in {'coopEnabled':False,'coopRegisteredTask':152,'NewCoopSession':lambda:None,'LoadCoopSettings':lambda:None,'CoopTimeEligible':lambda:False,'wukongEnabled':False,'wukongInterval':3600,'wukongRegisteredTask':151,'NewWukongSession':lambda:None,'LoadWukongSettings':lambda:None,'staminaEnabled':False,'IsTimedStamina':lambda x:False,'SelectTimedStamina':lambda:0,'LoadTimedStaminaSettings':lambda:None,'NewTimedStaminaSession':lambda:None,'qfriendEnabled':False,'qfriendInterval':14400,'qfriendRegisteredTask':56,'friendEnabled':False,'friendInterval':14400,'friendRegisteredTask':55,'monthEnabled':False,'monthInterval':3600,'monthRegisteredTask':166,'monthKeepDownload':False,'signEnabled':False,'signInterval':3600,'signRegisteredTask':167,'ForegroundInterrupted':lambda:False,'HandleForegroundRecovery':lambda:False,'BeginForegroundCommit':lambda:True,'EndForegroundCommit':lambda:None,'foregroundLoginPending':False,'BeginForegroundRecovery':lambda:None,'EndForegroundRecovery':lambda:None}.items():env.setdefault(key,value)
+ for key,value in {'beyondEnabled':False,'beyondRegisteredTask':87,'NewBeyondSession':lambda:None,'LoadBeyondSettings':lambda:None,'SelectBeyond':lambda:0,'legendEnabled':False,'legendRegisteredTask':86,'NewLegendSession':lambda:None,'LoadLegendSettings':lambda:None,'SelectLegend':lambda:0}.items():env.setdefault(key,value)
+ for key,value in {'redEnabled':False,'IsRedArmy':lambda t:False,'NewRedArmySession':lambda:None,'LoadRedArmySettings':lambda:None,'SelectRedArmy':lambda:0,'crossEnabled':False,'NewCrossBossSession':lambda:None,'LoadCrossBossSettings':lambda:None,'SelectCrossBoss':lambda:0,'worldEnabled':False,'cellEnabled':False,'IsWorldBoss':lambda t:False,'SelectWorldBoss':lambda:0,'NewWorldBossSession':lambda:None,'LoadWorldBossSettings':lambda:None,'coopEnabled':False,'coopRegisteredTask':152,'NewCoopSession':lambda:None,'LoadCoopSettings':lambda:None,'CoopTimeEligible':lambda:False,'wukongEnabled':False,'wukongInterval':3600,'wukongRegisteredTask':151,'NewWukongSession':lambda:None,'LoadWukongSettings':lambda:None,'staminaEnabled':False,'IsTimedStamina':lambda x:False,'SelectTimedStamina':lambda:0,'LoadTimedStaminaSettings':lambda:None,'NewTimedStaminaSession':lambda:None,'qfriendEnabled':False,'qfriendInterval':14400,'qfriendRegisteredTask':56,'friendEnabled':False,'friendInterval':14400,'friendRegisteredTask':55,'monthEnabled':False,'monthInterval':3600,'monthRegisteredTask':166,'monthKeepDownload':False,'signEnabled':False,'signInterval':3600,'signRegisteredTask':167,'ForegroundInterrupted':lambda:False,'HandleForegroundRecovery':lambda:False,'BeginForegroundCommit':lambda:True,'EndForegroundCommit':lambda:None,'foregroundLoginPending':False,'BeginForegroundRecovery':lambda:None,'EndForegroundRecovery':lambda:None}.items():env.setdefault(key,value)
  env['mqcat']=lambda *args: ''.join(str(x) for x in args)
  allglobals=[]
  for line in (ROOT/'app/入口.mq').read_text('utf-8-sig').splitlines():
@@ -28,6 +31,10 @@ def load(paths, env):
    if s.startswith('Dim '):continue
    if s=='End If':indent-=1;continue
    if s=='Loop':indent-=1;continue
+   if s=='Next':indent-=1;continue
+   loop=re.fullmatch(r'For (\w+) = (.+) To (.+)',s)
+   if loop:
+    out.append('    '*indent+'for '+loop[1]+' in range(int('+loop[2]+'), int('+loop[3]+')+1):');indent+=1;continue
    if s.startswith('ElseIf '):
     indent-=1;out.append('    '*indent+'elif '+expression(s[7:-5])+':');indent+=1;continue
    if s=='Else':
@@ -37,7 +44,7 @@ def load(paths, env):
    if s=='Do' or s.startswith('Do While '):
     out.append('    '*indent+'while '+(expression(s[9:]) if s.startswith('Do While ') else 'True')+':');indent+=1;continue
    if s in ('Exit Function','Exit Sub'):s='return mq_result'
-   elif s=='Exit Do':s='break'
+   elif s in ('Exit Do','Exit For'):s='break'
    elif s.startswith('Call '):s=s[5:]
    elif s.startswith('Delay '):s='Delay('+s[6:]+')'
    elif s.startswith('RunApp '):s='RunApp('+s[7:]+')'

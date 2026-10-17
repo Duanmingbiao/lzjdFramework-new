@@ -1,0 +1,2029 @@
+-- Static reconstruction only; not executed.
+local L3_1, L4_1, L5_1, L6_1, L7_1, L8_1, L9_1, L10_1, L11_1, L12_1, L13_1, L14_1, L15_1, L16_1, L17_1, L18_1, L19_1
+L3_1 = nil
+L4_1 = nil
+L5_1 = nil
+L6_1 = nil
+L7_1 = nil
+L8_1 = nil
+L9_1 = nil
+L10_1 = nil
+L11_1 = DateTime
+L11_1 = L11_1.WeekDay
+L11_1 = L11_1()
+L8_1 = L11_1
+L11_1 = LuaAuxLib
+L11_1 = L11_1.StringSplit
+L12_1 = SS
+L12_1 = L12_1["神神_时间设置当前"]
+L12_1 = L12_1()
+L13_1 = " "
+L11_1 = L11_1(L12_1, L13_1)
+L5_1 = L11_1
+L11_1 = A2_1
+if L11_1 == 10 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 11 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 12 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 13 then
+  L12_1 = SS
+  L12_1 = L12_1["神神_时间设置当前"]
+  L12_1 = L12_1()
+  L3_1 = L12_1
+elseif L11_1 == 14 then
+  if L8_1 < 6 then
+    L12_1 = LuaAuxLib
+    L12_1 = L12_1.LuaAuxLid
+    L13_1 = 226
+    L14_1 = "日常_武道会_功能"
+    L15_1 = nil
+    L16_1 = 0
+    L17_1 = nil
+    L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+    if L12_1 == 1 then
+      L12_1 = L5_1[1]
+      L13_1 = " 09:00:00"
+      L3_1 = L12_1 .. L13_1
+    else
+      L12_1 = L5_1[1]
+      L13_1 = " 18:00:00"
+      L3_1 = L12_1 .. L13_1
+    end
+  else
+    L12_1 = L5_1[1]
+    L13_1 = " 09:05:00"
+    L3_1 = L12_1 .. L13_1
+  end
+elseif L11_1 == 15 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_家族_抢福袋_模式"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 17 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_家族_抢福袋_模式"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = nil
+  L13_1 = LuaAuxLib
+  L13_1 = L13_1.LuaAuxLid
+  L14_1 = 226
+  L15_1 = "日常_家族_抢福袋定时开始"
+  L16_1 = nil
+  L17_1 = 0
+  L18_1 = nil
+  L13_1 = L13_1(L14_1, L15_1, L16_1, L17_1, L18_1)
+  L12_1 = L13_1
+  L13_1 = nil
+  L14_1 = LuaAuxLib
+  L14_1 = L14_1.LuaAuxLid
+  L15_1 = 226
+  L16_1 = "日常_家族_抢福袋定时结束"
+  L17_1 = nil
+  L18_1 = 0
+  L19_1 = nil
+  L14_1 = L14_1(L15_1, L16_1, L17_1, L18_1, L19_1)
+  L13_1 = L14_1
+  L14_1 = _ENV["设置填写时间_切割拼接"]
+  L15_1 = L12_1
+  L16_1 = 0
+  L14_1 = L14_1(L15_1, L16_1)
+  L10_1 = L14_1
+  L14_1 = L5_1[1]
+  L15_1 = " "
+  L14_1 = L14_1 .. L15_1
+  L15_1 = L10_1
+  L14_1 = L14_1 .. L15_1
+  L15_1 = ":00"
+  L12_1 = L14_1 .. L15_1
+  L14_1 = _ENV["设置填写时间_切割拼接"]
+  L15_1 = L13_1
+  L16_1 = 0
+  L14_1 = L14_1(L15_1, L16_1)
+  L10_1 = L14_1
+  L14_1 = L5_1[1]
+  L15_1 = " "
+  L14_1 = L14_1 .. L15_1
+  L15_1 = L10_1
+  L14_1 = L14_1 .. L15_1
+  L15_1 = ":00"
+  L13_1 = L14_1 .. L15_1
+  L14_1 = SS
+  L14_1 = L14_1["神神_时间戳对比"]
+  L15_1 = L12_1
+  L14_1 = L14_1(L15_1)
+  L15_1 = SS
+  L15_1 = L15_1["神神_时间戳对比"]
+  L16_1 = L13_1
+  L15_1 = L15_1(L16_1)
+  if L14_1 >= L15_1 then
+    L14_1 = SS
+    L14_1 = L14_1["神神_时间戳转日期时间"]
+    L15_1 = SS
+    L15_1 = L15_1["神神_日期时间转时间戳"]
+    L16_1 = L13_1
+    L15_1 = L15_1(L16_1)
+    L15_1 = L15_1 + 86400
+    L14_1 = L14_1(L15_1)
+    L3_1 = L14_1
+  else
+    L3_1 = L13_1
+  end
+elseif L11_1 == -6 then
+  L7_1 = L5_1[1]
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L5_1[2]
+  L6_1 = L12_1 .. L13_1
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_联盟_训练_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (60 < L12_1) then
+      goto lbl_242
+    end
+  end
+  L12_1 = DateTime
+  L12_1 = L12_1.Minute
+  L12_1 = L12_1()
+  A1_1 = L12_1
+  goto lbl_251
+  ::lbl_242::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 10 then
+    L12_1 = "0"
+    
+    function L13_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L13_1 = L13_1()
+    A1_1 = L12_1 .. L13_1
+  else
+  end
+  ::lbl_251::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (23 < L12_1) then
+      goto lbl_261
+    end
+  end
+  A0_1 = "05"
+  goto lbl_278
+  ::lbl_261::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if 10 <= L12_1 then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 <= 23 then
+  end
+  else
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 < 10 then
+      L12_1 = "0"
+      
+      function L13_1()
+        local L0_2, L1_2, L2_2
+        L0_2 = tonumber
+        L1_2 = upvalue1
+        L0_2 = L0_2(L1_2)
+        L1_2 = _ENV["nil"]
+        if L0_2 == L1_2 then
+          L1_2 = _ENV["nil"]
+          return L1_2
+        else
+          L1_2 = math
+          L1_2 = L1_2.floor
+          L2_2 = L0_2
+          return L1_2(L2_2)
+        end
+      end
+      
+      L13_1 = L13_1()
+      A0_1 = L12_1 .. L13_1
+    end
+  end
+  ::lbl_278::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 6 then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 < 30 then
+      A0_1 = "05"
+      A1_1 = "30"
+    end
+  end
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A0_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":"
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A1_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == -5 then
+  L7_1 = L5_1[1]
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L5_1[2]
+  L6_1 = L12_1 .. L13_1
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_联盟_首领_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = L5_1[1]
+    L13_1 = " 06:00:00"
+    L3_1 = L12_1 .. L13_1
+    return L3_1
+  end
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (60 < L12_1) then
+      goto lbl_335
+    end
+  end
+  L12_1 = DateTime
+  L12_1 = L12_1.Minute
+  L12_1 = L12_1()
+  A1_1 = L12_1
+  goto lbl_344
+  ::lbl_335::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 10 then
+    L12_1 = "0"
+    
+    function L13_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L13_1 = L13_1()
+    A1_1 = L12_1 .. L13_1
+  else
+  end
+  ::lbl_344::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (23 < L12_1) then
+      goto lbl_354
+    end
+  end
+  A0_1 = "05"
+  goto lbl_371
+  ::lbl_354::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if 10 <= L12_1 then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 <= 23 then
+  end
+  else
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 < 10 then
+      L12_1 = "0"
+      
+      function L13_1()
+        local L0_2, L1_2, L2_2
+        L0_2 = tonumber
+        L1_2 = upvalue1
+        L0_2 = L0_2(L1_2)
+        L1_2 = _ENV["nil"]
+        if L0_2 == L1_2 then
+          L1_2 = _ENV["nil"]
+          return L1_2
+        else
+          L1_2 = math
+          L1_2 = L1_2.floor
+          L2_2 = L0_2
+          return L1_2(L2_2)
+        end
+      end
+      
+      L13_1 = L13_1()
+      A0_1 = L12_1 .. L13_1
+    end
+  end
+  ::lbl_371::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 6 then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 < 30 then
+      A0_1 = "05"
+      A1_1 = "30"
+    end
+  end
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A0_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":"
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A1_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == -4 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = nil
+  L13_1 = SS
+  L13_1 = L13_1["神神_随机数"]
+  L14_1 = 10
+  L15_1 = 50
+  L13_1 = L13_1(L14_1, L15_1)
+  L12_1 = L13_1
+  if A1_1 == 1 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间差"]
+    L14_1 = "s"
+    L15_1 = L5_1[1]
+    L16_1 = " "
+    L15_1 = L15_1 .. L16_1
+    L16_1 = L10_1
+    L15_1 = L15_1 .. L16_1
+    L16_1 = ":00"
+    L15_1 = L15_1 .. L16_1
+    L16_1 = L5_1[1]
+    L17_1 = " 11:30:00"
+    L16_1 = L16_1 .. L17_1
+    L13_1 = L13_1(L14_1, L15_1, L16_1)
+    if L13_1 <= 0 then
+      L13_1 = SS
+      L13_1 = L13_1["神神_时间差"]
+      L14_1 = "s"
+      L15_1 = L5_1[1]
+      L16_1 = " "
+      L15_1 = L15_1 .. L16_1
+      L16_1 = L10_1
+      L15_1 = L15_1 .. L16_1
+      L16_1 = ":00"
+      L15_1 = L15_1 .. L16_1
+      L16_1 = L5_1[1]
+      L17_1 = " 13:30:00"
+      L16_1 = L16_1 .. L17_1
+      L13_1 = L13_1(L14_1, L15_1, L16_1)
+      if 0 <= L13_1 then
+        L13_1 = L5_1[1]
+        L14_1 = " "
+        L13_1 = L13_1 .. L14_1
+        L14_1 = L10_1
+        L13_1 = L13_1 .. L14_1
+        L14_1 = ":00"
+        L3_1 = L13_1 .. L14_1
+    end
+    else
+      L13_1 = L5_1[1]
+      L14_1 = " 13:"
+      L13_1 = L13_1 .. L14_1
+      L14_1 = L12_1
+      L13_1 = L13_1 .. L14_1
+      L14_1 = ":00"
+      L3_1 = L13_1 .. L14_1
+    end
+  else
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间差"]
+    L14_1 = "s"
+    L15_1 = L5_1[1]
+    L16_1 = " "
+    L15_1 = L15_1 .. L16_1
+    L16_1 = L10_1
+    L15_1 = L15_1 .. L16_1
+    L16_1 = ":00"
+    L15_1 = L15_1 .. L16_1
+    L16_1 = L5_1[1]
+    L17_1 = " 18:30:00"
+    L16_1 = L16_1 .. L17_1
+    L13_1 = L13_1(L14_1, L15_1, L16_1)
+    if L13_1 <= 0 then
+      L13_1 = SS
+      L13_1 = L13_1["神神_时间差"]
+      L14_1 = "s"
+      L15_1 = L5_1[1]
+      L16_1 = " "
+      L15_1 = L15_1 .. L16_1
+      L16_1 = L10_1
+      L15_1 = L15_1 .. L16_1
+      L16_1 = ":00"
+      L15_1 = L15_1 .. L16_1
+      L16_1 = L5_1[1]
+      L17_1 = " 20:30:00"
+      L16_1 = L16_1 .. L17_1
+      L13_1 = L13_1(L14_1, L15_1, L16_1)
+      if 0 <= L13_1 then
+        L13_1 = L5_1[1]
+        L14_1 = " "
+        L13_1 = L13_1 .. L14_1
+        L14_1 = L10_1
+        L13_1 = L13_1 .. L14_1
+        L14_1 = ":00"
+        L3_1 = L13_1 .. L14_1
+    end
+    else
+      L13_1 = L5_1[1]
+      L14_1 = " 19:"
+      L13_1 = L13_1 .. L14_1
+      L14_1 = L12_1
+      L13_1 = L13_1 .. L14_1
+      L14_1 = ":00"
+      L3_1 = L13_1 .. L14_1
+    end
+  end
+elseif L11_1 == -3 then
+  L12_1 = A0_1
+  if L12_1 == 0 then
+    L13_1 = L5_1[1]
+    L14_1 = " 18:00:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 1 then
+    L13_1 = L5_1[1]
+    L14_1 = " 19:00:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 2 then
+    L13_1 = L5_1[1]
+    L14_1 = " 20:00:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 3 then
+    L13_1 = L5_1[1]
+    L14_1 = " 20:50:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 4 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置当前"]
+    L13_1 = L13_1()
+    L3_1 = L13_1
+  end
+elseif L11_1 == -2 then
+  if A0_1 == nil then
+    L12_1 = SS
+    L12_1 = L12_1["神神_随机数"]
+    L13_1 = 5
+    L14_1 = 17
+    L12_1 = L12_1(L13_1, L14_1)
+    A0_1 = L12_1
+  end
+  if A1_1 == nil then
+    L12_1 = SS
+    L12_1 = L12_1["神神_随机数"]
+    L13_1 = 1
+    L14_1 = 60
+    L12_1 = L12_1(L13_1, L14_1)
+    A1_1 = L12_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = ":"
+  L13_1 = L13_1 .. L14_1
+  L14_1 = A1_1
+  L13_1 = L13_1 .. L14_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == -1 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 0 then
+  L7_1 = L5_1[1]
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L5_1[2]
+  L6_1 = L12_1 .. L13_1
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (23 < L12_1) then
+      function L12_1()
+        local L0_2, L1_2, L2_2
+        
+        L0_2 = tonumber
+        L1_2 = upvalue1
+        L0_2 = L0_2(L1_2)
+        L1_2 = _ENV["nil"]
+        if L0_2 == L1_2 then
+          L1_2 = _ENV["nil"]
+          return L1_2
+        else
+          L1_2 = math
+          L1_2 = L1_2.floor
+          L2_2 = L0_2
+          return L1_2(L2_2)
+        end
+      end
+      
+      L12_1 = L12_1()
+      if not (L12_1 < 9) then
+        goto lbl_611
+      end
+    end
+  end
+  A0_1 = "09"
+  goto lbl_620
+  ::lbl_611::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 10 then
+    L12_1 = "0"
+    
+    function L13_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L13_1 = L13_1()
+    A0_1 = L12_1 .. L13_1
+  else
+  end
+  ::lbl_620::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (60 < L12_1) then
+      goto lbl_633
+    end
+  end
+  L12_1 = DateTime
+  L12_1 = L12_1.Minute
+  L12_1 = L12_1()
+  A1_1 = L12_1
+  goto lbl_642
+  ::lbl_633::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 10 then
+    L12_1 = "0"
+    
+    function L13_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L13_1 = L13_1()
+    A1_1 = L12_1 .. L13_1
+  else
+  end
+  ::lbl_642::
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A0_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":"
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A1_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 1 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_竞技场_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = nil
+  L13_1 = LuaAuxLib
+  L13_1 = L13_1.StringSplit
+  L14_1 = A0_1
+  L15_1 = ":"
+  L13_1 = L13_1(L14_1, L15_1)
+  L12_1 = L13_1
+  L13_1 = L12_1[3]
+  if L13_1 ~= nil then
+    function L13_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1[3]
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L13_1 = L13_1()
+    if L13_1 ~= nil then
+      goto lbl_692
+    end
+  end
+  L9_1 = ":00"
+  goto lbl_705
+  ::lbl_692::
+  
+  function L13_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1[3]
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L13_1 = L13_1()
+  if L13_1 < 10 then
+    L13_1 = ":0"
+    
+    function L14_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1[3]
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L14_1 = L14_1()
+    L9_1 = L13_1 .. L14_1
+  else
+    L13_1 = ":"
+    
+    function L14_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1[3]
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L14_1 = L14_1()
+    L9_1 = L13_1 .. L14_1
+  end
+  ::lbl_705::
+  L13_1 = L5_1[1]
+  L14_1 = " "
+  L13_1 = L13_1 .. L14_1
+  L14_1 = L10_1
+  L13_1 = L13_1 .. L14_1
+  L14_1 = L9_1
+  L9_1 = L13_1 .. L14_1
+  L13_1 = LuaAuxLib
+  L13_1 = L13_1.LuaAuxLid
+  L14_1 = 226
+  L15_1 = "日常_竞技场_定时打"
+  L16_1 = nil
+  L17_1 = 0
+  L18_1 = nil
+  L13_1 = L13_1(L14_1, L15_1, L16_1, L17_1, L18_1)
+  if L13_1 == 0 and A1_1 == 0 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间戳转日期时间"]
+    L14_1 = SS
+    L14_1 = L14_1["神神_日期时间转时间戳"]
+    L15_1 = L9_1
+    L14_1 = L14_1(L15_1)
+    L14_1 = L14_1 - 90
+    L13_1 = L13_1(L14_1)
+    L9_1 = L13_1
+  else
+    L13_1 = LuaAuxLib
+    L13_1 = L13_1.LuaAuxLid
+    L14_1 = 226
+    L15_1 = "日常_竞技场_定时打"
+    L16_1 = nil
+    L17_1 = 0
+    L18_1 = nil
+    L13_1 = L13_1(L14_1, L15_1, L16_1, L17_1, L18_1)
+    if L13_1 == 2 and A1_1 == 0 then
+      L13_1 = SS
+      L13_1 = L13_1["神神_时间戳转日期时间"]
+      L14_1 = SS
+      L14_1 = L14_1["神神_日期时间转时间戳"]
+      L15_1 = L9_1
+      L14_1 = L14_1(L15_1)
+      L14_1 = L14_1 - 180
+      L13_1 = L13_1(L14_1)
+      L9_1 = L13_1
+    end
+  end
+  L3_1 = L9_1
+elseif L11_1 == 2 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_跨区竞技场_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 3 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_觉醒竞技场_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 4 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_格斗大赛_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 5 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.StringSplit
+  L13_1 = L10_1
+  L14_1 = ":"
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1[1]
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  A0_1 = L12_1
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1[2]
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  A1_1 = L12_1
+  L7_1 = L5_1[1]
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L5_1[2]
+  L6_1 = L12_1 .. L13_1
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 == nil then
+    A0_1 = "18"
+  else
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if 21 < L12_1 then
+      A0_1 = "20"
+    else
+      function L12_1()
+        local L0_2, L1_2, L2_2
+        
+        L0_2 = tonumber
+        L1_2 = upvalue1
+        L0_2 = L0_2(L1_2)
+        L1_2 = _ENV["nil"]
+        if L0_2 == L1_2 then
+          L1_2 = _ENV["nil"]
+          return L1_2
+        else
+          L1_2 = math
+          L1_2 = L1_2.floor
+          L2_2 = L0_2
+          return L1_2(L2_2)
+        end
+      end
+      
+      L12_1 = L12_1()
+      if L12_1 < 10 then
+        L12_1 = "0"
+        
+        function L13_1()
+          local L0_2, L1_2, L2_2
+          L0_2 = tonumber
+          L1_2 = upvalue1
+          L0_2 = L0_2(L1_2)
+          L1_2 = _ENV["nil"]
+          if L0_2 == L1_2 then
+            L1_2 = _ENV["nil"]
+            return L1_2
+          else
+            L1_2 = math
+            L1_2 = L1_2.floor
+            L2_2 = L0_2
+            return L1_2(L2_2)
+          end
+        end
+        
+        L13_1 = L13_1()
+        A0_1 = L12_1 .. L13_1
+      else
+      end
+    end
+  end
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A0_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":"
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A1_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 6 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常板块_商店_时间"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 0 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置当前"]
+    L13_1 = L13_1()
+    L3_1 = L13_1
+  elseif L12_1 == 1 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置指定"]
+    L14_1 = "21:30:00"
+    L13_1 = L13_1(L14_1)
+    L3_1 = L13_1
+  elseif L12_1 == 2 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置指定"]
+    L14_1 = "22:30:00"
+    L13_1 = L13_1(L14_1)
+    L3_1 = L13_1
+  elseif L12_1 == 3 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置指定"]
+    L14_1 = "23:30:00"
+    L13_1 = L13_1(L14_1)
+    L3_1 = L13_1
+  end
+elseif L11_1 == 16 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常板块_兑换商店_时间"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 0 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置当前"]
+    L13_1 = L13_1()
+    L3_1 = L13_1
+  elseif L12_1 == 1 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置指定"]
+    L14_1 = "21:30:00"
+    L13_1 = L13_1(L14_1)
+    L3_1 = L13_1
+  elseif L12_1 == 2 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置指定"]
+    L14_1 = "22:30:00"
+    L13_1 = L13_1(L14_1)
+    L3_1 = L13_1
+  elseif L12_1 == 3 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置指定"]
+    L14_1 = "23:30:00"
+    L13_1 = L13_1(L14_1)
+    L3_1 = L13_1
+  end
+elseif L11_1 == 7 then
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = ":"
+  L13_1 = L13_1 .. L14_1
+  L14_1 = A1_1
+  L13_1 = L13_1 .. L14_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 8 then
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_至高争霸_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = SS
+    L12_1 = L12_1["神神_时间设置当前"]
+    L12_1 = L12_1()
+    L3_1 = L12_1
+    return L3_1
+  end
+  L12_1 = _ENV["设置填写时间_切割拼接"]
+  L13_1 = A0_1
+  L14_1 = 0
+  L12_1 = L12_1(L13_1, L14_1)
+  L10_1 = L12_1
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L10_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+elseif L11_1 == 9 then
+  L7_1 = L5_1[1]
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = L5_1[2]
+  L6_1 = L12_1 .. L13_1
+  L12_1 = LuaAuxLib
+  L12_1 = L12_1.LuaAuxLid
+  L13_1 = 226
+  L14_1 = "日常_家族_首领_定时打"
+  L15_1 = nil
+  L16_1 = 0
+  L17_1 = nil
+  L12_1 = L12_1(L13_1, L14_1, L15_1, L16_1, L17_1)
+  if L12_1 == 1 then
+    L12_1 = L5_1[1]
+    L13_1 = " 05:30:00"
+    L3_1 = L12_1 .. L13_1
+    return L3_1
+  end
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (60 < L12_1) then
+      goto lbl_1072
+    end
+  end
+  L12_1 = DateTime
+  L12_1 = L12_1.Minute
+  L12_1 = L12_1()
+  A1_1 = L12_1
+  goto lbl_1081
+  ::lbl_1072::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 10 then
+    L12_1 = "0"
+    
+    function L13_1()
+      local L0_2, L1_2, L2_2
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L13_1 = L13_1()
+    A1_1 = L12_1 .. L13_1
+  else
+  end
+  ::lbl_1081::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 ~= nil then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if not (23 < L12_1) then
+      goto lbl_1091
+    end
+  end
+  A0_1 = "05"
+  goto lbl_1108
+  ::lbl_1091::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if 10 <= L12_1 then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 <= 23 then
+  end
+  else
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 < 10 then
+      L12_1 = "0"
+      
+      function L13_1()
+        local L0_2, L1_2, L2_2
+        L0_2 = tonumber
+        L1_2 = upvalue1
+        L0_2 = L0_2(L1_2)
+        L1_2 = _ENV["nil"]
+        if L0_2 == L1_2 then
+          L1_2 = _ENV["nil"]
+          return L1_2
+        else
+          L1_2 = math
+          L1_2 = L1_2.floor
+          L2_2 = L0_2
+          return L1_2(L2_2)
+        end
+      end
+      
+      L13_1 = L13_1()
+      A0_1 = L12_1 .. L13_1
+    end
+  end
+  ::lbl_1108::
+  
+  function L12_1()
+    local L0_2, L1_2, L2_2
+    L0_2 = tonumber
+    L1_2 = upvalue1
+    L0_2 = L0_2(L1_2)
+    L1_2 = _ENV["nil"]
+    if L0_2 == L1_2 then
+      L1_2 = _ENV["nil"]
+      return L1_2
+    else
+      L1_2 = math
+      L1_2 = L1_2.floor
+      L2_2 = L0_2
+      return L1_2(L2_2)
+    end
+  end
+  
+  L12_1 = L12_1()
+  if L12_1 < 6 then
+    function L12_1()
+      local L0_2, L1_2, L2_2
+      
+      L0_2 = tonumber
+      L1_2 = upvalue1
+      L0_2 = L0_2(L1_2)
+      L1_2 = _ENV["nil"]
+      if L0_2 == L1_2 then
+        L1_2 = _ENV["nil"]
+        return L1_2
+      else
+        L1_2 = math
+        L1_2 = L1_2.floor
+        L2_2 = L0_2
+        return L1_2(L2_2)
+      end
+    end
+    
+    L12_1 = L12_1()
+    if L12_1 < 30 then
+      A0_1 = "05"
+      A1_1 = "30"
+    end
+  end
+  L12_1 = L5_1[1]
+  L13_1 = " "
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A0_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":"
+  L12_1 = L12_1 .. L13_1
+  L13_1 = A1_1
+  L12_1 = L12_1 .. L13_1
+  L13_1 = ":00"
+  L3_1 = L12_1 .. L13_1
+end
+return L3_1

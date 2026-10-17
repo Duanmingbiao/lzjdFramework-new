@@ -1,0 +1,318 @@
+﻿Function StaminaBooleanSetting(key)
+    Dim raw, text
+    StaminaBooleanSetting = False
+    raw = ReadUIConfig(key, False)
+    text = "<null>"
+    If Not IsNull(raw) Then
+        text = LCase(Trim(CStr(raw)))
+        If text = "true" Or text = "1" Then
+            StaminaBooleanSetting = True
+        End If
+    End If
+    Call WriteMainLog("[龙珠激斗脚本][定时体力配置] 键=" & key & " 原值=" & text)
+End Function
+Sub LoadTimedStaminaSettings()
+    staminaKeepDownload = StaminaBooleanSetting("保留下载提示")
+    staminaEnabled = StaminaBooleanSetting("定时体力启用")
+    staminaGem = StaminaBooleanSetting("体力龙石补领")
+    staminaRecover = StaminaBooleanSetting("体力追回")
+    staminaExchange = StaminaBooleanSetting("体力兑换")
+End Sub
+Function IsTimedStamina(taskId)
+    IsTimedStamina = taskId >= 50 And taskId <= 54
+End Function
+Function StaminaDayStart(stamp)
+    // Game schedules use Asia/Shanghai UTC+08, Unix seconds; TickCount only for durations.
+    StaminaDayStart = Int((stamp + 28800) / 86400) * 86400 - 28800
+End Function
+Function StaminaName(taskId)
+    StaminaName = "定时领取体力"
+    If taskId = 50 Then
+        StaminaName = "定时领取体力_上午"
+    ElseIf taskId = 51 Then
+        StaminaName = "定时领取体力_中午"
+    ElseIf taskId = 52 Then
+        StaminaName = "定时领取体力_下午"
+    ElseIf taskId = 53 Then
+        StaminaName = "定时领取体力_晚上"
+    ElseIf taskId = 54 Then
+        StaminaName = "定时领取体力_补领"
+    End If
+End Function
+Function StaminaStartSecond(taskId)
+    StaminaStartSecond = 0
+    If taskId = 50 Then
+        StaminaStartSecond = 25205
+    ElseIf taskId = 51 Then
+        StaminaStartSecond = 43205
+    ElseIf taskId = 52 Then
+        StaminaStartSecond = 64805
+    ElseIf taskId = 53 Then
+        StaminaStartSecond = 75605
+    ElseIf taskId = 54 Then
+        StaminaStartSecond = 5
+    End If
+End Function
+Function StaminaEndSecond(taskId)
+    StaminaEndSecond = 0
+    If taskId = 50 Then
+        StaminaEndSecond = 43200
+    ElseIf taskId = 51 Then
+        StaminaEndSecond = 64800
+    ElseIf taskId = 52 Then
+        StaminaEndSecond = 75600
+    ElseIf taskId = 53 Then
+        StaminaEndSecond = 86310
+    ElseIf taskId = 54 Then
+        StaminaEndSecond = 17940
+    End If
+End Function
+Sub NewTimedStaminaSession()
+    staminaPhase = "未开始"
+    staminaRestartCount = 0
+    staminaRecoveryCount = 0
+    staminaTerminal = False
+    stamina50Due = StaminaDayStart(Time()) + StaminaStartSecond(50)
+    stamina50Count = 0
+    stamina50Failures = 0
+    stamina50Done = False
+    stamina50Failed = False
+    stamina50Phase = "未开始"
+    stamina50Restarts = 0
+    stamina50Recoveries = 0
+    stamina51Due = StaminaDayStart(Time()) + StaminaStartSecond(51)
+    stamina51Count = 0
+    stamina51Failures = 0
+    stamina51Done = False
+    stamina51Failed = False
+    stamina51Phase = "未开始"
+    stamina51Restarts = 0
+    stamina51Recoveries = 0
+    stamina52Due = StaminaDayStart(Time()) + StaminaStartSecond(52)
+    stamina52Count = 0
+    stamina52Failures = 0
+    stamina52Done = False
+    stamina52Failed = False
+    stamina52Phase = "未开始"
+    stamina52Restarts = 0
+    stamina52Recoveries = 0
+    stamina53Due = StaminaDayStart(Time()) + StaminaStartSecond(53)
+    stamina53Count = 0
+    stamina53Failures = 0
+    stamina53Done = False
+    stamina53Failed = False
+    stamina53Phase = "未开始"
+    stamina53Restarts = 0
+    stamina53Recoveries = 0
+    stamina54Due = StaminaDayStart(Time()) + StaminaStartSecond(54)
+    stamina54Count = 0
+    stamina54Failures = 0
+    stamina54Done = False
+    stamina54Failed = False
+    stamina54Phase = "未开始"
+    stamina54Restarts = 0
+    stamina54Recoveries = 0
+End Sub
+Function SelectTimedStamina()
+    Dim nowStamp, dayStart, eligible
+    SelectTimedStamina = 0
+    If Not staminaEnabled Then
+        Exit Function
+    End If
+    nowStamp = Time()
+    dayStart = StaminaDayStart(nowStamp)
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina50Due Then
+            If nowStamp < dayStart + 25205 Then
+                stamina50Due = dayStart + 25205
+            ElseIf nowStamp <= dayStart + 43200 Then
+                SelectTimedStamina = 50
+                Exit Function
+            Else
+                stamina50Due = dayStart + 86400 + 25205
+                Call Note("[定时体力50] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina50Due)
+            End If
+        End If
+    End If
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina51Due Then
+            If nowStamp < dayStart + 43205 Then
+                stamina51Due = dayStart + 43205
+            ElseIf nowStamp <= dayStart + 64800 Then
+                SelectTimedStamina = 51
+                Exit Function
+            Else
+                stamina51Due = dayStart + 86400 + 43205
+                Call Note("[定时体力51] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina51Due)
+            End If
+        End If
+    End If
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina52Due Then
+            If nowStamp < dayStart + 64805 Then
+                stamina52Due = dayStart + 64805
+            ElseIf nowStamp <= dayStart + 75600 Then
+                SelectTimedStamina = 52
+                Exit Function
+            Else
+                stamina52Due = dayStart + 86400 + 64805
+                Call Note("[定时体力52] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina52Due)
+            End If
+        End If
+    End If
+    eligible = True
+    If eligible Then
+        If nowStamp >= stamina53Due Then
+            If nowStamp < dayStart + 75605 Then
+                stamina53Due = dayStart + 75605
+            ElseIf nowStamp <= dayStart + 86310 Then
+                SelectTimedStamina = 53
+                Exit Function
+            Else
+                stamina53Due = dayStart + 86400 + 75605
+                Call Note("[定时体力53] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina53Due)
+            End If
+        End If
+    End If
+    eligible = True
+    eligible = staminaGem
+    If eligible Then
+        If nowStamp >= stamina54Due Then
+            If nowStamp < dayStart + 5 Then
+                stamina54Due = dayStart + 5
+            ElseIf nowStamp <= dayStart + 17940 Then
+                SelectTimedStamina = 54
+                Exit Function
+            Else
+                stamina54Due = dayStart + 86400 + 5
+                Call Note("[定时体力54] 窗口已过，未提交完成；下一次执行时间Unix=" & stamina54Due)
+            End If
+        End If
+    End If
+End Function
+Sub StartTimedStamina(taskId)
+    If taskId = 50 Then
+        staminaRestartCount = stamina50Restarts
+        staminaRecoveryCount = stamina50Recoveries
+        stamina50Done = False
+        stamina50Failed = False
+    ElseIf taskId = 51 Then
+        staminaRestartCount = stamina51Restarts
+        staminaRecoveryCount = stamina51Recoveries
+        stamina51Done = False
+        stamina51Failed = False
+    ElseIf taskId = 52 Then
+        staminaRestartCount = stamina52Restarts
+        staminaRecoveryCount = stamina52Recoveries
+        stamina52Done = False
+        stamina52Failed = False
+    ElseIf taskId = 53 Then
+        staminaRestartCount = stamina53Restarts
+        staminaRecoveryCount = stamina53Recoveries
+        stamina53Done = False
+        stamina53Failed = False
+    ElseIf taskId = 54 Then
+        staminaRestartCount = stamina54Restarts
+        staminaRecoveryCount = stamina54Recoveries
+        stamina54Done = False
+        stamina54Failed = False
+    End If
+    staminaTerminal = False
+    Call Note("[定时体力] 任务名称=" & StaminaName(taskId) & " 编号=" & taskId & " 任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & staminaRestartCount & " 恢复次数=" & staminaRecoveryCount)
+End Sub
+Sub RecoverTimedStamina(taskId)
+    staminaRecoveryCount = staminaRecoveryCount + 1
+    staminaTerminal = False
+    If taskId = 50 Then
+        stamina50Failures = stamina50Failures + 1
+        stamina50Failed = True
+        stamina50Recoveries = staminaRecoveryCount
+    ElseIf taskId = 51 Then
+        stamina51Failures = stamina51Failures + 1
+        stamina51Failed = True
+        stamina51Recoveries = staminaRecoveryCount
+    ElseIf taskId = 52 Then
+        stamina52Failures = stamina52Failures + 1
+        stamina52Failed = True
+        stamina52Recoveries = staminaRecoveryCount
+    ElseIf taskId = 53 Then
+        stamina53Failures = stamina53Failures + 1
+        stamina53Failed = True
+        stamina53Recoveries = staminaRecoveryCount
+    ElseIf taskId = 54 Then
+        stamina54Failures = stamina54Failures + 1
+        stamina54Failed = True
+        stamina54Recoveries = staminaRecoveryCount
+    End If
+    Call Note("[定时体力] 任务=" & taskId & " 未提交完成；恢复次数=" & staminaRecoveryCount & " 当前阶段=" & staminaPhase)
+End Sub
+Sub CommitTimedStamina(taskId)
+    Dim nextStamp
+    nextStamp = StaminaDayStart(Time()) + StaminaStartSecond(taskId)
+    If nextStamp <= Time() Then
+        nextStamp = nextStamp + 86400
+    End If
+    If taskId = 50 Then
+        stamina50Done = True
+        stamina50Failed = False
+        stamina50Phase = "完成"
+        stamina50Count = stamina50Count + 1
+        stamina50Due = nextStamp
+    ElseIf taskId = 51 Then
+        stamina51Done = True
+        stamina51Failed = False
+        stamina51Phase = "完成"
+        stamina51Count = stamina51Count + 1
+        stamina51Due = nextStamp
+    ElseIf taskId = 52 Then
+        stamina52Done = True
+        stamina52Failed = False
+        stamina52Phase = "完成"
+        stamina52Count = stamina52Count + 1
+        stamina52Due = nextStamp
+    ElseIf taskId = 53 Then
+        stamina53Done = True
+        stamina53Failed = False
+        stamina53Phase = "完成"
+        stamina53Count = stamina53Count + 1
+        stamina53Due = nextStamp
+    ElseIf taskId = 54 Then
+        stamina54Done = True
+        stamina54Failed = False
+        stamina54Phase = "完成"
+        stamina54Count = stamina54Count + 1
+        stamina54Due = nextStamp
+    End If
+    Call Note("[定时体力] 任务名称=" & StaminaName(taskId) & " 编号=" & taskId & " 是否提交完成=是；下一次执行时间Unix=" & nextStamp & " 重启次数=" & staminaRestartCount & " 恢复次数=" & staminaRecoveryCount)
+End Sub
+Sub SetTimedStaminaPhase(taskId, value)
+    If taskId = 50 Then
+        stamina50Phase = value
+    ElseIf taskId = 51 Then
+        stamina51Phase = value
+    ElseIf taskId = 52 Then
+        stamina52Phase = value
+    ElseIf taskId = 53 Then
+        stamina53Phase = value
+    ElseIf taskId = 54 Then
+        stamina54Phase = value
+    End If
+End Sub
+Sub RestartTimedStamina(taskId)
+    staminaRestartCount = staminaRestartCount + 1
+    If taskId = 50 Then
+        stamina50Restarts = staminaRestartCount
+    ElseIf taskId = 51 Then
+        stamina51Restarts = staminaRestartCount
+    ElseIf taskId = 52 Then
+        stamina52Restarts = staminaRestartCount
+    ElseIf taskId = 53 Then
+        stamina53Restarts = staminaRestartCount
+    ElseIf taskId = 54 Then
+        stamina54Restarts = staminaRestartCount
+    End If
+    Call Note("[定时体力] 重启原任务=" & taskId & " 重启次数=" & staminaRestartCount & " 恢复次数=" & staminaRecoveryCount)
+End Sub

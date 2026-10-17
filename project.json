@@ -5,6 +5,13 @@
     "common/常量.mq",
     "common/前台监控.mq",
     "common/日志.mq",
+    "common/地球保卫状态.mq",
+    "common/那美克状态.mq",
+    "common/极限状态.mq",
+    "common/超战士状态.mq",
+    "common/红绸军状态.mq",
+    "common/跨服首领状态.mq",
+    "common/世界首领状态.mq",
     "common/合作冒险状态.mq",
     "common/悟空冒险状态.mq",
     "common/定时体力状态.mq",
@@ -17,6 +24,7 @@
     "common/大厅清障.mq",
     "common/页面识别.mq",
     "common/游戏控制.mq",
+    "common/强敌入口.mq",
     "common/返回大厅.mq",
     "common/任务注册.mq",
     "common/任务分派.mq",
@@ -31,7 +39,15 @@
     "flows/056_Q友体力/Q友体力.mq",
     "flows/050_定时领取体力/定时领取体力.mq",
     "flows/151_悟空的冒险/悟空的冒险.mq",
-    "flows/152_合作大冒险/合作大冒险.mq"
+    "flows/152_合作大冒险/合作大冒险.mq",
+    "flows/070_世界首领/世界首领.mq",
+    "flows/032_世界首领沙鲁/打沙鲁.mq",
+    "flows/083_跨服世界首领/跨服世界首领.mq",
+    "flows/084_消灭红绸军/消灭红绸军.mq",
+    "flows/086_超战士传说/超战士传说.mq",
+    "flows/087_激战超越极限/激战超越极限.mq",
+    "flows/088_那美克星组队战/那美克星组队战.mq",
+    "flows/071_地球保卫战/地球保卫战.mq"
   ],
   "ui": "ui/最小配置.uip",
   "registeredTasks": [
@@ -47,7 +63,16 @@
     53,
     54,
     151,
-    152
+    152,
+    70,
+    32,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    71
   ],
-  "stage": "合作大冒险152待编译与实机"
+  "stage": "强敌入侵：地球保卫战71待实机"
 }

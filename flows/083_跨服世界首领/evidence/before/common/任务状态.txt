@@ -1,0 +1,240 @@
+﻿Sub NewSession()
+    Call NewWorldBossSession()
+    Call NewCoopSession()
+    Call NewWukongSession()
+    Call NewTimedStaminaSession()
+    qfriendDone = False
+    qfriendFailed = False
+    qfriendCount = 0
+    qfriendFailures = 0
+    qfriendDue = 0
+    qfriendFirst = True
+    qfriendPhase = "未开始"
+    qfriendTerminal = False
+    qfriendRecovery = False
+    friendDone = False
+    friendFailed = False
+    friendCount = 0
+    friendFailures = 0
+    friendDue = 0
+    friendFirst = True
+    friendPhase = "未开始"
+    monthDone = False
+    monthFailed = False
+    monthCount = 0
+    monthFailures = 0
+    monthDue = 0
+    monthFirst = True
+    monthPhase = "未开始"
+    monthCardType = -1
+    monthlySearchDirection = 0
+    activityOcrLast = "<未识别>"
+    activityOcrLogAt = TickCount() - 5000
+    signDone = False
+    signFailed = False
+    signCount = 0
+    signFailures = 0
+    signDue = 0
+    signFirst = True
+    signPhase = "未开始"
+    currentTask = 0
+    resumeTask = 0
+    mailDone = False
+    mailFailed = False
+    mailCount = 0
+    mailFailures = 0
+    mailDue = 0
+    mailFirst = True
+    mailPhase = "未开始"
+    rewardDone = False
+    rewardFailed = False
+    rewardCount = 0
+    rewardFailures = 0
+    rewardDue = 0
+    rewardFirst = True
+    rewardPhase = "未开始"
+    businessStarted = 0
+    loginStarted = 0
+    progressAt = 0
+    hallMisses = 0
+    hallExtended = False
+    hallActionIndex = 0
+    hallFrames = 0
+    hallSampleAt = TickCount() - 500
+    qqLastForeground = ""
+    qqLastDiagnosticAt = TickCount() - 5000
+    loginFailures = 0
+    stageName = "新会话"
+    terminalConfirmed = False
+End Sub
+Sub SaveCurrentTask(taskId)
+    Call Note("[流程] 入口 SaveCurrentTask")
+    currentTask = taskId
+    resumeTask = taskId
+    terminalConfirmed = False
+    If IsWorldBoss(taskId) Then
+        Call StartWorldBossTask(taskId)
+    End If
+    If taskId = 152 Then
+        Call StartCoopTask()
+    End If
+    If taskId = 151 Then
+        Call StartWukongTask()
+    End If
+    If IsTimedStamina(taskId) Then
+        Call StartTimedStamina(taskId)
+    End If
+    If taskId = 56 Then
+        qfriendDone = False
+        qfriendFailed = False
+        qfriendTerminal = False
+        qfriendRecovery = False
+    ElseIf taskId = 55 Then
+        friendDone = False
+        friendFailed = False
+    ElseIf taskId = 166 Then
+        monthDone = False
+        monthFailed = False
+    ElseIf taskId = 167 Then
+        signDone = False
+        signFailed = False
+    ElseIf taskId = 168 Then
+        mailDone = False
+        mailFailed = False
+    ElseIf taskId = 169 Then
+        rewardDone = False
+        rewardFailed = False
+    End If
+    Call Note("[流程] 出口 SaveCurrentTask 到达函数末尾（不代表任务已提交）")
+End Sub
+Sub SaveRecovery()
+    Call Note("[流程] 入口 SaveRecovery")
+    resumeTask = currentTask
+    If IsWorldBoss(currentTask) Then
+        Call RecoverWorldBossTask(currentTask)
+    End If
+    If currentTask = 152 Then
+        Call RecoverCoopTask()
+    End If
+    If currentTask = 151 Then
+        Call RecoverWukongTask()
+    End If
+    If IsTimedStamina(currentTask) Then
+        Call RecoverTimedStamina(currentTask)
+    End If
+    If currentTask = 56 Then
+        qfriendFailed = True
+        qfriendRecovery = True
+        qfriendTerminal = False
+        qfriendFailures = qfriendFailures + 1
+        qfriendPhase = "等待恢复"
+        Call Note("[Q友体力56] 保存原任务=" & resumeTask & " 失败次数=" & qfriendFailures)
+    ElseIf currentTask = 55 Then
+        friendFailed = True
+        friendFailures = friendFailures + 1
+        friendPhase = "等待恢复"
+        Call Note("[好友体力55] 保存恢复 原业务=" & resumeTask & " 失败次数=" & friendFailures)
+    ElseIf currentTask = 166 Then
+        monthFailed = True
+        monthFailures = monthFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，月卡失败次数=" & monthFailures)
+    ElseIf currentTask = 167 Then
+        signFailed = True
+        signFailures = signFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，签到失败次数=" & signFailures)
+    ElseIf currentTask = 168 Then
+        mailFailed = True
+        mailFailures = mailFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & mailFailures)
+    ElseIf currentTask = 169 Then
+        rewardFailed = True
+        rewardFailures = rewardFailures + 1
+        Call Note("保留原业务=" & resumeTask & "，业务失败次数=" & rewardFailures)
+    End If
+    Call Note("[流程] 出口 SaveRecovery 到达函数末尾（不代表任务已提交）")
+End Sub
+Function CommitTask(hallConfirmed)
+    Call Note("[流程] 入口 CommitTask")
+    CommitTask = False
+    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) Then
+        Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
+        Exit Function
+    End If
+    If Not terminalConfirmed Then
+        Call Note("[流程] 出口 CommitTask 分支2 路径条件 Not terminalConfirmed")
+        Exit Function
+    End If
+    If Not hallConfirmed Then
+        Call Note("[流程] 出口 CommitTask 分支3 路径条件 Not hallConfirmed")
+        Exit Function
+    End If
+    If Not BeginForegroundCommit() Then
+        Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
+        Exit Function
+    End If
+    If IsWorldBoss(currentTask) Then
+        Call CommitWorldBossTask(currentTask)
+    ElseIf currentTask = 152 Then
+        Call CommitCoopTask()
+    ElseIf currentTask = 151 Then
+        Call CommitWukongTask()
+    ElseIf IsTimedStamina(currentTask) Then
+        Call CommitTimedStamina(currentTask)
+    ElseIf currentTask = 56 Then
+        qfriendDone = True
+        qfriendFailed = False
+        qfriendRecovery = False
+        qfriendCount = qfriendCount + 1
+        qfriendDue = TickCount() + qfriendInterval * 1000
+        qfriendFirst = False
+        qfriendPhase = "完成"
+        Call Note("[Q友体力56] 返回大厅连续确认后提交 次数=" & qfriendCount & " 间隔秒=" & qfriendInterval)
+    ElseIf currentTask = 55 Then
+        friendDone = True
+        friendFailed = False
+        friendCount = friendCount + 1
+        friendDue = TickCount() + friendInterval * 1000
+        friendFirst = False
+        friendPhase = "完成"
+        Call Note("[好友体力55] 返回大厅连续确认后提交 次数=" & friendCount & " 间隔秒=" & friendInterval)
+    ElseIf currentTask = 166 Then
+        monthDone = True
+        monthFailed = False
+        monthCount = monthCount + 1
+        monthDue = TickCount() + monthInterval * 1000
+        monthFirst = False
+        monthPhase = "完成"
+        Call Note("月卡龙石166提交完成，次数=" & monthCount & "，间隔秒=" & monthInterval)
+    ElseIf currentTask = 167 Then
+        signDone = True
+        signFailed = False
+        signCount = signCount + 1
+        signDue = TickCount() + signInterval * 1000
+        signFirst = False
+        signPhase = "完成"
+        Call Note("日常签到167提交完成，次数=" & signCount & "，间隔秒=" & signInterval)
+    ElseIf currentTask = 168 Then
+        mailDone = True
+        mailFailed = False
+        mailCount = mailCount + 1
+        mailDue = TickCount() + mailInterval * 1000
+        mailFirst = False
+        mailPhase = "完成"
+        Call Note("邮件提交完成，次数=" & mailCount & "，间隔秒=" & mailInterval)
+    ElseIf currentTask = 169 Then
+        rewardDone = True
+        rewardFailed = False
+        rewardCount = rewardCount + 1
+        rewardDue = TickCount() + rewardInterval * 1000
+        rewardFirst = False
+        rewardPhase = "完成"
+        Call Note("任务奖励169提交完成，次数=" & rewardCount & "，间隔秒=" & rewardInterval)
+    End If
+    currentTask = 0
+    resumeTask = 0
+    terminalConfirmed = False
+    CommitTask = True
+    Call Note("[流程] 结果 CommitTask True")
+    Call EndForegroundCommit()
+    Call Note("[流程] 出口 CommitTask 到达函数末尾（不代表任务已提交）")
+End Function

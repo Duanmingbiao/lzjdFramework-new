@@ -1,4 +1,4 @@
-﻿import unittest,json,hashlib
+import unittest,json,hashlib
 from types import SimpleNamespace
 from mq_subset import ROOT,load
 E=ROOT/'flows/152_合作大冒险/evidence';MODULE='flows/152_合作大冒险/合作大冒险.mq'
@@ -70,6 +70,6 @@ class CoopTests(unittest.TestCase):
   for rel,h in json.loads((E/'修改前基线.json').read_text('utf-8')).items():
    if rel.startswith('flows/') or rel in ['common/悟空冒险状态.mq','common/定时体力状态.mq']:self.assertEqual(hashlib.sha256((ROOT/rel).read_bytes()).hexdigest(),h,rel)
  def test_append_only_exact_parameters(self):
-  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8'));conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv])
+  old=json.loads((E/'before/evidence/图色参数.txt').read_text('utf-8'));now=[x for x in json.loads((ROOT/'evidence/图色参数.json').read_text('utf-8')) if not x['name'].startswith(('070_','032_','强敌_','083_','084_','085_'))];conv=json.loads((E/'图色转换.json').read_text('utf-8'));self.assertEqual(now[:len(old)],old);self.assertEqual([x['definition'] for x in now[len(old):]],[x['definition'] for x in conv])
  def test_same_page_independent_modes_default_zero_and_no_placeholder(self):
-  ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertIn('悟空的冒险:{',ui);self.assertIn('名称:"合作冒险启用"',ui);self.assertIn('名称:"合作队伍模式"',ui);self.assertNotIn('合作待开发',ui);self.assertEqual(json.loads((ROOT/'project.json').read_text('utf-8'))['registeredTasks'].count(152),1)
+  ui=(ROOT/'ui/最小配置.uip').read_text('utf-8-sig');self.assertIn('日常任务:{',ui);self.assertIn('名称:"合作冒险启用"',ui);self.assertIn('名称:"合作队伍模式"',ui);self.assertNotIn('合作待开发',ui);self.assertEqual(json.loads((ROOT/'project.json').read_text('utf-8'))['registeredTasks'].count(152),1)

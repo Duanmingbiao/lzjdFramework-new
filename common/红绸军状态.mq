@@ -1,0 +1,175 @@
+﻿Function IsRedArmy(taskId)
+    IsRedArmy = taskId = 84 Or taskId = 85
+End Function
+Function RedArmyName(taskId)
+    RedArmyName = "消灭红绸军_中午84"
+    If taskId = 85 Then
+        RedArmyName = "消灭红绸军_下午85"
+    End If
+End Function
+Sub LoadRedArmySettings()
+    redEnabled = WorldBoolean("红绸军启用")
+    redMap = WorldNumber("红绸军地图", 0, 2)
+    red84Hour = WorldNumber("红绸军中午时", 12, 23)
+    red84Minute = WorldNumber("红绸军中午分", 30, 59)
+    red85Hour = WorldNumber("红绸军下午时", 20, 23)
+    red85Minute = WorldNumber("红绸军下午分", 0, 59)
+    Call WriteMainLog("[消灭红绸军84/85配置] 地图=" & redMap & " 中午=" & red84Hour & ":" & red84Minute & " 下午=" & red85Hour & ":" & red85Minute)
+End Sub
+Function RedArmyTime(taskId)
+    Dim seconds
+    If taskId = 84 Then
+        seconds = red84Hour * 3600 + red84Minute * 60
+        If seconds < 41400 Or seconds > 48600 Then
+            seconds = 46800 + (10 + Int(Rnd() * 41)) * 60
+            Call Note("[消灭红绸军84] 配置超出11:30至13:30，按专业版随机13:10至13:50")
+        End If
+    Else
+        seconds = red85Hour * 3600 + red85Minute * 60
+        If seconds < 66600 Or seconds > 73800 Then
+            seconds = 68400 + (10 + Int(Rnd() * 41)) * 60
+            Call Note("[消灭红绸军85] 配置超出18:30至20:30，按专业版随机19:10至19:50")
+        End If
+    End If
+    RedArmyTime = seconds
+End Function
+Sub SetRedArmyPhase(value)
+    If currentTask = 84 Then
+        red84Phase = value
+    Else
+        red85Phase = value
+    End If
+End Sub
+Sub NewRedArmySession()
+    redReason = ""
+    redMode = -1
+    redActionAt = 0
+    redFirstDone = False
+    redRefreshLeft = 6
+    red84Due = WorldDayStart(Time()) + RedArmyTime(84)
+    red84Done = False
+    red84Failed = False
+    red84Count = 0
+    red84Failures = 0
+    red84Restarts = 0
+    red84Recoveries = 0
+    red84Phase = "未开始"
+    red84Terminal = False
+    red84Reason = ""
+    red84FinishedAt = 0
+    red85Due = WorldDayStart(Time()) + RedArmyTime(85)
+    red85Done = False
+    red85Failed = False
+    red85Count = 0
+    red85Failures = 0
+    red85Restarts = 0
+    red85Recoveries = 0
+    red85Phase = "未开始"
+    red85Terminal = False
+    red85Reason = ""
+    red85FinishedAt = 0
+End Sub
+Function SelectRedArmy()
+    Dim nowStamp, dayStart
+    SelectRedArmy = 0
+    If Not redEnabled Then
+        Exit Function
+    End If
+    nowStamp = Time()
+    dayStart = WorldDayStart(nowStamp)
+    If red84Due < dayStart Then
+        red84Due = dayStart + RedArmyTime(84)
+    End If
+    If nowStamp >= red84Due Then
+        If nowStamp > dayStart + 50400 Then
+            red84Due = dayStart + 86400 + RedArmyTime(84)
+            Call Note("[" & RedArmyName(84) & "] 时段已过，是否提交完成=否 下一次执行时间Unix=" & red84Due)
+        Else
+            SelectRedArmy = 84
+            Exit Function
+        End If
+    End If
+    If red85Due < dayStart Then
+        red85Due = dayStart + RedArmyTime(85)
+    End If
+    If nowStamp >= red85Due Then
+        If nowStamp > dayStart + 75600 Then
+            red85Due = dayStart + 86400 + RedArmyTime(85)
+            Call Note("[" & RedArmyName(85) & "] 时段已过，是否提交完成=否 下一次执行时间Unix=" & red85Due)
+        Else
+            SelectRedArmy = 85
+            Exit Function
+        End If
+    End If
+End Function
+Sub StartRedArmyTask(taskId)
+    redReason = ""
+    redMode = -1
+    worldLastMatch = ""
+    worldLastOcr = ""
+    If taskId = 84 Then
+        red84Terminal = False
+        red84Reason = ""
+        red84FinishedAt = 0
+        red84Done = False
+        red84Failed = False
+        Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 地图=" & redMap & " 重启次数=" & red84Restarts & " 恢复次数=" & red84Recoveries)
+    ElseIf taskId = 85 Then
+        red85Terminal = False
+        red85Reason = ""
+        red85FinishedAt = 0
+        red85Done = False
+        red85Failed = False
+        Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 地图=" & redMap & " 重启次数=" & red85Restarts & " 恢复次数=" & red85Recoveries)
+    End If
+End Sub
+Sub RecoverRedArmyTask(taskId)
+    If taskId = 84 Then
+        red84Terminal = False
+        red84Failed = True
+        red84Failures = red84Failures + 1
+        red84Recoveries = red84Recoveries + 1
+        Call WorldLog("保存恢复原任务=84 阶段=" & red84Phase & " 失败次数=" & red84Failures & " 恢复次数=" & red84Recoveries & " 是否提交完成=否")
+    ElseIf taskId = 85 Then
+        red85Terminal = False
+        red85Failed = True
+        red85Failures = red85Failures + 1
+        red85Recoveries = red85Recoveries + 1
+        Call WorldLog("保存恢复原任务=85 阶段=" & red85Phase & " 失败次数=" & red85Failures & " 恢复次数=" & red85Recoveries & " 是否提交完成=否")
+    End If
+End Sub
+Sub RestartRedArmyTask(taskId)
+    If taskId = 84 Then
+        red84Restarts = red84Restarts + 1
+        Call WorldLog("重启原任务=84 重启次数=" & red84Restarts & " 恢复次数=" & red84Recoveries)
+    ElseIf taskId = 85 Then
+        red85Restarts = red85Restarts + 1
+        Call WorldLog("重启原任务=85 重启次数=" & red85Restarts & " 恢复次数=" & red85Recoveries)
+    End If
+End Sub
+Sub CommitRedArmyTask(taskId)
+    Dim finishedAt
+    If taskId = 84 Then
+        finishedAt = Time()
+        If red84FinishedAt > 0 Then
+            finishedAt = red84FinishedAt
+        End If
+        red84Done = True
+        red84Failed = False
+        red84Count = red84Count + 1
+        red84Due = WorldDayStart(finishedAt) + 86400 + RedArmyTime(84)
+        red84Phase = "本时段已完成，等待次日"
+        Call WorldLog("是否提交完成=是 次数=" & red84Count & " 终态=" & red84Reason & " 下一次执行时间Unix=" & red84Due & " 重启次数=" & red84Restarts & " 恢复次数=" & red84Recoveries)
+    ElseIf taskId = 85 Then
+        finishedAt = Time()
+        If red85FinishedAt > 0 Then
+            finishedAt = red85FinishedAt
+        End If
+        red85Done = True
+        red85Failed = False
+        red85Count = red85Count + 1
+        red85Due = WorldDayStart(finishedAt) + 86400 + RedArmyTime(85)
+        red85Phase = "本时段已完成，等待次日"
+        Call WorldLog("是否提交完成=是 次数=" & red85Count & " 终态=" & red85Reason & " 下一次执行时间Unix=" & red85Due & " 重启次数=" & red85Restarts & " 恢复次数=" & red85Recoveries)
+    End If
+End Sub

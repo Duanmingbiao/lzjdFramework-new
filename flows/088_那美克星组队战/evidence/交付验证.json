@@ -1,0 +1,47 @@
+{
+  "task": 88,
+  "name": "那美克星组队战",
+  "professional": "root.636",
+  "static": {
+    "scope": "static structure and encoding only; not official MQ compilation",
+    "issues": [],
+    "moduleCount": 45,
+    "pass": true
+  },
+  "simulation": {
+    "total": 498,
+    "task88": 29,
+    "pass": true
+  },
+  "synchronized": [
+    {
+      "extension": ".mq",
+      "build": "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq",
+      "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+      "buildSha256": "1fb520d46d06a6cc62af27606fe6aa903ab87820c19aa865e094bff5825ecf50",
+      "targetSha256": "1fb520d46d06a6cc62af27606fe6aa903ab87820c19aa865e094bff5825ecf50"
+    },
+    {
+      "extension": ".uip",
+      "build": "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip",
+      "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).uip",
+      "buildSha256": "78024ef86b7c67624657ed6b27894d3e2bc6655d3566de17685323b006196e4a",
+      "targetSha256": "78024ef86b7c67624657ed6b27894d3e2bc6655d3566de17685323b006196e4a"
+    }
+  ],
+  "sourceIncludedInBuild": true,
+  "sourceHashes": {
+    "flows\\088_那美克星组队战\\那美克星组队战.mq": "292715d8567dca49f735f0b9ea68acbf4ceaa980e1c45ec7c124fa966a4fec4c",
+    "common\\那美克状态.mq": "0e2d97680de3bee1f2379631135944dc89acaa01702c9bedb5c51a2e20c4462b",
+    "validation\\test_namek.py": "74937fce9fef027b2ca60c0a6425b0ad0dc1d91bf953cd47d637d53536522381"
+  },
+  "officialCompilation": "not performed",
+  "deviceExecution": "not performed",
+  "delayedRecheck": {
+    "waitSeconds": 10,
+    "allHashesMatch": {
+      ".mq": true,
+      ".uip": true
+    }
+  }
+}

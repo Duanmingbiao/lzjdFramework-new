@@ -1,4 +1,11 @@
 ﻿Sub NewSession()
+    Call NewEarthSession()
+    Call NewNamekSession()
+    Call NewBeyondSession()
+    Call NewLegendSession()
+    Call NewRedArmySession()
+    Call NewCrossBossSession()
+    Call NewWorldBossSession()
     Call NewCoopSession()
     Call NewWukongSession()
     Call NewTimedStaminaSession()
@@ -71,6 +78,27 @@ Sub SaveCurrentTask(taskId)
     currentTask = taskId
     resumeTask = taskId
     terminalConfirmed = False
+    If taskId = 71 Then
+        Call StartEarthTask()
+    End If
+    If taskId = 88 Then
+        Call StartNamekTask()
+    End If
+    If taskId = 87 Then
+        Call StartBeyondTask()
+    End If
+    If taskId = 86 Then
+        Call StartLegendTask()
+    End If
+    If IsRedArmy(taskId) Then
+        Call StartRedArmyTask(taskId)
+    End If
+    If taskId = 83 Then
+        Call StartCrossBossTask()
+    End If
+    If IsWorldBoss(taskId) Then
+        Call StartWorldBossTask(taskId)
+    End If
     If taskId = 152 Then
         Call StartCoopTask()
     End If
@@ -106,6 +134,27 @@ End Sub
 Sub SaveRecovery()
     Call Note("[流程] 入口 SaveRecovery")
     resumeTask = currentTask
+    If currentTask = 71 Then
+        Call RecoverEarthTask()
+    End If
+    If currentTask = 88 Then
+        Call RecoverNamekTask()
+    End If
+    If currentTask = 87 Then
+        Call RecoverBeyondTask()
+    End If
+    If currentTask = 86 Then
+        Call RecoverLegendTask()
+    End If
+    If IsRedArmy(currentTask) Then
+        Call RecoverRedArmyTask(currentTask)
+    End If
+    If currentTask = 83 Then
+        Call RecoverCrossBossTask()
+    End If
+    If IsWorldBoss(currentTask) Then
+        Call RecoverWorldBossTask(currentTask)
+    End If
     If currentTask = 152 Then
         Call RecoverCoopTask()
     End If
@@ -149,7 +198,7 @@ End Sub
 Function CommitTask(hallConfirmed)
     Call Note("[流程] 入口 CommitTask")
     CommitTask = False
-    If currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 Then
+    If currentTask <> 71 And currentTask <> 88 And currentTask <> 87 And currentTask <> 86 And currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56 And Not IsTimedStamina(currentTask) And currentTask <> 151 And currentTask <> 152 And Not IsWorldBoss(currentTask) And currentTask <> 83 And Not IsRedArmy(currentTask) Then
         Call Note("[流程] 出口 CommitTask 分支1 路径条件 currentTask <> 168 And currentTask <> 169 And currentTask <> 167 And currentTask <> 166 And currentTask <> 55 And currentTask <> 56")
         Exit Function
     End If
@@ -165,7 +214,21 @@ Function CommitTask(hallConfirmed)
         Call Note("[流程] 出口 CommitTask 分支4 路径条件 Not BeginForegroundCommit()")
         Exit Function
     End If
-    If currentTask = 152 Then
+    If currentTask = 71 Then
+        Call CommitEarthTask()
+    ElseIf currentTask = 88 Then
+        Call CommitNamekTask()
+    ElseIf currentTask = 87 Then
+        Call CommitBeyondTask()
+    ElseIf currentTask = 86 Then
+        Call CommitLegendTask()
+    ElseIf IsRedArmy(currentTask) Then
+        Call CommitRedArmyTask(currentTask)
+    ElseIf currentTask = 83 Then
+        Call CommitCrossBossTask()
+    ElseIf IsWorldBoss(currentTask) Then
+        Call CommitWorldBossTask(currentTask)
+    ElseIf currentTask = 152 Then
         Call CommitCoopTask()
     ElseIf currentTask = 151 Then
         Call CommitWukongTask()

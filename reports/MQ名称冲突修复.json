@@ -1,0 +1,42 @@
+{
+  "date": "2026-10-17",
+  "cause": "MQ identifiers are case-insensitive; global terminal variables collided with procedure names",
+  "fix": {
+    "Legend": {
+      "oldFunctionAbsent": true,
+      "newFunctionPresent": true
+    },
+    "Beyond": {
+      "oldFunctionAbsent": true,
+      "newFunctionPresent": true
+    },
+    "Namek": {
+      "oldFunctionAbsent": true,
+      "newFunctionPresent": true
+    },
+    "Earth": {
+      "oldFunctionAbsent": true,
+      "newFunctionPresent": true
+    }
+  },
+  "moduleCount": 47,
+  "testsPassed": 529,
+  "staticPass": true,
+  "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+  "hashes": {
+    ".mq": "33e2cc8c003d6de3b1426782aea1ca1717362346c8c5bac6d48e3af634aaa9da",
+    ".uip": "cf4601fb0e56e69149ca8e2439ecc6dc6df231f543496c252d77bdd287f513cc"
+  },
+  "syncMatches": {
+    ".mq": true,
+    ".uip": true
+  },
+  "officialCompilation": "pending user verification",
+  "delayedRecheck": {
+    "seconds": 10,
+    "checks": {
+      ".mq": true,
+      ".uip": true
+    }
+  }
+}

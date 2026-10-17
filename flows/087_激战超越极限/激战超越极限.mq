@@ -1,0 +1,326 @@
+﻿Function BeyondExpired()
+    Dim expired
+    expired = BusinessExpired()
+    BeyondExpired = expired
+    If expired Then
+        Call WorldLog("失败或超时原因=公共业务总超时或前台中断；保存原任务=87 是否提交完成=否")
+    End If
+End Function
+
+Function ConfirmBeyondTerminal(reason)
+    ConfirmBeyondTerminal = RESULT_TIMEOUT
+    If BeyondExpired() Then
+        Exit Function
+    End If
+    beyondReason = reason
+    beyondTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("正常终态=" & reason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    ConfirmBeyondTerminal = RESULT_OK
+End Function
+
+Function EnterBeyond()
+    EnterBeyond = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        Do While Not Sys.AppIsFront(GAME_PACKAGE)
+        If BeyondExpired() Then
+            Exit Function
+        End If
+            Delay 20
+        Loop
+        Swipe 370, 1000, 370, 300, 300
+        Call WorldWait(1000)
+        If WorldPair("087_入口") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("087_任务页一") Then
+            Call WorldWait(300)
+            EnterBeyond = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("087_已完成一") Then
+            Call WorldWait(500)
+            beyondRewardsReady = True
+            EnterBeyond = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldMatch("087_未开启一") Then
+            Call WorldWait(2000)
+            EnterBeyond = ConfirmBeyondTerminal("专业版灰色未开放或等级不足，本轮结束")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function EnterBeyondSupport()
+    EnterBeyondSupport = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        If WorldPair("087_寻求支援") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("087_支援无资源") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+            EnterBeyondSupport = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("087_支援页") Then
+            Call WorldWait(300)
+            EnterBeyondSupport = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function InviteBeyondWarriors()
+    InviteBeyondWarriors = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        If WorldPair("087_可邀请") Then
+            If Not WorldOffset(-160, -770, 500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(-160, -350, 500) Then
+                Exit Function
+            End If
+            If Not WorldOffset(64, 29, 500) Then
+                Exit Function
+            End If
+            InviteBeyondWarriors = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("087_不可邀请") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            InviteBeyondWarriors = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ReturnBeyondFromSupport()
+    ReturnBeyondFromSupport = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        If WorldPair("087_不可邀请") Then
+            If Not WorldOffset(0, 0, 200) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("087_返回按钮") Then
+            Call WorldWait(1500)
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("087_任务页一") Then
+            ReturnBeyondFromSupport = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("087_已完成一") Then
+            Call WorldWait(500)
+            ReturnBeyondFromSupport = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FightBeyondRound()
+    Dim battleClicks
+    battleClicks = 0
+    FightBeyondRound = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("087_已完成一") Then
+            Call WorldWait(2000)
+            FightBeyondRound = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("087_点击战斗") Then
+            If battleClicks < 5 Then
+            If Not WorldOffset(190, 12, 0) Then
+                Exit Function
+            End If
+                battleClicks = battleClicks + 1
+            Else
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("087_开战页") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("152_开战图标6") Then
+            If Not WorldTap(398, 982, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("087_跳过") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            Call WorldWait(3000)
+        End If
+        If WorldMatch("087_挑战成功一") Then
+            If Not WorldOffset(0, 0, 2000) Then
+                Exit Function
+            End If
+            FightBeyondRound = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("087_挑战成功二") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            FightBeyondRound = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("087_战斗失败") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            FightBeyondRound = ConfirmBeyondTerminal("专业版明确战斗失败并结束任务")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ContinueBeyondRound()
+    ContinueBeyondRound = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        If WorldPair("087_战斗失败") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("087_继续任务") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("087_任务页一") Then
+            ContinueBeyondRound = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("087_已完成一") Then
+            Call WorldWait(50)
+            beyondRewardsReady = True
+            ContinueBeyondRound = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FinishBeyondRewards()
+    FinishBeyondRewards = RESULT_TIMEOUT
+    Do
+        If BeyondExpired() Then
+            Exit Function
+        End If
+        If WorldMatch("087_已完成一") Then
+            If Not WorldOffset(475, -975, 50) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("087_奖励弹窗") Then
+            If Not WorldOffset(0, 0, 50) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("087_灰色领取") Then
+            If Not WorldOffset(0, 0, 50) Then
+                Exit Function
+            End If
+            FinishBeyondRewards = ConfirmBeyondTerminal("专业版英雄奖励领取完成")
+            Exit Function
+        End If
+        If WorldMatch("087_蓝色领取") Then
+            If Not WorldOffset(0, 0, 50) Then
+                Exit Function
+            End If
+        End If
+    Loop
+End Function
+
+Function ExecuteBeyond()
+    Dim roundIndex
+    ExecuteBeyond = RESULT_TIMEOUT
+    terminalConfirmed = False
+    beyondTerminal = False
+    beyondReason = ""
+    beyondRewardsReady = False
+    If EnterEnemyHall() <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("激战超越极限入口")
+    If EnterBeyond() <> RESULT_OK Then
+        Exit Function
+    End If
+    If beyondTerminal Then
+        ExecuteBeyond = RESULT_OK
+        Exit Function
+    End If
+    If Not beyondRewardsReady Then
+        For roundIndex = 1 To 10
+            Call WorldStage("激战超越极限寻求支援")
+            If EnterBeyondSupport() <> RESULT_OK Then
+                Exit Function
+            End If
+            Call WorldStage("激战超越极限邀请")
+            If InviteBeyondWarriors() <> RESULT_OK Then
+                Exit Function
+            End If
+            Call WorldStage("激战超越极限支援返回确认")
+            If ReturnBeyondFromSupport() <> RESULT_OK Then
+                Exit Function
+            End If
+            Call WorldStage("激战超越极限战斗")
+            If FightBeyondRound() <> RESULT_OK Then
+                Exit Function
+            End If
+            If beyondTerminal Then
+                ExecuteBeyond = RESULT_OK
+                Exit Function
+            End If
+            Call WorldWait(1000)
+            Call WorldStage("激战超越极限继续任务")
+            If ContinueBeyondRound() <> RESULT_OK Then
+                Exit Function
+            End If
+            If beyondRewardsReady Then
+                Exit For
+            End If
+        Next
+    End If
+    Call WorldStage("激战超越极限领奖")
+    ExecuteBeyond = FinishBeyondRewards()
+End Function

@@ -1,0 +1,82 @@
+﻿Sub SchedulerStep()
+    Dim selected, result, hallResult, committed
+    committed = HandleForegroundRecovery()
+    selected = SelectDueTask()
+    If selected = 0 Then
+        If foregroundLoginPending Then
+            result = EnsureGameHall()
+            Call Note("[流程] EnsureGameHall() 返回=" & result)
+            If HandleForegroundRecovery() Then
+                Exit Sub
+            End If
+            If result = RESULT_OK Then
+                foregroundLoginPending = False
+            Else
+                Call RestartGame()
+            End If
+        End If
+        Exit Sub
+    End If
+    Call SaveCurrentTask(selected)
+    Call Note("[流程] 调度入口 任务=" & selected)
+    result = EnsureGameHall()
+    Call Note("[流程] EnsureGameHall() 返回=" & result)
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    If result <> RESULT_OK Then
+        loginFailures = loginFailures + 1
+        Call Note("登录总超时，次数=" & loginFailures)
+        Call RestartGame()
+        Exit Sub
+    End If
+    foregroundLoginPending = False
+    businessStarted = TickCount()
+    result = DispatchTask(selected)
+    Call Note("[流程] DispatchTask(selected) 返回=" & result)
+    Do While result = RESULT_WAIT
+        If BusinessExpired() Then
+            result = RESULT_TIMEOUT
+        Else
+            Delay 20
+            result = DispatchTask(selected)
+            Call Note("[流程] DispatchTask(selected) 返回=" & result)
+        End If
+    Loop
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    If result = RESULT_OK And terminalConfirmed Then
+        hallResult = ReturnToHall()
+        Call Note("[流程] ReturnToHall() 返回=" & hallResult)
+        If currentTask = 152 Then
+            Call Note("[合作大冒险152] 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If currentTask = 151 Then
+            Call Note("[悟空的冒险151] 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If IsTimedStamina(currentTask) Then
+            Call Note("[定时体力] 编号=" & currentTask & " 返回大厅结果=" & hallResult & " 是否提交完成=尚未提交")
+        End If
+        If HandleForegroundRecovery() Then
+            Exit Sub
+        End If
+        If hallResult = RESULT_OK Then
+            committed = CommitTask(True)
+            If committed Then
+                Call Note("[流程] CommitTask(True) 返回=true")
+            Else
+                Call Note("[流程] CommitTask(True) 返回=false")
+            End If
+            If committed Then
+                Exit Sub
+            End If
+        End If
+    End If
+    If HandleForegroundRecovery() Then
+        Exit Sub
+    End If
+    Call SaveRecovery()
+    Call Note("[流程] 调度出口 业务未提交成功，进入恢复")
+    Call RestartGame()
+End Sub

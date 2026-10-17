@@ -1,0 +1,71 @@
+﻿Function WukongBooleanSetting(key)
+    Dim raw, text
+    WukongBooleanSetting = False
+    raw = ReadUIConfig(key, False)
+    text = "<null>"
+    If Not IsNull(raw) Then
+        text = LCase(Trim(CStr(raw)))
+        If text = "true" Or text = "1" Then
+            WukongBooleanSetting = True
+        End If
+    End If
+    Call WriteMainLog("[龙珠激斗脚本][悟空151配置] 键=" & key & " 原始值=" & text)
+End Function
+Function WukongOptionSetting(key)
+    Dim raw
+    WukongOptionSetting = 0
+    raw = ReadUIConfig(key, 0)
+    If IsNumeric(raw) Then
+        If CDbl(raw) = 1 Then
+            WukongOptionSetting = 1
+        End If
+    End If
+End Function
+Sub LoadWukongSettings()
+    wukongEnabled = WukongBooleanSetting("悟空冒险启用")
+    wukongKeepDownload = WukongBooleanSetting("保留下载提示")
+    wukongHidden = WukongOptionSetting("悟空隐藏关卡")
+    wukongSweep = WukongOptionSetting("悟空扫荡关卡")
+    wukongInterval = PositiveSetting("悟空间隔秒", 3600)
+    Call WriteMainLog("[龙珠激斗脚本][悟空151配置] 隐藏关卡=" & wukongHidden & " 扫荡关卡=" & wukongSweep & " 间隔秒=" & wukongInterval)
+End Sub
+Sub NewWukongSession()
+    wukongLastOcr = ""
+    wukongLastMatch = ""
+    wukongRegisteredTask = 151
+    wukongFirst = True
+    wukongDue = 0
+    wukongDone = False
+    wukongFailed = False
+    wukongCount = 0
+    wukongFailures = 0
+    wukongRestarts = 0
+    wukongRecoveries = 0
+    wukongPhase = "未开始"
+    wukongTerminal = False
+    wukongTerminalReason = ""
+End Sub
+Sub StartWukongTask()
+    wukongLastOcr = ""
+    wukongLastMatch = ""
+    wukongTerminal = False
+    wukongDone = False
+    wukongFailed = False
+    Call Note("[悟空的冒险151] 任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & wukongRestarts & " 恢复次数=" & wukongRecoveries)
+End Sub
+Sub RecoverWukongTask()
+    wukongTerminal = False
+    wukongFailed = True
+    wukongFailures = wukongFailures + 1
+    wukongRecoveries = wukongRecoveries + 1
+    Call Note("[悟空的冒险151] 保存恢复任务=151 是否提交完成=否 阶段=" & wukongPhase & " 失败次数=" & wukongFailures & " 恢复次数=" & wukongRecoveries)
+End Sub
+Sub CommitWukongTask()
+    wukongDone = True
+    wukongFailed = False
+    wukongCount = wukongCount + 1
+    wukongDue = TickCount() + wukongInterval * 1000
+    wukongFirst = False
+    wukongPhase = "完成"
+    Call Note("[悟空的冒险151] 是否提交完成=是 次数=" & wukongCount & " 下一次执行时间Unix=" & (Time() + wukongInterval) & " 重启次数=" & wukongRestarts & " 恢复次数=" & wukongRecoveries)
+End Sub

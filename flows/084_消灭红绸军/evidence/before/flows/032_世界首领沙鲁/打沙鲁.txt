@@ -1,0 +1,265 @@
+﻿Function EnterCellEncounter()
+    Dim clicked
+    EnterCellEncounter = RESULT_TIMEOUT
+    Call WorldStage("打沙鲁进入奇遇")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=奇遇入口未知；未提交")
+            Exit Function
+        End If
+        If WorldPair("032_奇遇入口") Then
+            clicked = WorldOffset(0, 0, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+        End If
+        Call WorldWait(50)
+        If WorldPair("032_奇遇界面") Then
+            cellEncounterEnded = False
+            Call Progress()
+            Call WorldWait(50)
+            EnterCellEncounter = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("032_奇遇结束") Then
+            cellEncounterEnded = True
+            Call Progress()
+            Call WorldWait(50)
+            Call WorldLog("识别奇遇已结束，走已结束关闭返回路径")
+            EnterCellEncounter = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function SweepCellEncounter(limit)
+    Dim count, clicked, x, y, i
+    SweepCellEncounter = RESULT_TIMEOUT
+    count = 0
+    Call WorldStage("打沙鲁扫荡 阶段阈值=" & limit)
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=奇遇扫荡未知；未提交")
+            Exit Function
+        End If
+        If WorldPair("032_关闭") Then
+            clicked = WorldOffset(0, 0, 50)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+            SweepCellEncounter = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("032_扫荡") Then
+            x = foundX
+            y = foundY
+            Call WorldLog("奇遇扫荡同锚点六点击 点击偏移=0,0")
+            For i = 1 To 5
+                clicked = WorldTap(x, y, 50)
+                If Not clicked Then
+                    Exit Function
+                End If
+            Next
+            clicked = WorldTap(x, y, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+            count = count + 1
+            Call WorldWait(500)
+            Call WorldLog("奇遇扫荡累计=" & count & " 阶段阈值=" & limit)
+        End If
+        Call WorldWait(50)
+        If WorldPair("032_结果") Then
+            x = foundX
+            y = foundY
+            Call WorldWait(1000)
+            clicked = WorldTap(x, y, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+            count = 0
+        End If
+        If count > limit Then
+            Call Progress()
+            Call WorldLog("扫荡阶段计数出口，仅推进下一阶段；不是任务成功")
+            SweepCellEncounter = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function RunCellFirstBattle()
+    Dim count, clicked
+    RunCellFirstBattle = RESULT_TIMEOUT
+    count = 0
+    Call WorldStage("打沙鲁首次开战与退出")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=首次战斗未知；未提交")
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("032_开战") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+            count = count + 1
+        End If
+        If WorldMatch("032_开战图标6") Then
+            clicked = WorldTap(587, 982, 2000)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+        End If
+        If WorldMatch("032_少人提示") Then
+            clicked = WorldOffset(0, 0, 2000)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("032_暂停") Then
+            clicked = WorldOffset(-311, 10, 200)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+        End If
+        If WorldMatch("032_退出") Then
+            clicked = WorldOffset(0, 0, 200)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+            RunCellFirstBattle = RESULT_OK
+            Exit Function
+        End If
+        If count > 3 Then
+            Call Progress()
+            Call WorldLog("开战累计超过3，进入结果处理；尚未提交")
+            RunCellFirstBattle = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function ReturnCellEncounter()
+    Dim x, y, clicked
+    ReturnCellEncounter = RESULT_TIMEOUT
+    Call WorldStage("打沙鲁首次战斗后返回奇遇")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=战后奇遇页面未确认")
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("032_结果") Then
+            x = foundX
+            y = foundY
+            Call WorldWait(1000)
+            clicked = WorldTap(x, y, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+        End If
+        Call WorldWait(50)
+        If WorldPair("032_奇遇界面") Then
+            Call Progress()
+            Call WorldWait(1000)
+            ReturnCellEncounter = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function ReturnCellWorldBoss()
+    Dim clicked
+    ReturnCellWorldBoss = RESULT_TIMEOUT
+    Call WorldStage("打沙鲁关闭奇遇返回首领")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=奇遇关闭后首领页面未确认")
+            Exit Function
+        End If
+        If WorldPair("032_关闭") Then
+            clicked = WorldOffset(0, 0, 50)
+            If Not clicked Then
+                Exit Function
+            End If
+            Call Progress()
+            If cellEncounterEnded Then
+                ReturnCellWorldBoss = RESULT_OK
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If Not cellEncounterEnded Then
+            If WorldPair("032_关闭其他") Then
+                clicked = WorldOffset(0, 0, 50)
+                If Not clicked Then
+                    Exit Function
+                End If
+                Call Progress()
+            End If
+            Call WorldWait(50)
+        End If
+        If WorldPair("032_首领界面") Then
+            Call WorldWait(300)
+            Call Progress()
+            ReturnCellWorldBoss = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteCellBoss()
+    Dim result
+    ExecuteCellBoss = RESULT_TIMEOUT
+    cellTerminal = False
+    terminalConfirmed = False
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterBossPage("032_")
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterCellEncounter()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    If Not cellEncounterEnded Then
+        result = SweepCellEncounter(20)
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = RunCellFirstBattle()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = ReturnCellEncounter()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = SweepCellEncounter(3)
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    result = ReturnCellWorldBoss()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = FinishBossRewards("032_")
+    If result <> RESULT_OK Or BusinessExpired() Then
+        Exit Function
+    End If
+    cellFinishedAt = Time()
+    cellTerminal = True
+    terminalConfirmed = True
+    ExecuteCellBoss = RESULT_OK
+End Function

@@ -1,0 +1,161 @@
+﻿Function LegendExpired()
+    Dim expired
+    expired = BusinessExpired()
+    LegendExpired = expired
+    If expired Then
+        Call WorldLog("失败或超时原因=公共业务总超时或前台中断；保存原任务=86 是否提交完成=否")
+    End If
+End Function
+
+Function ConfirmLegendTerminal(reason)
+    ConfirmLegendTerminal = RESULT_TIMEOUT
+    If LegendExpired() Then
+        Exit Function
+    End If
+    legendReason = reason
+    legendTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("正常终态=" & reason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    ConfirmLegendTerminal = RESULT_OK
+End Function
+
+Function LegendAutoTriple()
+    LegendAutoTriple = False
+    If LegendExpired() Then
+        Exit Function
+    End If
+    If WorldMatch("086_三倍已就绪") Then
+        LegendAutoTriple = True
+        Exit Function
+    End If
+    If WorldMatch("086_开启自动") Then
+        If Not WorldOffset(-310, 170, 50) Then
+            Exit Function
+        End If
+    ElseIf WorldMatch("086_开启三倍") Then
+        If Not WorldOffset(318, 92, 50) Then
+            Exit Function
+        End If
+    ElseIf WorldMatch("086_战斗基准") Then
+        If Not WorldOffset(318, 16, 50) Then
+            Exit Function
+        End If
+    End If
+End Function
+
+Function ExecuteLegend()
+    Dim result, difficultyChecked, acted
+    ExecuteLegend = RESULT_TIMEOUT
+    terminalConfirmed = False
+    legendTerminal = False
+    legendReason = ""
+    difficultyChecked = False
+    Call WorldLog("业务入口 ExecuteLegend 编号=86")
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    Call WorldStage("超战士传说入口")
+    Do
+        If LegendExpired() Then
+            Exit Function
+        End If
+        acted = False
+        If WorldPair("086_未开启") Then
+            Call WorldWait(2000)
+            ExecuteLegend = ConfirmLegendTerminal("专业版灰色未开启入口，本轮结束")
+            Exit Function
+        End If
+        If WorldPair("086_入口") Then
+            If Not WorldOffset(0, 0, 300) Then
+                Exit Function
+            End If
+            acted = True
+        End If
+        If WorldPair("086_无任务") Then
+            If Not difficultyChecked Then
+                Call WorldLog("专业版分支=看看困难 等待毫秒=2000 点击坐标=120,718 等待毫秒=2000")
+                Call WorldWait(2000)
+                If Not WorldTap(120, 718, 2000) Then
+                    Exit Function
+                End If
+                difficultyChecked = True
+                acted = True
+            Else
+                Call WorldWait(2000)
+                ExecuteLegend = ConfirmLegendTerminal("切换困难后仍明确当前没有任务，本轮结束")
+                Exit Function
+            End If
+        End If
+        If WorldPair("086_界面") Then
+            Call WorldWait(500)
+            Exit Do
+        End If
+        If Not acted Then
+            Delay 50
+        End If
+    Loop
+    Call Progress()
+    Call WorldStage("超战士传说挑战循环")
+    difficultyChecked = False
+    Do
+        If LegendExpired() Then
+            Exit Function
+        End If
+        acted = False
+        If WorldPair("086_界面") Then
+            Call WorldLog("点击挑战 锚点=" & foundX & "," & foundY & " 等待毫秒=500")
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            Call Progress()
+            acted = True
+        End If
+        If WorldMatch("152_开战图标6") Then
+            Call WorldLog("挑战目标=6 固定坐标398,982到587,982 等待500/500")
+            If Not WorldTap(398, 982, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            acted = True
+        End If
+        If LegendAutoTriple() Then
+            Call WorldLog("专业版自动三倍已就绪，战斗中等待3000毫秒")
+            Call WorldWait(3000)
+            acted = True
+        End If
+        If WorldMatch("086_挑战成功") Then
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            Call WorldLog("单场挑战成功，仅继续循环，尚非业务终态")
+            Call Progress()
+            acted = True
+        End If
+        If WorldPair("086_战斗失败") Then
+            If Not WorldOffset(0, 0, 1000) Then
+                Exit Function
+            End If
+            Call WorldLog("失败原因=专业版战斗失败分支；项目不复制其完成标记，恢复原任务86；是否提交完成=否")
+            Exit Function
+        End If
+        If WorldPair("086_无任务") Then
+            If Not difficultyChecked Then
+                Call WorldWait(2000)
+                If Not WorldTap(120, 718, 2000) Then
+                    Exit Function
+                End If
+                difficultyChecked = True
+                acted = True
+            Else
+                ExecuteLegend = ConfirmLegendTerminal("挑战后切换困难仍明确当前没有任务，本轮结束")
+                Exit Function
+            End If
+        End If
+        If Not acted Then
+            Delay 50
+        End If
+    Loop
+End Function

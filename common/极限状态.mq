@@ -1,0 +1,64 @@
+﻿Sub LoadBeyondSettings()
+    beyondEnabled = WorldBoolean("激战超越极限启用")
+    Call WriteMainLog("[激战超越极限87配置] 启用状态已读取")
+End Sub
+
+Sub NewBeyondSession()
+    beyondRewardsReady = False
+    beyondDue = 0
+    beyondFirst = True
+    beyondDone = False
+    beyondFailed = False
+    beyondCount = 0
+    beyondFailures = 0
+    beyondRestarts = 0
+    beyondRecoveries = 0
+    beyondPhase = "未开始"
+    beyondTerminal = False
+    beyondReason = ""
+End Sub
+
+Function SelectBeyond()
+    SelectBeyond = 0
+    If beyondEnabled Then
+        If beyondFirst Or TickCount() >= beyondDue Then
+            SelectBeyond = 87
+        End If
+    End If
+End Function
+
+Sub StartBeyondTask()
+    beyondRewardsReady = False
+    beyondDone = False
+    beyondFailed = False
+    beyondTerminal = False
+    beyondReason = ""
+    beyondPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 任务=激战超越极限87 重启次数=" & beyondRestarts & " 恢复次数=" & beyondRecoveries)
+End Sub
+
+Sub RecoverBeyondTask()
+    beyondRewardsReady = False
+    beyondTerminal = False
+    beyondFailed = True
+    beyondFailures = beyondFailures + 1
+    beyondRecoveries = beyondRecoveries + 1
+    beyondPhase = "等待恢复"
+    Call WorldLog("保存恢复原任务=87 阶段=" & beyondPhase & " 失败次数=" & beyondFailures & " 恢复次数=" & beyondRecoveries & " 是否提交完成=否")
+End Sub
+
+Sub RestartBeyondTask()
+    beyondRestarts = beyondRestarts + 1
+    Call WorldLog("重启原任务=87 重启次数=" & beyondRestarts & " 恢复次数=" & beyondRecoveries)
+End Sub
+
+Sub CommitBeyondTask()
+    beyondDone = True
+    beyondFailed = False
+    beyondCount = beyondCount + 1
+    beyondFirst = False
+    beyondDue = TickCount() + 86400000
+    beyondPhase = "本轮已完成，等待24小时"
+    Call WorldLog("是否提交完成=是 次数=" & beyondCount & " 终态=" & beyondReason & " 下一次执行TickCount=" & beyondDue & " 重启次数=" & beyondRestarts & " 恢复次数=" & beyondRecoveries)
+End Sub

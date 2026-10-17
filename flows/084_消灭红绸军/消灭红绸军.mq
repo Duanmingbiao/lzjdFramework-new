@@ -1,0 +1,477 @@
+﻿Function RedArmyExpired()
+    Dim expired
+    expired = BusinessExpired()
+    RedArmyExpired = expired
+    If expired Then
+        Call WorldLog("失败或超时原因=公共业务总超时或前台中断；保存原任务=" & currentTask & " 是否提交完成=否")
+    End If
+End Function
+Function EnterRedArmy()
+    Dim acted, clicked
+    EnterRedArmy = RESULT_TIMEOUT
+    Call WorldStage("红绸军入口")
+    Do
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        acted = False
+        Call WorldResourcePrompt()
+        If WorldMatch("084_入口") Then
+            If Not WorldOffset(0, 0, 2000) Then
+                Exit Function
+            End If
+            acted = True
+        End If
+        If WorldMatch("084_未开启") Then
+            Call WorldWait(2000)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            redReason = "专业版灰色未开启入口，本时段结束"
+            redMode = -1
+            EnterRedArmy = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("084_时间已过") Then
+            Call WorldWait(2000)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            redReason = "专业版明确任务时间已过，本时段结束"
+            redMode = -1
+            EnterRedArmy = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("084_主界面") Then
+            Call WorldWait(500)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            redMode = 0
+            EnterRedArmy = RESULT_OK
+            Exit Function
+        End If
+        If Not acted Then
+            Delay 20
+        End If
+    Loop
+End Function
+Function SelectRedArmyMap()
+    Dim base, selectedName, entryName
+    SelectRedArmyMap = RESULT_TIMEOUT
+    base = "084_图一"
+    If redMap = 1 Then
+        base = "084_图二"
+    ElseIf redMap = 2 Then
+        base = "084_图三"
+    End If
+    selectedName = base & "已选"
+    entryName = base & "入口"
+    Call WorldStage("红绸军地图选择")
+    Call WorldLog("地图配置=" & redMap)
+    Do
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        If WorldPair(selectedName) Then
+            Call WorldWait(500)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            SelectRedArmyMap = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair(entryName) Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            Call Progress()
+        End If
+    Loop
+End Function
+Function EnterRedArmyMonster(base)
+    Dim acted
+    EnterRedArmyMonster = RESULT_TIMEOUT
+    Call WorldStage(base)
+    Do
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        acted = False
+        If WorldPair(base) Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            Call Progress()
+            acted = True
+        End If
+        If WorldPair("084_扫荡界面") Then
+            Call Progress()
+            Call WorldWait(500)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            EnterRedArmyMonster = RESULT_OK
+            Exit Function
+        End If
+        If Not acted Then
+            Delay 20
+        End If
+    Loop
+End Function
+Function RedArmyVictory()
+    RedArmyVictory = False
+    If WorldMatch("084_胜利") Then
+        redActionAt = TickCount()
+        If Not WorldOffset(0, 0, 500) Then
+            Exit Function
+        End If
+        Call Progress()
+        RedArmyVictory = True
+    End If
+End Function
+Function RedArmyFlip()
+    RedArmyFlip = False
+    If WorldPair("084_翻牌") Then
+        redActionAt = TickCount()
+        If Not WorldOffset(0, 0, 1000) Then
+            Exit Function
+        End If
+        Call Progress()
+        Call WorldWait(50)
+        RedArmyFlip = True
+    End If
+End Function
+Function RedArmyFlipDone()
+    RedArmyFlipDone = False
+    If WorldPair("084_翻牌完成") Then
+        redActionAt = TickCount()
+        If Not WorldOffset(0, 0, 0) Then
+            Exit Function
+        End If
+        Call Progress()
+        Call WorldWait(50)
+        RedArmyFlipDone = True
+    End If
+End Function
+Function SweepRedArmyMonster(mode)
+    Dim count, limit, text, x, y, acted
+    SweepRedArmyMonster = RESULT_TIMEOUT
+    count = 0
+    limit = 5
+    If mode = 2 Then
+        limit = 7
+    End If
+    Call WorldStage("红绸军扫荡")
+    Call WorldLog("扫荡阶段模式=" & mode & " 0=中午 1=下午首怪 2=下午后两怪")
+    If mode = 1 Then
+        Call WorldWait(50)
+    End If
+    Do
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        acted = False
+        If mode = 1 And count > 6 Then
+            Call WorldWait(500)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            Call WorldLog("首怪7组双点完成，仅结束扫荡阶段，尚非业务终态")
+            SweepRedArmyMonster = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("084_扫荡界面") Then
+            x = foundX
+            y = foundY
+            text = WorldText(297, 827, 417, 852)
+            If text = "挑战次数：0" Then
+                Call WorldLog("扫荡OCR次数为零，仅结束阶段，尚非业务终态")
+                SweepRedArmyMonster = RESULT_OK
+                Exit Function
+            End If
+            Call WorldLog("扫荡双点击偏移=0,0 组次=" & (count + 1))
+            If Not WorldTap(x, y, 20) Then
+                Exit Function
+            End If
+            If Not WorldTap(x, y, 500) Then
+                Exit Function
+            End If
+            count = count + 1
+            Call Progress()
+            acted = True
+        End If
+        If mode <> 1 And count > limit Then
+            Call WorldLog("扫荡组数=" & count & " 达专业版阶段阈值，尚非业务终态")
+            SweepRedArmyMonster = RESULT_OK
+            Exit Function
+        End If
+        If RedArmyVictory() Then
+            count = 0
+            acted = True
+            If mode = 1 Then
+                SweepRedArmyMonster = RESULT_OK
+                Exit Function
+            End If
+        End If
+        If mode = 1 Then
+            Call WorldWait(50)
+        End If
+        If RedArmyFlip() Then
+            count = 0
+            acted = True
+        End If
+        If RedArmyFlipDone() Then
+            count = 0
+            acted = True
+        End If
+        If Not acted And mode <> 1 Then
+            Delay 20
+        End If
+    Loop
+End Function
+Function CloseRedArmyMonster(mode)
+    Dim closed
+    CloseRedArmyMonster = RESULT_TIMEOUT
+    Call WorldStage("红绸军战斗收尾确认板面")
+    Do
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        closed = RedArmyVictory()
+        If mode = 1 Then
+            closed = RedArmyFlip()
+        End If
+        Call WorldWait(50)
+        closed = RedArmyFlipDone()
+        Call WorldWait(50)
+        If WorldPair("084_关闭") Then
+            redActionAt = TickCount()
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            Call Progress()
+            Call WorldWait(50)
+        End If
+        If mode <> 1 Then
+            Call WorldWait(50)
+        End If
+        If WorldMatch("084_主界面") Then
+            Call WorldWait(500)
+            If RedArmyExpired() Then
+                Exit Function
+            End If
+            CloseRedArmyMonster = RESULT_OK
+            Exit Function
+        End If
+    Loop
+End Function
+Function RefreshRedArmyPage()
+    Dim leftPage, acted
+    RefreshRedArmyPage = RESULT_TIMEOUT
+    leftPage = False
+    Call WorldStage("红绸军防卡切页")
+    Do
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        acted = False
+        If WorldMatch("084_主界面") Then
+            If leftPage Then
+                Call WorldLog("防卡切页已重新确认红绸军板面")
+                RefreshRedArmyPage = RESULT_OK
+                Exit Function
+            End If
+            If Not WorldOffset(0, 0, 2000) Then
+                Exit Function
+            End If
+            acted = True
+        End If
+        If WorldMatch("084_入口") Then
+            If Not leftPage Then
+                leftPage = True
+            Else
+                If Not WorldOffset(0, 0, 1000) Then
+                    Exit Function
+                End If
+                acted = True
+            End If
+        End If
+        If Not acted Then
+            Delay 20
+        End If
+    Loop
+End Function
+Function WaitRedArmyRefresh()
+    Dim i, result, text
+    WaitRedArmyRefresh = RESULT_TIMEOUT
+    redFirstDone = False
+    Call WorldStage("红绸军首怪等待刷新")
+    For i = 1 To 30
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        redRefreshLeft = redRefreshLeft - 1
+        Call WorldLog("首怪刷新倒计时=" & redRefreshLeft)
+        Call WorldWait(1000)
+        If RedArmyExpired() Then
+            Exit Function
+        End If
+        If redRefreshLeft < 1 Then
+            redRefreshLeft = 6
+            result = RefreshRedArmyPage()
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            result = SelectRedArmyMap()
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            WaitRedArmyRefresh = RESULT_OK
+            Exit Function
+        End If
+        If WorldMatch("085_首怪打完") Then
+            redFirstDone = True
+            Call WorldLog("首怪明确打完，仅结束首怪阶段")
+            WaitRedArmyRefresh = RESULT_OK
+            Exit Function
+        End If
+        Call Progress()
+        If WorldMatch("085_等待主界面") Then
+            text = WorldText(262, 395, 404, 430)
+            If text = "挑战次数：1" Or text = "挑战次数：2" Then
+                Call WorldWait(1000)
+                If RedArmyExpired() Then
+                    Exit Function
+                End If
+                Call WorldLog("首怪次数刷新，继续首怪")
+                WaitRedArmyRefresh = RESULT_OK
+                Exit Function
+            End If
+        End If
+    Next
+End Function
+Function RunRedArmyFirstMonster()
+    Dim started, result
+    RunRedArmyFirstMonster = RESULT_TIMEOUT
+    started = TickCount()
+    redActionAt = started
+    redFirstDone = False
+    redRefreshLeft = 6
+    Do
+        result = EnterRedArmyMonster("085_首怪")
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = SweepRedArmyMonster(1)
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = CloseRedArmyMonster(1)
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = RefreshRedArmyPage()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = SelectRedArmyMap()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = WaitRedArmyRefresh()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If redFirstDone Then
+            RunRedArmyFirstMonster = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - redActionAt > 120000 Then
+            Call WorldLog("超时原因=专业版首怪120000ms无胜利/翻牌进展，恢复原85；不提交")
+            Exit Function
+        End If
+        If TickCount() - started > 240000 Then
+            Call WorldLog("超时原因=专业版首怪240000ms总计时，恢复原85；不提交")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteRedArmy(taskId)
+    Dim result, mode, monster
+    ExecuteRedArmy = RESULT_TIMEOUT
+    terminalConfirmed = False
+    redReason = ""
+    Call WorldLog("业务入口 ExecuteRedArmy 编号=" & taskId)
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterRedArmy()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    If redMode = 0 Then
+        result = SelectRedArmyMap()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        If taskId = 85 Then
+            result = RunRedArmyFirstMonster()
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+        End If
+        mode = 0
+        If taskId = 85 Then
+            mode = 2
+        End If
+        For monster = 2 To 3
+            If taskId = 85 Then
+                result = RefreshRedArmyPage()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+                result = SelectRedArmyMap()
+                If result <> RESULT_OK Then
+                    Exit Function
+                End If
+            End If
+            Call WorldLog("进入怪物序号=" & monster)
+            If monster = 2 Then
+                result = EnterRedArmyMonster("084_第二怪")
+            Else
+                result = EnterRedArmyMonster("084_第三怪")
+            End If
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            result = SweepRedArmyMonster(mode)
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+            result = CloseRedArmyMonster(0)
+            If result <> RESULT_OK Then
+                Exit Function
+            End If
+        Next
+        redReason = "第二/第三怪按原流程收尾并确认红绸军主界面，本时段结束"
+    End If
+    If redReason = "" Or RedArmyExpired() Then
+        Call WorldLog("失败原因=未确认业务终态；不提交")
+        Exit Function
+    End If
+    If taskId = 84 Then
+        red84Terminal = True
+        red84Reason = redReason
+        red84FinishedAt = Time()
+    Else
+        red85Terminal = True
+        red85Reason = redReason
+        red85FinishedAt = Time()
+    End If
+    terminalConfirmed = True
+    Call WorldLog("正常终态=" & redReason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    ExecuteRedArmy = RESULT_OK
+End Function

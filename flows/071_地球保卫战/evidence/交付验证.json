@@ -1,0 +1,47 @@
+{
+  "task": 71,
+  "name": "地球保卫战",
+  "professional": "root.629",
+  "static": {
+    "scope": "static structure and encoding only; not official MQ compilation",
+    "issues": [],
+    "moduleCount": 47,
+    "pass": true
+  },
+  "simulation": {
+    "total": 525,
+    "task71": 27,
+    "pass": true
+  },
+  "synchronized": [
+    {
+      "extension": ".mq",
+      "build": "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.mq",
+      "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+      "buildSha256": "a3204e874b13cad394ba249df7cea6fcf659e4c5fb6d6897026e59820a3e21a5",
+      "targetSha256": "a3204e874b13cad394ba249df7cea6fcf659e4c5fb6d6897026e59820a3e21a5"
+    },
+    {
+      "extension": ".uip",
+      "build": "D:\\game\\anjian-new\\dist\\手机助手3.8导入版\\龙珠激斗脚本.uip",
+      "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).uip",
+      "buildSha256": "cf4601fb0e56e69149ca8e2439ecc6dc6df231f543496c252d77bdd287f513cc",
+      "targetSha256": "cf4601fb0e56e69149ca8e2439ecc6dc6df231f543496c252d77bdd287f513cc"
+    }
+  ],
+  "sourceIncludedInBuild": true,
+  "sourceHashes": {
+    "flows\\071_地球保卫战\\地球保卫战.mq": "21ceb7c76be0faf9208705f9279d9ceaaacc673442073d1bbd874fe6b8d63e25",
+    "common\\地球保卫状态.mq": "fe5eb8f9f6288b46f81d060ddec354b9e61fbb7fa64468a1a823273389b01af0",
+    "validation\\test_earth.py": "a3497460efd0044daae86278ff59834395b9129754c33cb473ed090207965175"
+  },
+  "officialCompilation": "not performed",
+  "deviceExecution": "not performed",
+  "delayedRecheck": {
+    "waitSeconds": 10,
+    "allHashesMatch": {
+      ".mq": true,
+      ".uip": true
+    }
+  }
+}

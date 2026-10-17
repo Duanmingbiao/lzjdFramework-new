@@ -1,0 +1,293 @@
+﻿Function EnterBossPage(prefix)
+    Dim clicked, matched
+    EnterBossPage = RESULT_TIMEOUT
+    Call WorldStage("进入世界首领")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=首领页面入口未确认")
+            Exit Function
+        End If
+        Call WorldWait(200)
+        If WorldPair(prefix & "入口") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(200)
+        If prefix = "070_" Then
+            matched = WorldMatch("070_首领界面")
+        Else
+            matched = WorldPair("032_首领界面")
+        End If
+        If matched Then
+            Call WorldWait(300)
+            If Not BusinessExpired() Then
+                EnterBossPage = RESULT_OK
+            End If
+            Exit Function
+        End If
+        Call WorldWait(200)
+    Loop
+End Function
+Function FinishBossRewards(prefix)
+    Dim clicked, x, y
+    FinishBossRewards = RESULT_TIMEOUT
+    Call WorldStage("首领奖励收尾")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=领奖页面未知或公共超时；未提交")
+            Exit Function
+        End If
+        If WorldPair(prefix & "领奖") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair(prefix & "无奖") Then
+            Call WorldWait(1000)
+            worldTerminalReason = "专业版明确无奖励可领取"
+            Exit Do
+        End If
+        If WorldPair(prefix & "灰领") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+            worldTerminalReason = "用户批准的专业版灰色领取界面点击出口"
+            Exit Do
+        End If
+        Call WorldWait(300)
+        If WorldPair(prefix & "蓝领") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(300)
+        If WorldPair(prefix & "领奖弹窗") Then
+            x = foundX
+            y = foundY
+            If prefix = "070_" Then
+                x = 100
+                y = 50
+            End If
+            Call WorldLog("奖励双击 点击偏移=0,0；70使用固定100,50，32使用命中锚点")
+            clicked = WorldTap(x, y, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+            clicked = WorldTap(x, y, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+            worldTerminalReason = "用户批准的专业版奖励弹窗双击出口"
+            Exit Do
+        End If
+    Loop
+    If BusinessExpired() Then
+        Exit Function
+    End If
+    Call WorldLog("正常终态=" & worldTerminalReason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    FinishBossRewards = RESULT_OK
+End Function
+
+Function BuyWorldBossAttempts()
+    Dim started, prepared, adds, price, text, x, y, i, clicked, decisions
+    BuyWorldBossAttempts = RESULT_TIMEOUT
+    If worldBuyRuntime = 0 Then
+        Call WorldLog("购买次数=不购买")
+        BuyWorldBossAttempts = RESULT_OK
+        Exit Function
+    End If
+    adds = 2
+    price = 60
+    If worldBuyRuntime = 2 Then
+        adds = 4
+        price = 140
+    ElseIf worldBuyRuntime = 3 Then
+        adds = 6
+        price = 320
+    ElseIf worldBuyRuntime = 4 Then
+        adds = 9
+        price = 870
+    End If
+    prepared = False
+    decisions = 0
+    started = TickCount()
+    Call WorldStage("世界首领购买次数")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=购买阶段公共超时；保留当前恢复任务")
+            Exit Function
+        End If
+        If WorldMatch("070_首领界面") Then
+            If prepared Then
+                BuyWorldBossAttempts = RESULT_OK
+                Exit Function
+            Else
+                clicked = WorldTap(640, 1050, 1000)
+                If Not clicked Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldMatch("070_购买弹窗") Then
+            x = foundX
+            y = foundY
+            If Not prepared Then
+                Call WorldLog("购买设置 目标次数=" & (adds + 1) & " 加号次数=" & adds & " 应有价格=" & price & " 点击偏移=-212,152")
+                For i = 1 To adds
+                    clicked = WorldTap(x - 212, y + 152, 300)
+                    If Not clicked Then
+                        Exit Function
+                    End If
+                Next
+                Call WorldWait(1000)
+                For i = 1 To 2
+                    text = WorldText(322, 785, 433, 815)
+                    Call WorldWait(200)
+                Next
+                prepared = True
+            Else
+                text = WorldText(322, 785, 433, 815)
+                clicked = False
+                If IsNumeric(text) Then
+                    If Int(CDbl(text)) = price And decisions = 0 Then
+                        Call WorldLog("购买价格核对通过 点击偏移=-306,330")
+                        clicked = WorldTap(x - 306, y + 330, 0)
+                    End If
+                End If
+                If Not clicked Then
+                    Call WorldLog("关闭购买 原因=OCR非预期价格或已处理 点击偏移=-11,17")
+                    clicked = WorldTap(x - 11, y + 17, 0)
+                End If
+                If Not clicked Then
+                    Exit Function
+                End If
+                decisions = decisions + 1
+                Call WorldWait(1000)
+                worldBuyRuntime = 0
+            End If
+        End If
+        If TickCount() - started > 15000 Then
+            worldBuyRuntime = 0
+            Call WorldLog("购买阶段15秒结束，清除本会话购买设置后继续扫荡；非业务终态")
+            BuyWorldBossAttempts = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function SweepWorldBoss()
+    Dim lastAction, count, x, y, clicked, text
+    SweepWorldBoss = RESULT_TIMEOUT
+    lastAction = TickCount()
+    count = 0
+    Call WorldStage("世界首领扫荡")
+    Call Progress()
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=扫荡公共超时或前台中断")
+            Exit Function
+        End If
+        If WorldMatch("070_购买弹窗") Then
+            clicked = WorldOffset(-11, 17, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("070_扫荡") Then
+            x = foundX
+            y = foundY
+            text = WorldText(473, 1026, 613, 1075)
+            If text = "挑战次数0" Or text = "挑战次数|0" Then
+                Call WorldLog("OCR命中=挑战次数0/挑战次数|0，进入领奖；尚未提交")
+                SweepWorldBoss = RESULT_OK
+                Exit Function
+            End If
+            Call WorldLog("扫荡同锚点三点击 点击偏移=0,0")
+            clicked = WorldTap(x, y, 50)
+            If Not clicked Then
+                Exit Function
+            End If
+            clicked = WorldTap(x, y, 50)
+            If Not clicked Then
+                Exit Function
+            End If
+            clicked = WorldTap(x, y, 100)
+            If Not clicked Then
+                Exit Function
+            End If
+            lastAction = TickCount()
+            count = count + 1
+            Call WorldLog("扫荡累计=" & count)
+        End If
+        Call WorldWait(50)
+        If WorldPair("070_消灭") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+            lastAction = TickCount()
+            count = 0
+        End If
+        Call WorldWait(50)
+        If WorldPair("070_复活") Then
+            Call WorldLog("等待BOSS复活，清空连续扫荡计数")
+            count = 0
+        End If
+        Call WorldWait(50)
+        If WorldPair("070_奖励") Then
+            clicked = WorldTap(100, 50, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+            lastAction = TickCount()
+            count = 0
+            Call Progress()
+        End If
+        If count > 15 Then
+            Call WorldLog("连续扫荡超过15次，按专业版进入领奖；尚未确认业务终态")
+            Call Progress()
+            SweepWorldBoss = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - lastAction > 30000 Then
+            Call WorldLog("超时原因=扫荡30秒无进展；不沿用原版超时后继续成功路径")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ExecuteWorldBoss()
+    Dim result
+    ExecuteWorldBoss = RESULT_TIMEOUT
+    worldTerminal = False
+    terminalConfirmed = False
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterBossPage("070_")
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = BuyWorldBossAttempts()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = SweepWorldBoss()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = FinishBossRewards("070_")
+    If result <> RESULT_OK Or BusinessExpired() Then
+        Exit Function
+    End If
+    worldFinishedAt = Time()
+    worldTerminal = True
+    terminalConfirmed = True
+    ExecuteWorldBoss = RESULT_OK
+End Function

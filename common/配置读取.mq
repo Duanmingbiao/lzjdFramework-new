@@ -43,6 +43,13 @@ Function PositiveSetting(key, fallback)
     End If
 End Function
 Sub LoadSettings()
+    Call LoadEarthSettings()
+    Call LoadNamekSettings()
+    Call LoadBeyondSettings()
+    Call LoadLegendSettings()
+    Call LoadRedArmySettings()
+    Call LoadCrossBossSettings()
+    Call LoadWorldBossSettings()
     Call LoadCoopSettings()
     Call LoadWukongSettings()
     Call LoadTimedStaminaSettings()

@@ -1,0 +1,148 @@
+root.800 PC1401—1455
+1400: JMP A=0 B=266 C=184 target=6706
+1401: EQ A=0 B=0 C=452 R0 K196='地球保卫战'
+1402: JMP A=0 B=256 C=52 target=1456
+1403: GETTABUP A=9 B=0 C=453 R0 K197='DateTime'
+1404: GETTABLE A=9 B=9 C=454 R9 K198='WeekDay'
+1405: CALL A=9 B=1 C=2 
+1406: EQ A=0 B=9 C=268 R9 K12=1.0
+1407: JMP A=0 B=256 C=25 target=1434
+1408: GETTABUP A=9 B=0 C=262 R0 K6='LuaAuxLib'
+1409: GETTABLE A=9 B=9 C=263 R9 K7='LuaAuxLid'
+1410: LOADK A=10 B=0 C=21 63.0
+1411: GETTABUP A=11 B=0 C=278 R0 K22='tostring'
+1412: LOADK A=12 B=0 C=199 '★开始>地球保卫战 \n★ 星期一没有活动'
+1413: CALL A=11 B=2 C=2 
+1414: LOADK A=12 B=0 C=24 1000.0
+1415: GETTABLE A=13 B=2 C=260 R2 K4='显示消息'
+1416: GETTABLE A=13 B=13 C=261 R13 K5='点X'
+1417: GETTABLE A=14 B=2 C=260 R2 K4='显示消息'
+1418: GETTABLE A=14 B=14 C=267 R14 K11='点Y'
+1419: CALL A=9 B=6 C=1 
+1420: GETTABUP A=9 B=0 C=262 R0 K6='LuaAuxLib'
+1421: GETTABLE A=9 B=9 C=263 R9 K7='LuaAuxLid'
+1422: LOADK A=10 B=0 C=102 128.0
+1423: LOADK A=11 B=0 C=200 '_37305:'
+1424: LOADK A=12 B=0 C=201 '银河争霸,时间已经过了'
+1425: CALL A=9 B=4 C=1 
+1426: GETTABLE A=9 B=2 C=452 R2 K196='地球保卫战'
+1427: SETTABLE A=9 B=318 C=273 
+1428: GETTABUP A=9 B=0 C=256 R0 K0='id5353'
+1429: GETTABLE A=9 B=9 C=271 R9 K15='ide585a8e5b180e58f98e9878fe8aebee7bdae'
+1430: LOADK A=10 B=0 C=2 'dzc'
+1431: MOVE A=11 B=2 C=0 
+1432: CALL A=9 B=3 C=1 
+1433: RETURN A=1 B=2 C=0 
+1434: GETTABUP A=9 B=0 C=262 R0 K6='LuaAuxLib'
+1435: GETTABLE A=9 B=9 C=263 R9 K7='LuaAuxLid'
+1436: LOADK A=10 B=0 C=21 63.0
+1437: GETTABUP A=11 B=0 C=278 R0 K22='tostring'
+1438: LOADK A=12 B=0 C=202 '★开始>地球保卫战'
+1439: CALL A=11 B=2 C=2 
+1440: LOADK A=12 B=0 C=24 1000.0
+1441: GETTABLE A=13 B=2 C=260 R2 K4='显示消息'
+1442: GETTABLE A=13 B=13 C=261 R13 K5='点X'
+1443: GETTABLE A=14 B=2 C=260 R2 K4='显示消息'
+1444: GETTABLE A=14 B=14 C=267 R14 K11='点Y'
+1445: CALL A=9 B=6 C=1 
+1446: GETTABUP A=9 B=0 C=284 R0 K28='ide59b9ee588b0e9a696e9a1b5'
+1447: CALL A=9 B=1 C=1 
+1448: GETTABUP A=9 B=0 C=372 R0 K116='ide6a8a1e5bc8fe585a5e58fa3'
+1449: LOADK A=10 B=0 C=188 '强敌入袭'
+1450: CALL A=9 B=2 C=1 
+1451: GETTABUP A=9 B=0 C=459 R0 K203='ide59cb0e79083e4bf9de58dabe68898'
+1452: CALL A=9 B=1 C=1 
+1453: GETTABUP A=9 B=0 C=284 R0 K28='ide59b9ee588b0e9a696e9a1b5'
+1454: CALL A=9 B=1 C=1 
+1455: JMP A=0 B=266 C=129 target=6706
+
+root.816 L4920—4980
+L5_1 = {}
+L6_1 = LuaAuxLib
+L6_1 = L6_1.LuaAuxLid
+L7_1 = 226
+L8_1 = "日常_地球保卫战"
+L9_1 = nil
+L10_1 = 0
+L11_1 = nil
+L6_1 = L6_1(L7_1, L8_1, L9_1, L10_1, L11_1)
+L5_1["是否勾选"] = L6_1
+L6_1 = "买次数"
+L7_1 = LuaAuxLib
+L7_1 = L7_1.LuaAuxLid
+L8_1 = 226
+L9_1 = "日常_地球保卫战_买次数"
+L10_1 = nil
+L11_1 = 0
+L12_1 = nil
+L7_1 = L7_1(L8_1, L9_1, L10_1, L11_1, L12_1)
+L5_1[L6_1] = L7_1
+L6_1 = "是否完成"
+L7_1 = false
+L5_1[L6_1] = L7_1
+L6_1 = "是否可做"
+L7_1 = true
+L5_1[L6_1] = L7_1
+L6_1 = "任务描述"
+L5_1[L6_1] = ""
+L6_1 = "完成时间"
+L5_1[L6_1] = ""
+L6_1 = "失败次数"
+L5_1[L6_1] = 0
+L6_1 = "失败几次放弃任务"
+L7_1 = 2
+L5_1[L6_1] = L7_1
+L6_1 = "完成次数"
+L5_1[L6_1] = 0
+L6_1 = "需要完成次数"
+L7_1 = 2
+L5_1[L6_1] = L7_1
+L6_1 = "上次任务时间"
+L5_1[L6_1] = ""
+L6_1 = "下次任务时间间隔"
+L7_1 = 3600
+L5_1[L6_1] = L7_1
+L6_1 = _ENV["设置填写时间"]
+L7_1 = LuaAuxLib
+L7_1 = L7_1.LuaAuxLid
+L8_1 = 226
+L9_1 = "日常_地球保卫战_时间"
+L10_1 = nil
+L11_1 = 0
+L12_1 = nil
+L7_1 = L7_1(L8_1, L9_1, L10_1, L11_1, L12_1)
+L8_1 = nil
+L9_1 = -3
+L6_1 = L6_1(L7_1, L8_1, L9_1)
+L5_1["任务时间"] = L6_1
+L6_1 = "第几话"
+L5_1[L6_1] = 1
+L4_1["地球保卫战"] = L5_1
+L5_1 = {}
+
+root.823 L914—938 mode -3
+elseif L11_1 == -3 then
+  L12_1 = A0_1
+  if L12_1 == 0 then
+    L13_1 = L5_1[1]
+    L14_1 = " 18:00:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 1 then
+    L13_1 = L5_1[1]
+    L14_1 = " 19:00:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 2 then
+    L13_1 = L5_1[1]
+    L14_1 = " 20:00:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 3 then
+    L13_1 = L5_1[1]
+    L14_1 = " 20:50:00"
+    L3_1 = L13_1 .. L14_1
+  elseif L12_1 == 4 then
+    L13_1 = SS
+    L13_1 = L13_1["神神_时间设置当前"]
+    L13_1 = L13_1()
+    L3_1 = L13_1
+  end
+elseif L11_1 == -2 then

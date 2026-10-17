@@ -1,0 +1,85 @@
+﻿Function CoopBooleanSetting(key)
+    Dim raw, text
+    CoopBooleanSetting = False
+    raw = ReadUIConfig(key, False)
+    text = "<null>"
+    If Not IsNull(raw) Then
+        text = LCase(Trim(CStr(raw)))
+        If text = "true" Or text = "1" Then
+            CoopBooleanSetting = True
+        End If
+    End If
+    Call WriteMainLog("[龙珠激斗脚本][合作152配置] 键=" & key & " 原始值=" & text)
+End Function
+Sub LoadCoopSettings()
+    Dim raw
+    coopEnabled = CoopBooleanSetting("合作冒险启用")
+    coopKeepDownload = CoopBooleanSetting("保留下载提示")
+    coopTeamMode = 0
+    raw = ReadUIConfig("合作队伍模式", 0)
+    If IsNumeric(raw) Then
+        If CDbl(raw) = 1 Then
+            coopTeamMode = 1
+        End If
+    End If
+    coopInterval = 43200
+    Call WriteMainLog("[龙珠激斗脚本][合作152配置] 队伍模式=" & coopTeamMode & " 间隔秒=" & coopInterval)
+End Sub
+Sub NewCoopSession()
+    coopRegisteredTask = 152
+    coopFirst = True
+    coopDue = 0
+    coopDone = False
+    coopFailed = False
+    coopCount = 0
+    coopFailures = 0
+    coopRestarts = 0
+    coopRecoveries = 0
+    coopPhase = "未开始"
+    coopTerminal = False
+    coopTerminalReason = ""
+    coopLastMatch = ""
+    coopLastOcr = ""
+    coopTimeKey = ""
+End Sub
+Function CoopTimeEligible()
+    Dim week, hour, key, state
+    week = DateTime.WeekDay()
+    hour = DateTime.Hour()
+    CoopTimeEligible = False
+    state = "原版分派未允许，尚未提交"
+    // Literal root.800 branch semantics; no invented weekday-number conversion.
+    If week <= 5 And week <> 1 Then
+        CoopTimeEligible = True
+        state = "原版分派允许"
+    End If
+    key = week & ":" & hour
+    If key <> coopTimeKey Then
+        Call Note("[合作大冒险152] 时间资格 WeekDay=" & week & " Hour=" & hour & " 结果=" & state)
+        coopTimeKey = key
+    End If
+End Function
+Sub StartCoopTask()
+    coopTerminal = False
+    coopDone = False
+    coopFailed = False
+    coopLastMatch = ""
+    coopLastOcr = ""
+    Call Note("[合作大冒险152] 任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 重启次数=" & coopRestarts & " 恢复次数=" & coopRecoveries)
+End Sub
+Sub RecoverCoopTask()
+    coopTerminal = False
+    coopFailed = True
+    coopFailures = coopFailures + 1
+    coopRecoveries = coopRecoveries + 1
+    Call Note("[合作大冒险152] 保存恢复任务=152 是否提交完成=否 阶段=" & coopPhase & " 失败次数=" & coopFailures & " 恢复次数=" & coopRecoveries)
+End Sub
+Sub CommitCoopTask()
+    coopDone = True
+    coopFailed = False
+    coopCount = coopCount + 1
+    coopDue = TickCount() + 43200000
+    coopFirst = False
+    coopPhase = "本轮完成，等待12小时"
+    Call Note("[合作大冒险152] 是否提交完成=是 本轮次数=" & coopCount & " 下一次执行时间Unix=" & (Time() + 43200) & " 重启次数=" & coopRestarts & " 恢复次数=" & coopRecoveries)
+End Sub

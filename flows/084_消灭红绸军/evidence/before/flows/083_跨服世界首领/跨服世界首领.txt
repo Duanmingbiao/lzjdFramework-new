@@ -1,0 +1,377 @@
+﻿Function EnterCrossBoss()
+    Dim clicked
+    EnterCrossBoss = RESULT_TIMEOUT
+    Call WorldStage("83跨服首领入口与阶段识别")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=跨服入口或阶段未确认；未提交")
+            Exit Function
+        End If
+        Call WorldResourcePrompt()
+        If WorldPair("083_入口") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_灰入口") Then
+            crossMode = -1
+            crossTerminalReason = "用户批准的专业版灰色入口不可用出口"
+            EnterCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        // The original checks the same two gray candidates twice at this priority.
+        If WorldPair("083_灰入口") Then
+            crossMode = -1
+            crossTerminalReason = "用户批准的专业版灰色入口不可用出口"
+            EnterCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("083_预备") Then
+            crossMode = 0
+            Call WorldLog("分流=预备阶段")
+            EnterCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("083_未上阵") Then
+            crossMode = 1
+            Call WorldLog("分流=正式阶段未上阵")
+            EnterCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("083_已上阵") Then
+            crossMode = 1
+            Call WorldLog("分流=正式阶段已上阵")
+            EnterCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function RunCrossPreparation()
+    Dim attacks, results, started, clicked, text
+    RunCrossPreparation = RESULT_TIMEOUT
+    attacks = 0
+    results = 0
+    started = TickCount()
+    Call WorldStage("83预备阶段")
+    Call Progress()
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=预备阶段公共超时或前台中断")
+            Exit Function
+        End If
+        If attacks > 5 Or results >= 10 Then
+            Call WorldWait(50)
+            If WorldPair("083_预备退出") Then
+                clicked = WorldOffset(0, 0, 0)
+                If Not clicked Then
+                    Exit Function
+                End If
+                crossTerminalReason = "用户批准的预备操作达阈值且退出模板点击出口"
+                RunCrossPreparation = RESULT_OK
+                Exit Function
+            End If
+            // The original 3000ms origin is preparation entry, not threshold entry.
+            If TickCount() - started > 3000 Then
+                Call WorldLog("超时原因=预备阈值后退出模板未命中；阶段起点累计超过3000毫秒；不沿用原版盲结束")
+                Exit Function
+            End If
+        Else
+            If WorldPair("083_预备") Then
+                text = WorldText(406, 1084, 496, 1113)
+                If text = "次数不够" Then
+                    crossTerminalReason = "专业版预备阶段OCR明确次数不够"
+                    RunCrossPreparation = RESULT_OK
+                    Exit Function
+                End If
+                clicked = WorldOffset(0, 0, 500)
+                If Not clicked Then
+                    Exit Function
+                End If
+                results = 0
+                attacks = attacks + 1
+                Call WorldLog("预备操作累计=" & attacks & " 结果操作累计=" & results)
+            End If
+            If WorldPair("083_预备结果") Then
+                clicked = WorldOffset(0, 0, 500)
+                If Not clicked Then
+                    Exit Function
+                End If
+                results = results + 1
+                Call WorldLog("预备结果累计=" & results & " 预备操作累计=" & attacks)
+            End If
+        End If
+        Delay 20
+    Loop
+End Function
+Function BuyCrossBossAttempts()
+    Dim started, prepared, adds, price, text, x, y, i, clicked, decisions
+    BuyCrossBossAttempts = RESULT_TIMEOUT
+    If crossBuyRuntime = 0 Then
+        Call WorldLog("购买次数=不购买")
+        BuyCrossBossAttempts = RESULT_OK
+        Exit Function
+    End If
+    adds = 2
+    price = 60
+    If crossBuyRuntime = 2 Then
+        adds = 4
+        price = 140
+    ElseIf crossBuyRuntime = 3 Then
+        adds = 6
+        price = 320
+    ElseIf crossBuyRuntime = 4 Then
+        adds = 9
+        price = 870
+    End If
+    prepared = False
+    decisions = 0
+    started = TickCount()
+    Call WorldStage("83跨服首领购买次数")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=购买阶段公共超时；保留当前恢复任务")
+            Exit Function
+        End If
+        If WorldMatch("083_购买主界面") Then
+            If prepared Then
+                BuyCrossBossAttempts = RESULT_OK
+                Exit Function
+            Else
+                clicked = WorldTap(590, 1150, 1000)
+                If Not clicked Then
+                    Exit Function
+                End If
+            End If
+        End If
+        If WorldMatch("083_购买弹窗") Then
+            x = foundX
+            y = foundY
+            If Not prepared Then
+                Call WorldLog("购买设置 目标次数=" & (adds + 1) & " 加号次数=" & adds & " 应有价格=" & price & " 点击偏移=-212,152")
+                For i = 1 To adds
+                    clicked = WorldTap(x - 212, y + 152, 300)
+                    If Not clicked Then
+                        Exit Function
+                    End If
+                Next
+                Call WorldWait(1000)
+                For i = 1 To 2
+                    text = WorldText(322, 785, 433, 815)
+                    Call WorldWait(200)
+                Next
+                prepared = True
+            Else
+                text = WorldText(322, 785, 433, 815)
+                clicked = False
+                If IsNumeric(text) Then
+                    If Int(CDbl(text)) = price And decisions = 0 Then
+                        Call WorldLog("购买价格核对通过 点击偏移=-306,330")
+                        clicked = WorldTap(x - 306, y + 330, 0)
+                    End If
+                End If
+                If Not clicked Then
+                    Call WorldLog("关闭购买 原因=OCR非预期价格或已处理 点击偏移=-11,17")
+                    clicked = WorldTap(x - 11, y + 17, 0)
+                End If
+                If Not clicked Then
+                    Exit Function
+                End If
+                decisions = decisions + 1
+                Call WorldWait(1000)
+                crossBuyRuntime = 0
+            End If
+        End If
+        If TickCount() - started > 15000 Then
+            crossBuyRuntime = 0
+            Call WorldLog("购买阶段15秒结束，清除本会话购买设置后继续扫荡；非业务终态")
+            BuyCrossBossAttempts = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function SweepCrossBoss()
+    Dim count, clicked
+    SweepCrossBoss = RESULT_TIMEOUT
+    count = 0
+    Call WorldStage("83正式阶段扫荡")
+    Call Progress()
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=正式扫荡公共超时或前台中断")
+            Exit Function
+        End If
+        If count > 5 Then
+            Call WorldLog("连续扫荡超过5次，进入页面确认与领奖；非终态")
+            SweepCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("083_已上阵") Then
+            clicked = WorldOffset(0, 0, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+            count = count + 1
+            Call WorldLog("正式扫荡累计=" & count)
+        End If
+        If WorldPair("083_未上阵") Then
+            clicked = WorldOffset(0, 0, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_扫荡奖励") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+            crossActionAt = TickCount()
+            count = 0
+        End If
+        Call WorldWait(50)
+        If WorldPair("083_次数弹窗") Then
+            clicked = WorldOffset(0, 0, 0)
+            If Not clicked Then
+                Exit Function
+            End If
+            crossActionAt = TickCount()
+            Call WorldLog("识别次数弹窗并点击，进入收尾确认；非终态")
+            SweepCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        If count > 5 Then
+            Call WorldLog("连续扫荡超过5次，进入页面确认与领奖；非终态")
+            SweepCrossBoss = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - crossActionAt > 15000 Then
+            Call WorldLog("超时原因=正式扫荡15秒未获奖励；计时起点包括购买阶段，扫荡点击不刷新")
+            Exit Function
+        End If
+    Loop
+End Function
+Function ConfirmCrossBossBoard()
+    Dim clicked
+    ConfirmCrossBossBoard = RESULT_TIMEOUT
+    Call WorldStage("83扫荡后主界面确认")
+    Call Progress()
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=扫荡后主界面未确认")
+            Exit Function
+        End If
+        If WorldPair("083_次数弹窗") Then
+            clicked = WorldOffset(0, 0, 300)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_已上阵") Then
+            Call WorldWait(500)
+            ConfirmCrossBossBoard = RESULT_OK
+            Exit Function
+        End If
+        If WorldPair("083_未上阵") Then
+            Call WorldWait(500)
+            ConfirmCrossBossBoard = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function FinishCrossBossRewards()
+    Dim clicked
+    FinishCrossBossRewards = RESULT_TIMEOUT
+    Call WorldStage("83跨服首领奖励收尾")
+    Do
+        If BusinessExpired() Then
+            Call WorldLog("超时原因=跨服领奖终态未确认；未提交")
+            Exit Function
+        End If
+        If WorldPair("083_领奖入口") Then
+            clicked = WorldOffset(0, 0, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_一键领取") Then
+            clicked = WorldOffset(0, 0, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_领取奖励") Then
+            clicked = WorldOffset(0, 0, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_领取关闭") Then
+            clicked = WorldOffset(0, 0, 500)
+            If Not clicked Then
+                Exit Function
+            End If
+        End If
+        If WorldPair("083_无奖励") Then
+            Call WorldWait(500)
+            If BusinessExpired() Then
+                Exit Function
+            End If
+            crossTerminalReason = "专业版正式阶段明确无奖励，任务结束"
+            FinishCrossBossRewards = RESULT_OK
+            Exit Function
+        End If
+        Delay 20
+    Loop
+End Function
+Function ExecuteCrossBoss()
+    Dim result
+    ExecuteCrossBoss = RESULT_TIMEOUT
+    crossTerminal = False
+    terminalConfirmed = False
+    crossTerminalReason = ""
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterCrossBoss()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    If crossMode = 0 Then
+        result = RunCrossPreparation()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    ElseIf crossMode = 1 Then
+        // Preserve the professional local timer origin before the purchase stage.
+        crossActionAt = TickCount()
+        result = BuyCrossBossAttempts()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = SweepCrossBoss()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = ConfirmCrossBossBoard()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+        result = FinishCrossBossRewards()
+        If result <> RESULT_OK Then
+            Exit Function
+        End If
+    End If
+    If crossTerminalReason = "" Or BusinessExpired() Then
+        Call WorldLog("失败原因=没有明确业务终态或已超时；不提交")
+        Exit Function
+    End If
+    crossFinishedAt = Time()
+    crossTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("正常终态=" & crossTerminalReason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    ExecuteCrossBoss = RESULT_OK
+End Function

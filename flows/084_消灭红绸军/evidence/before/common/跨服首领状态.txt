@@ -1,0 +1,90 @@
+﻿Sub LoadCrossBossSettings()
+    crossEnabled = WorldBoolean("跨服首领启用")
+    crossSundayStop = WorldBoolean("跨服首领周日停")
+    crossBuyConfig = WorldNumber("跨服首领买次数", 0, 4)
+    crossHour = WorldNumber("跨服首领执行时", 9, 23)
+    crossMinute = WorldNumber("跨服首领执行分", 10, 59)
+    Call WriteMainLog("[跨服世界首领83配置] 时=" & crossHour & " 分=" & crossMinute & " 购买选项=" & crossBuyConfig)
+End Sub
+Sub NewCrossBossSession()
+    crossDue = WorldDayStart(Time()) + crossHour * 3600 + crossMinute * 60
+    crossBuyRuntime = crossBuyConfig
+    crossDone = False
+    crossFailed = False
+    crossCount = 0
+    crossFailures = 0
+    crossRestarts = 0
+    crossRecoveries = 0
+    crossPhase = "未开始"
+    crossTerminal = False
+    crossTerminalReason = ""
+    crossFinishedAt = 0
+    crossMode = -1
+    crossActionAt = 0
+End Sub
+Function SelectCrossBoss()
+    Dim nowStamp, dayStart, week, state
+    SelectCrossBoss = 0
+    If Not crossEnabled Then
+        Exit Function
+    End If
+    nowStamp = Time()
+    dayStart = WorldDayStart(nowStamp)
+    If crossDue < dayStart Then
+        crossDue = dayStart + crossHour * 3600 + crossMinute * 60
+    End If
+    If nowStamp < crossDue Then
+        Exit Function
+    End If
+    week = DateTime.WeekDay()
+    state = "允许执行"
+    If nowStamp >= dayStart + 82800 Then
+        state = "23点窗口已过"
+    ElseIf week = 1 Then
+        state = "专业版WeekDay=1不执行"
+    ElseIf week = 7 And crossSundayStop Then
+        state = "专业版WeekDay=7且周日停开启"
+    End If
+    If state <> "允许执行" Then
+        crossDue = dayStart + 86400 + crossHour * 3600 + crossMinute * 60
+        Call Note("[跨服世界首领83] 时间筛选 WeekDay=" & week & " 原因=" & state & " 是否提交完成=否 下一次执行时间Unix=" & crossDue)
+        Exit Function
+    End If
+    Call Note("[跨服世界首领83] 时间筛选 WeekDay=" & week & " 允许执行")
+    SelectCrossBoss = 83
+End Function
+Sub StartCrossBossTask()
+    crossTerminal = False
+    crossTerminalReason = ""
+    crossFinishedAt = 0
+    crossDone = False
+    crossFailed = False
+    crossMode = -1
+    worldLastMatch = ""
+    worldLastOcr = ""
+    Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 剩余购买设置=" & crossBuyRuntime & " 重启次数=" & crossRestarts & " 恢复次数=" & crossRecoveries)
+End Sub
+Sub RecoverCrossBossTask()
+    crossTerminal = False
+    crossFailed = True
+    crossFailures = crossFailures + 1
+    crossRecoveries = crossRecoveries + 1
+    Call WorldLog("保存恢复原任务=83 阶段=" & crossPhase & " 失败次数=" & crossFailures & " 恢复次数=" & crossRecoveries & " 是否提交完成=否")
+End Sub
+Sub RestartCrossBossTask()
+    crossRestarts = crossRestarts + 1
+    Call WorldLog("重启原任务=83 重启次数=" & crossRestarts & " 恢复次数=" & crossRecoveries)
+End Sub
+Sub CommitCrossBossTask()
+    Dim finishedAt
+    finishedAt = Time()
+    If crossFinishedAt > 0 Then
+        finishedAt = crossFinishedAt
+    End If
+    crossDone = True
+    crossFailed = False
+    crossCount = crossCount + 1
+    crossDue = WorldDayStart(finishedAt) + 86400 + crossHour * 3600 + crossMinute * 60
+    crossPhase = "本日已完成，等待下次日程"
+    Call WorldLog("是否提交完成=是 次数=" & crossCount & " 终态=" & crossTerminalReason & " 下一次执行时间Unix=" & crossDue & " 重启次数=" & crossRestarts & " 恢复次数=" & crossRecoveries)
+End Sub

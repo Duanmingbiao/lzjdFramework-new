@@ -1,0 +1,291 @@
+﻿Function NamekExpired()
+    Dim expired
+    expired = BusinessExpired()
+    NamekExpired = expired
+    If expired Then
+        Call WorldLog("失败或超时原因=公共业务总超时或前台中断；保存原任务=88 是否提交完成=否")
+    End If
+End Function
+
+Function ConfirmNamekTerminal(reason)
+    ConfirmNamekTerminal = RESULT_TIMEOUT
+    If NamekExpired() Then
+        Exit Function
+    End If
+    namekReason = reason
+    namekTerminal = True
+    terminalConfirmed = True
+    Call WorldLog("正常终态=" & reason & " 等待公共返回大厅连续确认；是否提交完成=否")
+    ConfirmNamekTerminal = RESULT_OK
+End Function
+
+Function NamekRetry(reason)
+    NamekRetry = RESULT_TIMEOUT
+    If NamekExpired() Then
+        Exit Function
+    End If
+    namekReason = reason
+    namekRetryAt = Time() + 3600
+    namekDeferred = True
+    terminalConfirmed = False
+    Call WorldLog("专业版一小时后重试 原因=" & reason & " 下一次执行时间Unix=" & namekRetryAt & " 是否提交完成=否")
+    NamekRetry = RESULT_WAIT
+End Function
+
+Function EnterNamek()
+    Dim started
+    EnterNamek = RESULT_TIMEOUT
+    started = TickCount()
+    Call WorldStage("那美克星组队战入口")
+    Do
+        If NamekExpired() Then
+            Exit Function
+        End If
+        // root.785 强敌入袭/滑下；root.636每轮先滑后等待1000。
+        Do While Not Sys.AppIsFront(GAME_PACKAGE)
+            If NamekExpired() Then
+                Exit Function
+            End If
+            Delay 20
+        Loop
+        Call WorldLog("入口滑动=370,1000到370,300 时长=300 等待毫秒=1000")
+        Swipe 370, 1000, 370, 300, 300
+        Call WorldWait(1000)
+        If WorldPair("088_入口") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_未开放") Then
+            Call WorldWait(1000)
+            EnterNamek = ConfirmNamekTerminal("专业版明确灰色入口未开放")
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_未准备") Then
+            Call WorldWait(50)
+            EnterNamek = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_准备") Then
+            Call WorldWait(50)
+            EnterNamek = RESULT_OK
+            Exit Function
+        End If
+        If TickCount() - started > 25000 Then
+            EnterNamek = NamekRetry("专业版入口25秒仍未到任务页")
+            Exit Function
+        End If
+        If Time() < WorldDayStart(Time()) + 36000 Then
+            EnterNamek = NamekRetry("恢复任务早于专业版10点业务时间")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function PrepareNamek()
+    PrepareNamek = RESULT_TIMEOUT
+    Call WorldStage("那美克星组队战进入关卡")
+    Do
+        If NamekExpired() Then
+            Exit Function
+        End If
+        If WorldPair("088_未准备") Then
+            If Not WorldOffset(0, 0, 50) Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_准备") Then
+            If Not WorldOffset(0, 0, 5000) Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_关卡") Then
+            PrepareNamek = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_任务结束") Then
+            Call WorldWait(2000)
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            PrepareNamek = ConfirmNamekTerminal("专业版准备阶段明确任务已经结束")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function RunNamek()
+    Dim quickRounds, idleRounds, defeats
+    RunNamek = RESULT_TIMEOUT
+    quickRounds = 0
+    idleRounds = 0
+    defeats = 0
+    Call WorldStage("那美克星组队战挑战")
+    Do
+        If NamekExpired() Then
+            Exit Function
+        End If
+        If quickRounds < 4 Then
+            If WorldMatch("088_快速战斗") Then
+                If Not WorldOffset(0, 0, 500) Then
+                    Exit Function
+                End If
+            End If
+            quickRounds = quickRounds + 1
+        Else
+            If WorldPair("088_关卡") Then
+                idleRounds = idleRounds + 1
+                Call WorldLog("专业版关卡轮点次数=" & idleRounds)
+                If Not WorldOffset(-150, -280, 50) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-20, -490, 50) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-340, -620, 50) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(-210, -790, 50) Then
+                    Exit Function
+                End If
+                If Not WorldOffset(60, -950, 50) Then
+                    Exit Function
+                End If
+                Call WorldWait(500)
+            End If
+            quickRounds = 0
+        End If
+        If WorldMatch("088_小怪详情") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+        End If
+        If WorldMatch("152_开战图标6") Then
+            If Not WorldTap(398, 982, 500) Then
+                Exit Function
+            End If
+            If Not WorldTap(587, 982, 500) Then
+                Exit Function
+            End If
+            idleRounds = 0
+        End If
+        If WorldMatch("088_跳过") Then
+            If Not WorldOffset(-310, 93, 50) Then
+                Exit Function
+            End If
+            Call WorldWait(3000)
+            idleRounds = 0
+        End If
+        If WorldMatch("088_有宝箱") Then
+            If Not WorldOffset(-146, -537, 50) Then
+                Exit Function
+            End If
+            If Not WorldOffset(-146, -537, 500) Then
+                Exit Function
+            End If
+            idleRounds = 0
+        End If
+        If WorldMatch("088_战斗失败") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            defeats = defeats + 1
+            Call WorldLog("专业版战败次数=" & defeats & " 是否提交完成=否")
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_空宝箱") Then
+            If Not WorldOffset(0, 0, 50) Then
+                Exit Function
+            End If
+            idleRounds = 0
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_蓝框") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            RunNamek = RESULT_OK
+            Exit Function
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_任务结束") Then
+            Call WorldWait(2000)
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+            RunNamek = RESULT_OK
+            Exit Function
+        End If
+        If idleRounds > 5 Then
+            Call WorldLog("专业版关卡轮点超过5轮，只转收尾，不直接提交")
+            RunNamek = RESULT_OK
+            Exit Function
+        End If
+        If defeats > 5 Then
+            RunNamek = NamekRetry("专业版战败超过5次，一小时后再次执行")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function FinishNamek()
+    FinishNamek = RESULT_TIMEOUT
+    Call WorldStage("那美克星组队战收尾")
+    Do
+        If NamekExpired() Then
+            Exit Function
+        End If
+        If WorldPair("088_任务结束") Then
+            Call WorldWait(2000)
+            If Not WorldOffset(0, 0, 0) Then
+                Exit Function
+            End If
+        End If
+        Call WorldWait(50)
+        If WorldPair("088_蓝框") Then
+            If Not WorldOffset(0, 0, 500) Then
+                Exit Function
+            End If
+            FinishNamek = ConfirmNamekTerminal("专业版收尾首末关卡蓝框点击结束")
+            Exit Function
+        End If
+        If WorldPair("088_关卡") Then
+            FinishNamek = ConfirmNamekTerminal("专业版收尾明确回到关卡页面")
+            Exit Function
+        End If
+    Loop
+End Function
+
+Function ExecuteNamek()
+    Dim result
+    ExecuteNamek = RESULT_TIMEOUT
+    terminalConfirmed = False
+    namekTerminal = False
+    namekDeferred = False
+    result = EnterEnemyHall()
+    If result <> RESULT_OK Then
+        Exit Function
+    End If
+    result = EnterNamek()
+    If result <> RESULT_OK Or namekTerminal Then
+        ExecuteNamek = result
+        Exit Function
+    End If
+    result = PrepareNamek()
+    If result <> RESULT_OK Or namekTerminal Then
+        ExecuteNamek = result
+        Exit Function
+    End If
+    result = RunNamek()
+    If result <> RESULT_OK Then
+        ExecuteNamek = result
+        Exit Function
+    End If
+    ExecuteNamek = FinishNamek()
+End Function

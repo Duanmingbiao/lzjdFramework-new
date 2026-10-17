@@ -1,7 +1,31 @@
 ﻿Function DispatchTask(taskId)
     Call Note("[流程] 入口 DispatchTask")
     DispatchTask = RESULT_FAIL
-    If taskId = 152 Then
+    If taskId = 71 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteEarth()
+    ElseIf taskId = 88 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteNamek()
+    ElseIf taskId = 87 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteBeyond()
+    ElseIf taskId = 86 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteLegend()
+    ElseIf IsRedArmy(taskId) Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteRedArmy(taskId)
+    ElseIf taskId = 83 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteCrossBoss()
+    ElseIf taskId = 70 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteWorldBoss()
+    ElseIf taskId = 32 Then
+        terminalConfirmed = False
+        DispatchTask = ExecuteCellBoss()
+    ElseIf taskId = 152 Then
         terminalConfirmed = False
         DispatchTask = ExecuteCoopAdventure()
     ElseIf taskId = 151 Then

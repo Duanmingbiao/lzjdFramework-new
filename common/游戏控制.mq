@@ -14,6 +14,27 @@
     Call Note("[流程] 出口 StartGame 到达函数末尾（不代表任务已提交）")
 End Sub
 Sub RestartGame()
+    If currentTask = 71 Then
+        Call RestartEarthTask()
+    End If
+    If currentTask = 88 Then
+        Call RestartNamekTask()
+    End If
+    If currentTask = 87 Then
+        Call RestartBeyondTask()
+    End If
+    If currentTask = 86 Then
+        Call RestartLegendTask()
+    End If
+    If IsRedArmy(currentTask) Then
+        Call RestartRedArmyTask(currentTask)
+    End If
+    If currentTask = 83 Then
+        Call RestartCrossBossTask()
+    End If
+    If IsWorldBoss(currentTask) Then
+        Call RestartWorldBossTask(currentTask)
+    End If
     If currentTask = 152 Then
         coopRestarts = coopRestarts + 1
         Call Note("[合作大冒险152] 重启原任务=152 重启次数=" & coopRestarts & " 恢复次数=" & coopRecoveries)

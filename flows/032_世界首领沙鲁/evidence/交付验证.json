@@ -1,0 +1,50 @@
+﻿{
+  "tasks": [
+    70,
+    32
+  ],
+  "implemented": true,
+  "professionalEvidence": "root627/root628/root787/root773/root775; parameters and mapped behavior only; no Lua import",
+  "time": "2026-10-16 Asia/Shanghai",
+  "staticCheck": {
+    "modules": 35,
+    "passed": true
+  },
+  "mockControlFlow": {
+    "tests": 368,
+    "newWorldBossTests": 45,
+    "passed": true
+  },
+  "officialCompile": false,
+  "deviceRun": false,
+  "assistantUiOperated": false,
+  "gitCommitPush": false,
+  "protectedFilesUnchanged": {
+    "common/合作冒险状态.mq": true,
+    "common/悟空冒险状态.mq": true,
+    "common/定时体力状态.mq": true,
+    "flows/001_游戏重连/QQ登录.mq": true,
+    "flows/001_游戏重连/登录游戏.mq": true,
+    "flows/168_领邮件奖励/领邮件奖励.mq": true,
+    "flows/169_领任务奖励/领任务奖励.mq": true,
+    "flows/167_日常签到/日常签到.mq": true,
+    "flows/166_领月卡龙石/领月卡龙石.mq": true,
+    "flows/055_好友体力/好友体力.mq": true,
+    "flows/056_Q友体力/Q友体力.mq": true,
+    "flows/050_定时领取体力/定时领取体力.mq": true,
+    "flows/151_悟空的冒险/悟空的冒险.mq": true,
+    "flows/152_合作大冒险/合作大冒险.mq": true
+  },
+  "sync": {
+    "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+    "exactByteMatchesAfterDelay": {
+      ".mq": true,
+      ".uip": true
+    },
+    "sha256": {
+      ".mq": "00a201ce7169bd8075e973b57737404bad0a0b884a24fae4ca2ec8f411fb335d",
+      ".uip": "4d98bba4a7cf8486cb3a5b7e294e1440013d4636f86a6c43a4d03fa5745b9963"
+    }
+  },
+  "scope": "世界首领70及打沙鲁32；其他强敌功能未开发；151/152业务未改；取消的双色资源弹窗未恢复"
+}

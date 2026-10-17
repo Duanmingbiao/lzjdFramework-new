@@ -1,0 +1,72 @@
+﻿{
+  "tasks": [
+    84,
+    85
+  ],
+  "professionalEvidence": {
+    "roots": [
+      631,
+      632,
+      633,
+      776,
+      800,
+      816,
+      823
+    ],
+    "rawRecognitionCalls": 123,
+    "uniqueProfiles": 33,
+    "staticOnly": true
+  },
+  "staticCheck": {
+    "modules": 39,
+    "passed": true
+  },
+  "mockControlFlow": {
+    "allTests": 459,
+    "redArmyTests": 53,
+    "passed": true
+  },
+  "officialCompile": false,
+  "emulatorRun": false,
+  "assistantUiOperated": false,
+  "gitCommitPush": false,
+  "protectedFilesUnchanged": {
+    "common/跨服首领状态.mq": true,
+    "common/合作冒险状态.mq": true,
+    "common/悟空冒险状态.mq": true,
+    "common/定时体力状态.mq": true,
+    "common/强敌入口.mq": true,
+    "flows/001_游戏重连/QQ登录.mq": true,
+    "flows/001_游戏重连/登录游戏.mq": true,
+    "flows/168_领邮件奖励/领邮件奖励.mq": true,
+    "flows/169_领任务奖励/领任务奖励.mq": true,
+    "flows/167_日常签到/日常签到.mq": true,
+    "flows/166_领月卡龙石/领月卡龙石.mq": true,
+    "flows/055_好友体力/好友体力.mq": true,
+    "flows/056_Q友体力/Q友体力.mq": true,
+    "flows/050_定时领取体力/定时领取体力.mq": true,
+    "flows/151_悟空的冒险/悟空的冒险.mq": true,
+    "flows/152_合作大冒险/合作大冒险.mq": true,
+    "flows/070_世界首领/世界首领.mq": true,
+    "flows/032_世界首领沙鲁/打沙鲁.mq": true,
+    "flows/083_跨服世界首领/跨服世界首领.mq": true
+  },
+  "normalExits": [
+    "灰色未开启，仅当前编号",
+    "明确时间已过，仅当前编号",
+    "第二第三怪按原阶段阈值或OCR零收尾，最终确认主界面"
+  ],
+  "recovery": "公共总超时、前台5秒或下午120/240秒异常，恢复原84/85；无重试上限",
+  "sync": {
+    "target": "D:\\ProgramData\\按键精灵\\按键精灵手机助手\\Script\\龙珠激斗脚本(f36a80cf-4e0e-4492-ab30-c8035f412569).mq",
+    "exactBytesMatchAfter10Seconds": {
+      ".mq": true,
+      ".uip": true
+    },
+    "sha256": {
+      ".mq": "3233dacd71380ed8b6b8a281492d7393a49d954f24b2823145476a5c44b37559",
+      ".uip": "0cb9fb58eb07d4d03ac669f75ec371c92be37c9ea7e9332079e31d239f5bbe72"
+    }
+  },
+  "worldStateOnlyRedNameAndPhaseHooks": true
+}

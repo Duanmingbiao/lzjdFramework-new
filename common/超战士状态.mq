@@ -1,0 +1,62 @@
+﻿Sub LoadLegendSettings()
+    legendEnabled = WorldBoolean("超战士传说启用")
+    Call WriteMainLog("[超战士传说86配置] 启用状态已读取")
+End Sub
+
+Sub NewLegendSession()
+    legendDue = 0
+    legendFirst = True
+    legendDone = False
+    legendFailed = False
+    legendCount = 0
+    legendFailures = 0
+    legendRestarts = 0
+    legendRecoveries = 0
+    legendPhase = "未开始"
+    legendTerminal = False
+    legendReason = ""
+End Sub
+
+Function SelectLegend()
+    SelectLegend = 0
+    If Not legendEnabled Then
+        Exit Function
+    End If
+    If legendFirst Or TickCount() >= legendDue Then
+        SelectLegend = 86
+    End If
+End Function
+
+Sub StartLegendTask()
+    legendDone = False
+    legendFailed = False
+    legendTerminal = False
+    legendReason = ""
+    legendPhase = "开始"
+    worldLastMatch = ""
+    Call WorldLog("任务开始时间Unix=" & Time() & " TickCount=" & TickCount() & " 任务=超战士传说86 重启次数=" & legendRestarts & " 恢复次数=" & legendRecoveries)
+End Sub
+
+Sub RecoverLegendTask()
+    legendTerminal = False
+    legendFailed = True
+    legendFailures = legendFailures + 1
+    legendRecoveries = legendRecoveries + 1
+    legendPhase = "等待恢复"
+    Call WorldLog("保存恢复原任务=86 阶段=" & legendPhase & " 失败次数=" & legendFailures & " 恢复次数=" & legendRecoveries & " 是否提交完成=否")
+End Sub
+
+Sub RestartLegendTask()
+    legendRestarts = legendRestarts + 1
+    Call WorldLog("重启原任务=86 重启次数=" & legendRestarts & " 恢复次数=" & legendRecoveries)
+End Sub
+
+Sub CommitLegendTask()
+    legendDone = True
+    legendFailed = False
+    legendCount = legendCount + 1
+    legendFirst = False
+    legendDue = TickCount() + 86400000
+    legendPhase = "本轮已完成，等待24小时"
+    Call WorldLog("是否提交完成=是 次数=" & legendCount & " 终态=" & legendReason & " 下一次执行TickCount=" & legendDue & " 重启次数=" & legendRestarts & " 恢复次数=" & legendRecoveries)
+End Sub
